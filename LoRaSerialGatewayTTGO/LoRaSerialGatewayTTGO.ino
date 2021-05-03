@@ -437,6 +437,8 @@ void PollRx()
 		
 		Bytes=receiveMessage(Message);
 		
+		DecryptPacket(Message);
+		
 		double freqerr=FrequencyError()/1000.0;
 		
 #if 1
