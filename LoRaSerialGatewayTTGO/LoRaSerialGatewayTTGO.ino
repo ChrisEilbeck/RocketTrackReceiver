@@ -116,23 +116,20 @@ int LowDataRateOptimize;
 
 AXP20X_Class axp;
 
+int lora_mode=0;
+
 void SetParametersFromLoRaMode(int LoRaMode)
 {
-#if 0
-	LowDataRateOptimize=0;
-	
-	if(LoRaMode==7)			{	ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_5;	Bandwidth=BANDWIDTH_20K8;	SpreadingFactor=SPREADING_7;								}
-	else if(LoRaMode==6)	{	ImplicitOrExplicit=IMPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_5;	Bandwidth=BANDWIDTH_41K7;	SpreadingFactor=SPREADING_6;								}
-	else if(LoRaMode==5)	{	ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_41K7;	SpreadingFactor=SPREADING_11;								}
-	else if(LoRaMode==4)	{	ImplicitOrExplicit=IMPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_5;	Bandwidth=BANDWIDTH_250K;	SpreadingFactor=SPREADING_6;								}
-	else if(LoRaMode==3)	{	ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_6;	Bandwidth=BANDWIDTH_250K;	SpreadingFactor=SPREADING_7;								}
-	else if(LoRaMode==2)	{	ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_62K5;	SpreadingFactor=SPREADING_8;								}
-	else if(LoRaMode==1)	{	ImplicitOrExplicit=IMPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_5;	Bandwidth=BANDWIDTH_20K8;	SpreadingFactor=SPREADING_6;								}
-	else if(LoRaMode==0)	{	ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_20K8;	SpreadingFactor=SPREADING_11;	LowDataRateOptimize=0x08;	}
-#else
-//	ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_20K8;	SpreadingFactor=SPREADING_8;	LowDataRateOptimize=0;
-	ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_62K5;	SpreadingFactor=SPREADING_7;	LowDataRateOptimize=0;
-#endif
+	if(lora_mode==0)
+	{
+		// this transmits 16 bytes of data in 5135ms
+		ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_20K8;	SpreadingFactor=SPREADING_11;	LowDataRateOptimize=0x08;
+	}
+	else
+	{
+		// this transmits 16 bytes of data in 139ms
+		ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_62K5;	SpreadingFactor=SPREADING_7;	LowDataRateOptimize=0;
+	}
 }
 
 // initialize the library with the numbers of the interface pins
