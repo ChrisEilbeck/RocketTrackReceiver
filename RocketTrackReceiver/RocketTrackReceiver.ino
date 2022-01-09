@@ -1,6 +1,6 @@
 // Intended for use with a TTGO T-BEAM
 
-#define DEBUG 1
+#define DEBUG 2
 
 // Power management
 #include <axp20x.h>
@@ -160,9 +160,6 @@ void setup()
 	
 	if(axp.isChargeing())	{	Serial.println("Charging");	}  
 	
-//	pinMode(LED, OUTPUT);
-//	digitalWrite(LED, 1);
-	
 	Serial.println("");
 	Serial.println("ESP32 LoRa Receiver V1.2");
 	Serial.println("");
@@ -171,16 +168,14 @@ void setup()
 	
 	setupRFM98();
 	
-	SetParametersFromLoRaMode(0);
-	
-//	digitalWrite(LED, 0);
+//	SetParametersFromLoRaMode(0);
 }
 
 void loop()
 {
 	PollPC();
 	PollRx();
-//	UpdateClient();
+	UpdateClient();
 }
 
 void UpdateClient(void)
@@ -268,7 +263,7 @@ int receiveMessage(unsigned char *message)
 	}
 	else
 	{
-#if 0
+#if 1
 		Serial.println("Received");
 #endif
 		
@@ -409,12 +404,6 @@ void PollPC()
 
 void PollRx()
 {
-//	if((LEDOff > 0) && (millis() >= LEDOff))
-//	{
-//		digitalWrite(LED, LOW);
-//		LEDOff=0;
-//	}
-	
 	if(digitalRead(LORA_DIO0))
 	{
 #if 0
@@ -429,9 +418,6 @@ void PollRx()
 		int cnt;
 		long Altitude;
 
-//		digitalWrite(LED, 1);
-//		LEDOff=millis() + 1000;
-		
 		Bytes=receiveMessage(Message);
 		
 		DecryptPacket(Message);
@@ -446,7 +432,7 @@ void PollRx()
 		SetLoRaFrequency();
 		SetLoRaParameters();
 		
-#if 0
+#if 1
 		sprintf(Line, "FreqErr=%.1lf\tAFC=%.1lf\t",freqerr,AFC);
 		SendToHosts(Line);
 #endif
@@ -459,7 +445,7 @@ void PollRx()
 		
 		if(SNR<0)			{	RSSI+=SNR;	}
 		
-#if 0
+#if 1
 		sprintf(Line,"RSSI=%d\t",RSSI);
 		SendToHosts(Line);
 		sprintf(Line,"SNR=%d\t",SNR);
@@ -608,7 +594,7 @@ void SetLoRaFrequency()
 	Temp=(Frequency+AFC/1000)*7110656/434;
 	FrequencyValue=(unsigned long)(Temp);
 	
-#if DEBUG>2
+#if DEBUG>1
 	Serial.print("FrequencyValue is ");
 	Serial.println(FrequencyValue);
 #endif
