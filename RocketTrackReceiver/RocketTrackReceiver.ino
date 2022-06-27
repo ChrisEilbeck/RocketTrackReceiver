@@ -1,4 +1,6 @@
 
+#define LIVE_RSSI_DISPLAY 0
+
 #define OLD_LORA 0
 
 // Intended for use with a TTGO T-BEAM
@@ -19,13 +21,10 @@
 #define LORA_NSS	18	// Comment out to disable LoRa code
 #define LORA_RESET	14	// Comment out ifnot connected
 #define LORA_DIO0	26                
+
 #define SCK			5	// GPIO5  -- SX1278's SCK
 #define MISO		19	// GPIO19 -- SX1278's MISO
 #define MOSI		27	// GPIO27 -- SX1278's MOSI
-
-//char character;
-// int LED=11;
-// unsigned long LEDOff=0;
 
 unsigned long UpdateClientAt=0;
 
@@ -35,10 +34,9 @@ double Frequency=434.650;
 double AFC=0.0;
 
 #define LORA_FREQ           434650000
-#define LORA_OFFSET         0         // Frequency to add in kHz to make Tx frequency accurate
 
 double lora_frequency=LORA_FREQ;
-double lora_offset=LORA_OFFSET;
+double lora_offset=0;
 int lora_mode=0;
 
 
@@ -229,10 +227,10 @@ void setup()
 	LoRa.receive();
 
 #if 1
-	LoRa.setSpreadingFactor(11);
-	LoRa.setSignalBandwidth(125E3);
+	LoRa.setSpreadingFactor(12);
+	LoRa.setSignalBandwidth(31.25E3);
 	LoRa.setCodingRate4(8);
-	LoRa.setFrequency(434.65E6);
+	LoRa.setFrequency(lora_frequency);
 #endif
 	
 #endif
@@ -251,6 +249,9 @@ void loop()
 	int packetSize=LoRa.parsePacket();
 	if(packetSize)
 	{
+		int offset=LoRa.packetFrequencyError();
+		int rssi=LoRa.packetRssi();
+		
 		// received a packet
 		Serial.print("Received packet '");
 		
@@ -262,7 +263,19 @@ void loop()
 		
 		// print RSSI of packet
 		Serial.print("' with RSSI ");
-		Serial.println(LoRa.packetRssi());
+		Serial.print(rssi);
+		
+		Serial.print(" and offset ");
+		Serial.print(offset);
+		Serial.println(" Hz");
+		
+		if(offset>100)	lora_offset-=20.0;
+		if(offset<-100)	lora_offset+=200.0;
+		
+		LoRa.setFrequency(lora_frequency+lora_offset);
+		
+		
+		
 	}
 	
 	UpdateClient();
@@ -279,9 +292,10 @@ void UpdateClient(void)
 		if(Frequency>525)	{	CurrentRSSI=readRegister(REG_RSSI_CURRENT)-157;	}
 		else				{	CurrentRSSI=readRegister(REG_RSSI_CURRENT)-164;	}
 
-#if 0
+#if LIVE_RSSI_DISPLAY
+	#if 0
  		sprintf(Line,"CurrentRSSI=%d\r\n",CurrentRSSI);
-#else
+	#else
 		memset(Line,0,sizeof(Line));
 		
 		int bar;
@@ -289,15 +303,16 @@ void UpdateClient(void)
 			Line[bar]='#';
 		Line[bar]='\r';
 		Line[bar+1]='\n';
-#endif
+	#endif
 		
  		SendToHosts(Line);
 		
-#if 0
+	#if 0
 		LoRa.setSpreadingFactor(11);
 		LoRa.setSignalBandwidth(125E3);
 		LoRa.setCodingRate4(8);
 		LoRa.setFrequency(434.65E6);
+	#endif
 #endif
 		
 		UpdateClientAt=millis()+100;
