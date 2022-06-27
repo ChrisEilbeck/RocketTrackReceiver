@@ -1,6 +1,8 @@
 
 #define LIVE_RSSI_DISPLAY 0
 
+#define DISPLAY_ASCII_PACKET 0
+
 #define OLD_LORA 0
 
 // Intended for use with a TTGO T-BEAM
@@ -106,30 +108,54 @@ void loop()
 	int packetSize=LoRa.parsePacket();
 	if(packetSize)
 	{
-		int offset=LoRa.packetFrequencyError();
-		int rssi=LoRa.packetRssi();
+		uint8_t *packet=(uint8_t *)malloc(packetSize);
 		
-		// received a packet
-		Serial.print("Received packet '");
-		
-		// read packet
-		while (LoRa.available()) 
+		if(packet!=NULL)
 		{
-			Serial.print((char)LoRa.read());
+			int offset=LoRa.packetFrequencyError();
+			int rssi=LoRa.packetRssi();
+			
+			// received a packet
+			Serial.print("Received packet '");
+			
+			int cnt=0;
+			
+			// read packet
+			while(LoRa.available()) 
+				packet[cnt++]=LoRa.read();
+			
+			DecryptPacket(packet);
+			
+			for(cnt=0;cnt<packetSize;cnt++)
+			{
+				if(packet[cnt]<16)	Serial.print("0");
+				Serial.print(packet[cnt],HEX);
+			}
+			
+#if DISPLAY_ASCII_PACKET
+			Serial.print("', '");
+			
+			for(cnt=0;cnt<packetSize;cnt++)
+			{
+				Serial.print((char)packet[cnt]);
+			}
+#endif
+			
+			// print RSSI of packet
+			Serial.print("' with RSSI ");
+			Serial.print(rssi);
+			
+			Serial.print(" and offset ");
+			Serial.print(offset);
+			Serial.println(" Hz");
+			
+			if(offset>100)	lora_offset-=20.0;
+			if(offset<-100)	lora_offset+=200.0;
+			
+			LoRa.setFrequency(lora_frequency+lora_offset);
+			
+			free(packet);
 		}
-		
-		// print RSSI of packet
-		Serial.print("' with RSSI ");
-		Serial.print(rssi);
-		
-		Serial.print(" and offset ");
-		Serial.print(offset);
-		Serial.println(" Hz");
-		
-		if(offset>100)	lora_offset-=20.0;
-		if(offset<-100)	lora_offset+=200.0;
-		
-		LoRa.setFrequency(lora_frequency+lora_offset);
 	}
 	
 	UpdateClient();
@@ -157,24 +183,10 @@ void UpdateClient(void)
 		Line[bar+1]='\n';
 	#endif
 		
- 		SendToHosts(Line);
+ 		Serial.println(Line);
 #endif
 		
 		UpdateClientAt=millis()+100;
 	}
 }
   
-void SendToHosts(char *Line)
-{
-	Serial.print(Line);
-}
-
-void ReplyOK(void)
-{
-	SendToHosts("*");
-}
-
-void ReplyBad(void)
-{
-	SendToHosts("?");
-}
