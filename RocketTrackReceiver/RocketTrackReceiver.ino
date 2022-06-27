@@ -1,3 +1,6 @@
+
+#define OLD_LORA 1
+
 // Intended for use with a TTGO T-BEAM
 
 #define DEBUG 2
@@ -8,6 +11,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <SPI.h>
+
+#include <LoRa.h>
 
 // RFM98
 
@@ -28,6 +33,17 @@ byte currentMode=0x81;
 
 double Frequency=434.650;
 double AFC=0.0;
+
+#define LORA_FREQ           434650000
+#define LORA_OFFSET         0         // Frequency to add in kHz to make Tx frequency accurate
+
+double lora_frequency=LORA_FREQ;
+double lora_offset=LORA_OFFSET;
+int lora_mode=0;
+
+
+
+
 
 int ImplicitOrExplicit;
 int ErrorCoding;
@@ -116,19 +132,45 @@ int LowDataRateOptimize;
 
 AXP20X_Class axp;
 
-int lora_mode=0;
-
 void SetParametersFromLoRaMode(int LoRaMode)
 {
-	if(lora_mode==0)
+	switch(LoRaMode)
 	{
-		// this transmits 16 bytes of data in 5135ms
-		ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_20K8;	SpreadingFactor=SPREADING_11;	LowDataRateOptimize=0x08;
-	}
-	else
-	{
-		// this transmits 16 bytes of data in 139ms
-		ImplicitOrExplicit=EXPLICIT_MODE;	ErrorCoding=ERROR_CODING_4_8;	Bandwidth=BANDWIDTH_62K5;	SpreadingFactor=SPREADING_7;	LowDataRateOptimize=0;
+		case 0:		// this transmits 16 bytes of data in 5135ms
+					ImplicitOrExplicit=EXPLICIT_MODE;	
+					ErrorCoding=ERROR_CODING_4_8;	
+					Bandwidth=BANDWIDTH_20K8;	
+					SpreadingFactor=SPREADING_11;	
+					LowDataRateOptimize=0x08;
+					
+					Serial.print("Setting lora to long range mode");
+					
+					break;
+		
+		case 1:		// this transmits 16 bytes of data in 139ms
+					ImplicitOrExplicit=EXPLICIT_MODE;
+					ErrorCoding=ERROR_CODING_4_8;
+					Bandwidth=BANDWIDTH_62K5;
+					SpreadingFactor=SPREADING_7;
+					LowDataRateOptimize=0;
+					
+					Serial.print("Setting lora to high speed mode");
+					
+					break;
+		
+		case 2:		// frig
+					ImplicitOrExplicit=EXPLICIT_MODE;
+					ErrorCoding=ERROR_CODING_4_8;
+					Bandwidth=BANDWIDTH_125K;
+					SpreadingFactor=SPREADING_11;
+					LowDataRateOptimize=0;
+			
+					Serial.print("Setting lora to frig mode");
+					
+					break;
+		
+		default:	Serial.print("Duff lora mode selected!");
+					break;
 	}
 }
 
@@ -138,7 +180,7 @@ void setup()
 {
 	Serial.begin(115200);
 	
-	Wire.begin(21, 22);
+	Wire.begin(21,22);
 	
 	if(!axp.begin(Wire, AXP192_SLAVE_ADDRESS))	{	Serial.println("AXP192 Begin PASS");	}
 	else										{	Serial.println("AXP192 Begin FAIL");	}
@@ -163,33 +205,100 @@ void setup()
 	Serial.println("");
 	Serial.println("ESP32 LoRa Receiver V1.2");
 	Serial.println("");
-	
-	SetParametersFromLoRaMode(0);
-	
+
+#if OLD_LORA
+	SetParametersFromLoRaMode(2);
 	setupRFM98();
+#else
+	Serial.println("LoRa Receiver");
 	
-//	SetParametersFromLoRaMode(0);
+	// initialize the pins
+	pinMode(LORA_RESET,OUTPUT);
+	digitalWrite(LORA_RESET,HIGH);
+	
+	delay(100);          // Module needs this before it's ready  
+	
+	LoRa.setPins(LORA_NSS,LORA_RESET,LORA_DIO0);
+	
+	if(!LoRa.begin(434.650E6))
+	{
+		Serial.println("Starting LoRa failed!");
+		while (1);
+	}
+	
+	LoRa.receive();
+
+#if 1
+	LoRa.setSpreadingFactor(11);
+	LoRa.setSignalBandwidth(125E3);
+	LoRa.setCodingRate4(8);
+	LoRa.setFrequency(434.65E6);
+#endif
+	
+#endif
 }
 
+#if OLD_LORA
 void loop()
 {
-	PollPC();
 	PollRx();
 	UpdateClient();
 }
+#else
+void loop()
+{
+	// try to parse packet
+	int packetSize=LoRa.parsePacket();
+	if(packetSize)
+	{
+		// received a packet
+		Serial.print("Received packet '");
+		
+		// read packet
+		while (LoRa.available()) 
+		{
+			Serial.print((char)LoRa.read());
+		}
+		
+		// print RSSI of packet
+		Serial.print("' with RSSI ");
+		Serial.println(LoRa.packetRssi());
+	}
+	
+//	UpdateClient();
+}
+#endif
 
 void UpdateClient(void)
 {
 	if(millis()>=UpdateClientAt)
 	{
 		int CurrentRSSI;
-		char Line[32];
+		char Line[256];
 		
 		if(Frequency>525)	{	CurrentRSSI=readRegister(REG_RSSI_CURRENT)-157;	}
 		else				{	CurrentRSSI=readRegister(REG_RSSI_CURRENT)-164;	}
 
- 		sprintf(Line,"\rCurrentRSSI=%d     ",CurrentRSSI);
+#if 0
+ 		sprintf(Line,"CurrentRSSI=%d\r\n",CurrentRSSI);
+#else
+		memset(Line,0,sizeof(Line));
+		
+		int bar;
+		for(bar=0;bar<CurrentRSSI+140;bar++)
+			Line[bar]='#';
+		Line[bar]='\r';
+		Line[bar+1]='\n';
+#endif
+		
  		SendToHosts(Line);
+		
+#if 0
+		LoRa.setSpreadingFactor(11);
+		LoRa.setSignalBandwidth(125E3);
+		LoRa.setCodingRate4(8);
+		LoRa.setFrequency(434.65E6);
+#endif
 		
 		UpdateClientAt=millis()+100;
 	}
@@ -248,7 +357,7 @@ int receiveMessage(unsigned char *message)
 
 	int x=readRegister(REG_IRQ_FLAGS);
 	Bytes=0;
-	// printf("Message status=%02Xh\n", x);
+	Serial.printf("Message status=%02Xh\n", x);
 	
 	// clear the rxDone flag
 	// writeRegister(REG_IRQ_FLAGS, 0x40); 
@@ -263,9 +372,7 @@ int receiveMessage(unsigned char *message)
 	}
 	else
 	{
-#if 1
 		Serial.println("Received");
-#endif
 		
 		currentAddr=readRegister(REG_FIFO_RX_CURRENT_ADDR);
 		Bytes=readRegister(REG_RX_NB_BYTES);
@@ -300,115 +407,11 @@ void ReplyBad(void)
 	SendToHosts("?");
 }
 
-void SetFrequency(char *Line)
-{
-	double Freq=atof(Line);
-	char Output[20];
-	
-	if(Freq>0)	{	ReplyOK();	Frequency=Freq;	sprintf(Output,"Frequency=%.3lf\r\n", Frequency);	SendToHosts(Output);	startReceiving();	}
-	else		{	ReplyBad();																													}
-}
-
-void SetMode(char *Line)
-{
-	int Mode=atoi(Line);
-	char Output[20];
-	
-	if((Mode>=0)&&(Mode<=7))	{	ReplyOK();	SetParametersFromLoRaMode(Mode);	sprintf(Output,"Mode=%d\r\n", Mode);	SendToHosts(Output);	startReceiving();	}
-	else						{	ReplyBad();																															}
-}
-
-void SetBandwidth(char *Line)
-{
-	if(strcmp(Line,"7K8")==0)			{	ReplyOK();	Bandwidth=BANDWIDTH_7K8;	startReceiving();	}
-	else if(strcmp(Line,"10K4")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_10K4;	startReceiving();	}
-	else if(strcmp(Line,"15K6")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_15K6;	startReceiving();	}
-	else if(strcmp(Line,"20K8")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_20K8;	startReceiving();	}
-	else if(strcmp(Line,"31K25")==0)	{	ReplyOK();	Bandwidth=BANDWIDTH_31K25;	startReceiving();	}
-	else if(strcmp(Line,"41K7")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_41K7;	startReceiving();	}
-	else if(strcmp(Line,"62K5")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_62K5;	startReceiving();	}
-	else if(strcmp(Line,"125K")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_125K;	startReceiving();	}
-	else if(strcmp(Line,"250K")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_250K;	startReceiving();	}
-	else if(strcmp(Line,"500K")==0)		{	ReplyOK();	Bandwidth=BANDWIDTH_500K;	startReceiving();	}
-	else								{	ReplyBad();													}
-}
-
-void SetErrorCoding(char *Line)
-{
-	int Coding=atoi(Line);
-	
-	if((Coding>=5)&&(Coding<=8))		{	ReplyOK();	ErrorCoding=(Coding-4)<<1;	startReceiving();	}
-	else								{	ReplyBad();													}
-}
-
-void SetSpreadingFactor(char *Line)
-{
-	int Spread=atoi(Line);
-
-	if((Spread>=6)&&(Spread<=12))		{	ReplyOK();	SpreadingFactor=Spread<<4;	startReceiving();	}
-	else								{	ReplyBad();													}
-}
-
-void SetImplicit(char *Line)
-{
-	int Implicit=atoi(Line);
-
-	ReplyOK();
-	ImplicitOrExplicit=Implicit?IMPLICIT_MODE:EXPLICIT_MODE;
-	startReceiving();
-}
-
-void SetLowOpt(char *Line)
-{
-	int LowOpt=atoi(Line);
-
-	ReplyOK();
-	ImplicitOrExplicit=LowOpt?0x08:0;
-	startReceiving();
-}
-
-void PollPC()
-{
-// 	static char Line[32];
-// 	static int Length=0;
-// 	char Character;
-// 
-// 	while(Serial.available())
-// 	{ 
-// 		Character=Serial.read();
-// 		
-// 		if(Character=='~')
-// 		{
-// 			Line[0]=Character;
-// 			Length=1;
-// 		}
-// 		else if(Length >= sizeof(Line))
-// 		{
-// 			Length=0;
-// 		}
-// 		else if(Length > 0)
-// 		{
-// 			if(Character=='\r')
-// 			{
-// 				Line[Length]='\0';
-// 				ProcessCommand(Line);
-// 				Length=0;
-// 			}
-// 			else
-// 			{
-// 				Line[Length++]=Character;
-// 			}
-// 		}
-// 	}
-}
-
 void PollRx()
 {
 	if(digitalRead(LORA_DIO0))
 	{
-#if 0
-		Serial.println("\x1b[2JReceived message");
-#endif
+		Serial.println("\tReceived message");
 		
 		unsigned char Message[256];
 		char Line[160];
@@ -424,7 +427,7 @@ void PollRx()
 		
 		double freqerr=FrequencyError()/1000.0;
 		
-#if 1
+#if 0
 		if(freqerr>0)	AFC+=0.1;
 		else			AFC-=0.1;
 #endif
@@ -454,64 +457,14 @@ void PollRx()
 		SendToHosts(Line);
 #endif
 		
-		// Telemetry=$$LORA1,108,20:30:39,51.95027,-2.54445,00141,0,0,11*9B74
-		
-#if 1
 		sprintf(Line,"RX,RSSI,%03d,SNR,%03d,FreqErr,%-03.3f,Bytes,%d,Msg,",RSSI,SNR,freqerr,Bytes);
 		
 		for(cnt=0;cnt<Bytes;cnt++)
-		{
 			sprintf(Line+strlen(Line),"%02x",Message[cnt]);
-		}
 		
 		sprintf(Line+strlen(Line),"\r\n");
 		
 		SendToHosts(Line);
-#else
-		if(Message[0]=='$')
-		{
-			char Line[256];
-			
-			// Remove LF
-			Message[strlen((char *)Message)-1]='\0';
-			
-			sprintf(Line, "Message: %s\r\n", Message);
-			SendToHosts(Line);
-		}
-		else if(Message[0]=='%')
-		{
-			char *ptr;
-			char *ptr2;
-
-			Message[0]='$';
-			
-			ptr=(char *)Message;
-			
-			do
-			{
-				if((ptr2=strchr(ptr,'\n'))!=NULL)
-				{
-					*ptr2='\0';
-					
-					SendToHosts("Message:");
-					SendToHosts((char *)Message);
-					SendToHosts("\r\n");
-					
-					ptr=ptr2+1;
-				}
-			}
-			while(ptr2!=NULL);
-		}
-		else
-		{
-			Serial.print("Hex:");
-			
-			for(cnt=0;cnt<Bytes;cnt++)
-				Serial.printf("%02X ",Message[cnt]);
-			
-			Serial.println();
-		}
-#endif
 	}
 }
 
@@ -591,13 +544,16 @@ void SetLoRaFrequency()
 	unsigned long FrequencyValue;
 	double Temp;
 	
+	Serial.print("Frequency is ");
+	Serial.println(Frequency+AFC/1000);
+	
 	Temp=(Frequency+AFC/1000)*7110656/434;
 	FrequencyValue=(unsigned long)(Temp);
 	
-#if DEBUG>1
+//#if DEBUG>1
 	Serial.print("FrequencyValue is ");
 	Serial.println(FrequencyValue);
-#endif
+//#endif
 	
 	// Set frequency
 	writeRegister(0x06,(FrequencyValue>>16)&0xFF);
@@ -607,6 +563,8 @@ void SetLoRaFrequency()
 
 void SetLoRaParameters()
 {
+	Serial.println("SetLoRaParameters()");
+	
 	writeRegister(REG_MODEM_CONFIG,ImplicitOrExplicit|ErrorCoding|Bandwidth);
 	writeRegister(REG_MODEM_CONFIG2,SpreadingFactor|CRC_ON);
 	writeRegister(REG_MODEM_CONFIG3,0x04|LowDataRateOptimize);														// 0x04: AGC sets LNA gain
