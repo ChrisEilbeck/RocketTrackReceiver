@@ -28,10 +28,12 @@
 
 unsigned long UpdateClientAt=0;
 
+#if 0
 byte currentMode=0x81;
 
 double Frequency=434.650;
 double AFC=0.0;
+#endif
 
 #define LORA_FREQ           434650000
 
@@ -39,10 +41,7 @@ double lora_frequency=LORA_FREQ;
 double lora_offset=0;
 int lora_mode=0;
 
-
-
-
-
+#if 0
 int ImplicitOrExplicit;
 int ErrorCoding;
 int Bandwidth;
@@ -127,9 +126,11 @@ int LowDataRateOptimize;
 #define REG_LNA                     0x0C
 #define LNA_MAX_GAIN                0x23  // 0010 0011
 #define LNA_OFF_GAIN                0x00
+#endif
 
 AXP20X_Class axp;
 
+#if 0
 void SetParametersFromLoRaMode(int LoRaMode)
 {
 	switch(LoRaMode)
@@ -171,6 +172,7 @@ void SetParametersFromLoRaMode(int LoRaMode)
 					break;
 	}
 }
+#endif
 
 // initialize the library with the numbers of the interface pins
 
@@ -273,9 +275,6 @@ void loop()
 		if(offset<-100)	lora_offset+=200.0;
 		
 		LoRa.setFrequency(lora_frequency+lora_offset);
-		
-		
-		
 	}
 	
 	UpdateClient();
@@ -289,9 +288,12 @@ void UpdateClient(void)
 		int CurrentRSSI;
 		char Line[256];
 		
+#if OLD_LORA		
 		if(Frequency>525)	{	CurrentRSSI=readRegister(REG_RSSI_CURRENT)-157;	}
 		else				{	CurrentRSSI=readRegister(REG_RSSI_CURRENT)-164;	}
-
+#else
+		CurrentRSSI=LoRa.rssi();
+#endif
 #if LIVE_RSSI_DISPLAY
 	#if 0
  		sprintf(Line,"CurrentRSSI=%d\r\n",CurrentRSSI);
@@ -324,6 +326,7 @@ void SendToHosts(char *Line)
 	Serial.print(Line);
 }
 
+#if 0
 double FrequencyReference(void)
 {
 	switch (Bandwidth)
@@ -342,7 +345,8 @@ double FrequencyReference(void)
 
 	return 0;
 }
-
+#endif
+#if 0
 double FrequencyError(void)
 {
 	int32_t Temp;
@@ -365,7 +369,8 @@ double FrequencyError(void)
 
 	return -T;
 } 
-
+#endif
+#if 0
 int receiveMessage(unsigned char *message)
 {
 	int i, Bytes, currentAddr;
@@ -411,6 +416,7 @@ int receiveMessage(unsigned char *message)
 	
 	return Bytes;
 }
+#endif
 
 void ReplyOK(void)
 {
@@ -422,6 +428,7 @@ void ReplyBad(void)
 	SendToHosts("?");
 }
 
+#if 0
 void PollRx()
 {
 	if(digitalRead(LORA_DIO0))
@@ -625,3 +632,4 @@ void setupRFM98(void)
 	
 	Serial.println("Setup Complete");
 }
+#endif
