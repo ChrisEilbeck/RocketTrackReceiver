@@ -1,5 +1,5 @@
 
-#define OLD_LORA 1
+#define OLD_LORA 0
 
 // Intended for use with a TTGO T-BEAM
 
@@ -265,7 +265,7 @@ void loop()
 		Serial.println(LoRa.packetRssi());
 	}
 	
-//	UpdateClient();
+	UpdateClient();
 }
 #endif
 
