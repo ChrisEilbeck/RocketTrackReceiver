@@ -1,12 +1,19 @@
 
 #define LORA_ID 0
 
+// these are global variables to be populated from the last packet received
+// and picked up by the web server
+
 uint8_t beaconid=0;
 float beaconlat=52.2;
 float beaconlon=-2.21;
 float beaconheight=250.0;
 float beaconvoltage=4.200;
 float beaconhacc=1.23;
+uint8_t beaconnumsats=6;
+uint8_t beacongpsfix=3;
+uint16_t beaconcount=123;
+
 
 void PackPacket(uint8_t *TxPacket,uint16_t *TxPacketLength)
 {
@@ -55,11 +62,25 @@ void PackPacket(uint8_t *TxPacket,uint16_t *TxPacketLength)
 	packetcounter++;
 }
 
-void UnpackPacket(void)
+void UnpackPacket(uint8_t *RxPacket,uint16_t *RxPacketLength)
 {
+	beaconid=RxPacket[0];
 	
+	beaconnumsats=RxPacket[1]&0x03f;
+	beacongpsfix=(RxPacket[1]&0xc0)>>6;
 	
+	int32_t longitude=RxPacket[2]+(RxPacket[3]<<8)+(RxPacket[4]<<16)+(RxPacket[5]<<24);
+	beaconlon=(float)longitude/1e7;
 	
+	int32_t latitude=RxPacket[6]+(RxPacket[7]<<8)+(RxPacket[8]<<16)+(RxPacket[9]<<24);
+	beaconlat=(float)latitude/1e7;
 	
+	int16_t height=RxPacket[10]+(RxPacket[11]<<8);
+	
+	beaconhacc=(float)(RxPacket[12]<1);
+	
+	beaconvoltage=(float)(RxPacket[13]*20);
+	
+	beaconcount=RxPacket[14]+(RxPacket[15]<<8);
 }
 

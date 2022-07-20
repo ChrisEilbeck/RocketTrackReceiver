@@ -151,8 +151,8 @@ void loop()
 		if(packet!=NULL)
 		{
 			int offset=LoRa.packetFrequencyError();
-			int rssi=LoRa.packetRssi();
-			float snr=LoRa.packetSnr();
+			lora_rssi=LoRa.packetRssi();
+			lora_snr=LoRa.packetSnr();
 			
 			// received a packet
 			Serial.print("Received packet '");
@@ -181,8 +181,8 @@ void loop()
 #endif
 			
 			// print RSSI of packet
-			Serial.print("' with RSSI ");	Serial.print(rssi);
-			Serial.print(", with SNR ");	Serial.print(snr);
+			Serial.print("' with RSSI ");	Serial.print(lora_rssi);
+			Serial.print(", with SNR ");	Serial.print(lora_snr);
 			Serial.print(" and offset ");	Serial.print(offset);	Serial.println(" Hz");
 			
 			if(offset>100)			lora_offset-=20.0;
@@ -234,6 +234,8 @@ void UpdateClient(void)
 		lora_mode=!lora_mode;
 		SetLoRaMode(lora_mode);
 		last_good_receive=millis();
+		lora_offset=0;
+		LoRa.setFrequency(lora_frequency+lora_offset);
 	}
 }
   
