@@ -36,8 +36,8 @@ double lora_frequency=LORA_FREQ;
 double lora_offset=4000;
 int lora_mode=1;
 int last_good_receive=0;
-
-AXP20X_Class axp;
+int lora_rssi=-123;
+int lora_snr=9;
 
 // initialize the library with the numbers of the interface pins
 
@@ -72,38 +72,46 @@ void setup()
 {
 	Serial.begin(115200);
 	
+	// SPI
+	SPI.begin(SCK,MISO,MOSI);
+	
+	// I2C
 	Wire.begin(21,22);
 	
-	if(!axp.begin(Wire, AXP192_SLAVE_ADDRESS))	{	Serial.println("AXP192 Begin PASS");	}
-	else										{	Serial.println("AXP192 Begin FAIL");	}
-	
-	axp.setPowerOutPut(AXP192_LDO2,AXP202_ON);
-	axp.setPowerOutPut(AXP192_LDO3,AXP202_ON);
-	axp.setPowerOutPut(AXP192_DCDC2,AXP202_ON);
-	axp.setPowerOutPut(AXP192_EXTEN,AXP202_ON);
-	axp.setPowerOutPut(AXP192_DCDC1,AXP202_ON);
-	
-	axp.setDCDC1Voltage(3300);
-	
-	Serial.printf("\tDCDC1: %s",axp.isDCDC1Enable()?"ENABLE":"DISABLE");	Serial.println("");
-	Serial.printf("\tDCDC2: %s",axp.isDCDC2Enable()?"ENABLE":"DISABLE");	Serial.println("");
-	Serial.printf("\tLDO2: %s",axp.isLDO2Enable()?"ENABLE":"DISABLE");		Serial.println("");
-	Serial.printf("\tLDO3: %s",axp.isLDO3Enable()?"ENABLE":"DISABLE");		Serial.println("");
-	Serial.printf("\tDCDC3: %s",axp.isDCDC3Enable()?"ENABLE":"DISABLE");	Serial.println("");
-	Serial.printf("\tExten: %s",axp.isExtenEnable()?"ENABLE":"DISABLE");	Serial.println("");
-	
-	if(axp.isChargeing())	{	Serial.println("Charging");	}  
-	
+	Serial.println("ESP32 LoRa Receiver V1.3");
 	Serial.println("");
-	Serial.println("ESP32 LoRa Receiver V1.2");
-	Serial.println("");
+
+	// mandatory peripherals
+	
+	if(SetupPMIC())				{	Serial.print("PMIC Setup failed, halting ...\r\n");					while(1);				}
+
+#if 1
+	if(SetupWebServer())		{	Serial.print("Web Server Setup failed, disabling ...\r\n");									}
+#endif
+#if 1
+	// disabled while i'm messing around with the web page
+//	if(SetupLoRa())				{	Serial.print("LoRa Setup failed, halting ...\r\n");					while(1);				}
+	if(SetupGPS())				{	Serial.print("GPS Setup failed, halting ...\r\n");					while(1);				}
+	if(SetupCrypto())			{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
+//	if(SetupScheduler())		{	Serial.print("Scheduler Setup failed, halting ...\r\n");			while(1);				}
+	
+	// optional peripherals
+//	if(SetupLEDs())				{	Serial.print("LED Setup failed, halting ...\r\n");					while(1);				}
+#endif
+#if 0
+	// optional peripherals
+	
+	if(SetupBeeper())			{	Serial.print("Beeper Setup failed, disabling ...\r\n");				beeper_enable=false;	}
+	if(SetupNeopixels())		{	Serial.print("Neopixels Setup failed, disabling ...\r\n");			neopixels_enable=false;	}
+#endif
+#if 0
+	if(SetupPressureSensor())	{	Serial.print("Pressure Sensor Setup failed, disabling ...\r\n");	psensor_enable=false;	}
+#endif
 
 #if OLD_LORA
 	SetParametersFromLoRaMode(2);
 	setupRFM98();
 #else
-	Serial.println("LoRa Receiver");
-	
 	// initialize the pins
 	pinMode(LORA_RESET,OUTPUT);
 	digitalWrite(LORA_RESET,HIGH);
@@ -144,6 +152,7 @@ void loop()
 		{
 			int offset=LoRa.packetFrequencyError();
 			int rssi=LoRa.packetRssi();
+			float snr=LoRa.packetSnr();
 			
 			// received a packet
 			Serial.print("Received packet '");
@@ -172,12 +181,9 @@ void loop()
 #endif
 			
 			// print RSSI of packet
-			Serial.print("' with RSSI ");
-			Serial.print(rssi);
-			
-			Serial.print(" and offset ");
-			Serial.print(offset);
-			Serial.println(" Hz");
+			Serial.print("' with RSSI ");	Serial.print(rssi);
+			Serial.print(", with SNR ");	Serial.print(snr);
+			Serial.print(" and offset ");	Serial.print(offset);	Serial.println(" Hz");
 			
 			if(offset>100)			lora_offset-=20.0;
 			else if(offset<-100)	lora_offset+=200.0;
@@ -190,6 +196,8 @@ void loop()
 		
 		last_good_receive=millis();
 	}
+	
+	PollGPS();
 	
 	UpdateClient();
 }

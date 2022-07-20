@@ -7,7 +7,7 @@ BlockCipher *cipher=&aes256;
 
 uint8_t crypto_key[32];
 
-void SetupCrypto(void)
+int SetupCrypto(void)
 {
 	Serial.print("Configuring AES crypto\r\n");
 	
@@ -26,11 +26,13 @@ void SetupCrypto(void)
 		if(ct[cnt]!=tv[cnt])
 		{
 			Serial.print("Crypto check FAILED!  Halting ...\r\n");
-			while(1);
+			return(1);
 		}
 	}
 	
 	Serial.print("Crypto checked out OK\r\n");
+	
+	return(0);
 }
 
 void EncryptPacket(uint8_t *packet)
