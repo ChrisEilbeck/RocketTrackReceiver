@@ -14,7 +14,6 @@ uint8_t beaconnumsats=6;
 uint8_t beacongpsfix=3;
 uint16_t beaconcount=123;
 
-
 void PackPacket(uint8_t *TxPacket,uint16_t *TxPacketLength)
 {
 	static uint16_t packetcounter=0;
@@ -62,7 +61,7 @@ void PackPacket(uint8_t *TxPacket,uint16_t *TxPacketLength)
 	packetcounter++;
 }
 
-void UnpackPacket(uint8_t *RxPacket,uint16_t *RxPacketLength)
+void UnpackPacket(uint8_t *RxPacket,uint16_t RxPacketLength)
 {
 	beaconid=RxPacket[0];
 	
@@ -75,7 +74,8 @@ void UnpackPacket(uint8_t *RxPacket,uint16_t *RxPacketLength)
 	int32_t latitude=RxPacket[6]+(RxPacket[7]<<8)+(RxPacket[8]<<16)+(RxPacket[9]<<24);
 	beaconlat=(float)latitude/1e7;
 	
-	int16_t height=RxPacket[10]+(RxPacket[11]<<8);
+	int height=RxPacket[10]+(RxPacket[11]<<8);
+	beaconheight=(float)height;
 	
 	beaconhacc=(float)(RxPacket[12]<1);
 	
