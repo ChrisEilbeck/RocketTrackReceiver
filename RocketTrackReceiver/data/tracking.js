@@ -180,11 +180,6 @@ function DrawSpotAt(range,bearing,maxrange)
 	ctx.fillStyle=colour;
 	ctx.arc(Math.cos(bearing)*radius,Math.sin(bearing)*radius,5,0,2*Math.PI);
 	ctx.fill();
-	
-// 	ctx.font="20px Comic Sans MS";
-// 	ctx.fillStyle="white";
-// 	ctx.textAlign="center";
-// 	ctx.fillText(num,Math.cos(bearing*Math.PI/180)*radius,Math.sin(bearing*Math.PI/180)*radius+7);
 }
 
 function GreatCircleDistance(lat1,long1,lat2,long2)
