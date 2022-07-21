@@ -138,6 +138,11 @@ void setup()
 #endif
 	
 #endif
+	uint8_t *packet=(uint8_t *)"\x00\xC9\xC9\x96\x9E\xFE\x6C\x44\x0E\x1F\x4D\x00\x0B\xCA\x09\x00";
+//	uint8_t *packet=(uint8_t *)"\x00\xCC\xDC\x2E\x9F\xFE\xB6\xB7\x0A\x1F\x3A\x00\x0F\xC9\xE3\x00";
+	uint16_t packetlength=16;
+	
+	UnpackPacket(packet,packetlength);
 }
 
 void loop()
@@ -164,6 +169,7 @@ void loop()
 				packet[cnt++]=LoRa.read();
 			
 			DecryptPacket(packet);
+			UnpackPacket(packet,cnt);
 			
 			for(cnt=0;cnt<packetSize;cnt++)
 			{
