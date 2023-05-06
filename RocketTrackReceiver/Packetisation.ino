@@ -84,3 +84,12 @@ void UnpackPacket(uint8_t *RxPacket,uint16_t RxPacketLength)
 	beaconcount=RxPacket[14]+(RxPacket[15]<<8);
 }
 
+void DumpHexPacket(uint8_t *packet,uint16_t packetlength)
+{
+	int cnt;
+	for(cnt=0;cnt<packetlength;cnt++)
+		Serial.printf("%02x",packet[cnt]);
+	
+	Serial.print("\r\n");
+}
+

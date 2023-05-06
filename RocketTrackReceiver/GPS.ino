@@ -380,8 +380,14 @@ void UnpackNAVPOSLLH(uint8_t *buffer)
 	Serial.printf("\t\thAcc = %ld mm\n",hAcc);
 #endif
 #if (DEBUG>2)
+	Serial.print("\t\t");
+	for(int cnt=0;cnt<34;cnt++)
+		Serial.printf("%02x ",buffer[cnt]);
+	
+	Serial.print("\r\n");
+	
 	Serial.printf("\t\tLat = %.6f, Lon = %.6f, ",rxlat/1e7,rxlon/1e7,rxheight/1e3);
-	Serial.printf("height = %.1f\n",rxheight/1e3);
+	Serial.printf("height = %.1f\r\n",rxheight/1e3);
 #endif
 }
 
@@ -400,9 +406,9 @@ void UnpackNAVSTATUS(uint8_t *buffer)
 	msss=*((uint32_t *)(buffer+18));
 	
 #if (DEBUG>2)
-	if(gpsFix==0x00)		Serial.println("No Fix");
-	else if(gpsFix==0x02)	Serial.println("2D Fix");
-	else if(gpsFix==0x03)	Serial.println("3D Fix");
+	if(gpsFix==0x00)		Serial.print("No Fix\r\n");
+	else if(gpsFix==0x02)	Serial.print("2D Fix\r\n");
+	else if(gpsFix==0x03)	Serial.print("3D Fix\r\n");
 #endif
 }
 
@@ -431,7 +437,7 @@ void UnpackNAVSVINFO(uint8_t *buffer)
 	}
 	
 #if (DEBUG>2)
-	Serial.printf("\tnumCh = %d\n",numCh);
+	Serial.printf("\tnumCh = %d\r\n",numCh);
 #endif
 }
 
@@ -461,7 +467,7 @@ int GPSCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 		
 		case 's':	// satellite info
-					Serial.println("Chan\tPRN\tElev\tAzim\tC/No");
+					Serial.print("Chan\tPRN\tElev\tAzim\tC/No\r\n");
 					for(cnt=0;cnt<numCh;cnt++)
 					{
 						Serial.print(cnt);	Serial.print("\t"); Serial.print(svid[cnt]);	Serial.print("\t");	Serial.print(elev[cnt]);	Serial.print("\t");	Serial.print(azim[cnt]);	Serial.print("\t");	Serial.println(cno[cnt]);

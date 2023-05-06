@@ -39,6 +39,8 @@ int last_good_receive=0;
 int lora_rssi=-123;
 int lora_snr=9;
 
+extern uint8_t crypto_key[32];
+
 // initialize the library with the numbers of the interface pins
 
 void SetLoRaMode(int mode)
@@ -95,6 +97,8 @@ void setup()
 	if(SetupCrypto())			{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
 //	if(SetupScheduler())		{	Serial.print("Scheduler Setup failed, halting ...\r\n");			while(1);				}
 	
+	DumpHexPacket(crypto_key,32);
+
 	// optional peripherals
 //	if(SetupLEDs())				{	Serial.print("LED Setup failed, halting ...\r\n");					while(1);				}
 #endif
@@ -173,8 +177,7 @@ void loop()
 			
 			for(cnt=0;cnt<packetSize;cnt++)
 			{
-				if(packet[cnt]<16)	Serial.print("0");
-				Serial.print(packet[cnt],HEX);
+				Serial.printf("%02x",packet[cnt]);
 			}
 			
 #if DISPLAY_ASCII_PACKET
@@ -185,7 +188,6 @@ void loop()
 				Serial.print((char)packet[cnt]);
 			}
 #endif
-			
 			// print RSSI of packet
 			Serial.print("' with RSSI ");	Serial.print(lora_rssi);
 			Serial.print(", with SNR ");	Serial.print(lora_snr);
