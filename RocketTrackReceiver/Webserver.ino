@@ -1,4 +1,6 @@
 
+#define DEBUG 0
+
 #define STATIONMODE 1
 
 #include "network_creds.h"
@@ -223,10 +225,10 @@ int SetupWebServer(void)
 	}
 	
 	// Route for root / web page
-	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)					{														request->redirect("/tracking.html");		});	
+	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)					{	request->redirect("/tracking.html");		});	
 	
-	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	Serial.println("Returning /status.html");			request->send(SPIFFS,"/status.html");	});	
-	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	Serial.println("Returning /status.css");			request->send(SPIFFS,"/status.css");	});	
+	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/status.html");		});	
+	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.css");		});	
 	
 	server.on("/status.js",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
@@ -234,23 +236,26 @@ int SetupWebServer(void)
 		request->send(SPIFFS,"/status.js",String(),false,statusprocessor);
 	});	
 	
-	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	Serial.println("Returning /tracking.html");			request->send(SPIFFS,"/tracking.html");	});	
-	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	Serial.println("Returning /tracking.css");			request->send(SPIFFS,"/tracking.css");	});	
+	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/tracking.html");		});	
+	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/tracking.css");		});	
 	
 	server.on("/tracking.js",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
+#if 0
 		Serial.println("Returning modified /tracking.js");
+#endif
+			
 		request->send(SPIFFS,"/tracking.js",String(),false,trackingprocessor);
 	});	
 	
 #if 0
-	server.on("/config.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	Serial.println("Returning /config.html");			request->send(SPIFFS,"/config.html");	});	
-	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	Serial.println("Returning /config.css");			request->send(SPIFFS,"/config.css");	});	
-	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	Serial.println("Returning /config.js");				request->send(SPIFFS,"/config.js");		});	
+	server.on("/config.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/config.html");		});	
+	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.css");		});	
+	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.js");			});	
 	
-	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	Serial.println("Returning /engineering.html");		request->send(SPIFFS,"/engineering.html");		});	
-	server.on("/engineering.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	Serial.println("Returning /engineering.css");		request->send(SPIFFS,"/engineering.css");		});	
-	server.on("/engineering.js",HTTP_GET,[](AsyncWebServerRequest *request)		{	Serial.println("Returning /engineering.js");		request->send(SPIFFS,"/engineering.js");		});	
+	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/engineering.html");	});	
+	server.on("/engineering.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/engineering.css");	});	
+	server.on("/engineering.js",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.js");	});	
 	
 	server.on("/longrange.html",HTTP_POST,[](AsyncWebServerRequest *request)
 	{

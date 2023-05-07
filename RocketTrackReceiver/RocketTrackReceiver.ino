@@ -18,6 +18,8 @@
 
 #include <LoRa.h>
 
+#include "Packetisation.h"
+
 // RFM98
 
 #define LORA_NSS	18	// Comment out to disable LoRa code
@@ -80,8 +82,8 @@ void setup()
 	// I2C
 	Wire.begin(21,22);
 	
-	Serial.println("ESP32 LoRa Receiver V1.3");
-	Serial.println("");
+
+	Serial.print("\n--------\tRocketTrack Flight Telemetry Receiver\t--------\r\n\n");
 
 	// mandatory peripherals
 	
@@ -97,7 +99,9 @@ void setup()
 	if(SetupCrypto())			{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
 //	if(SetupScheduler())		{	Serial.print("Scheduler Setup failed, halting ...\r\n");			while(1);				}
 	
+#if 0
 	DumpHexPacket(crypto_key,32);
+#endif
 
 	// optional peripherals
 //	if(SetupLEDs())				{	Serial.print("LED Setup failed, halting ...\r\n");					while(1);				}
@@ -174,7 +178,7 @@ void loop()
 			
 			DecryptPacket(packet);
 			UnpackPacket(packet,cnt);
-			
+
 			for(cnt=0;cnt<packetSize;cnt++)
 			{
 				Serial.printf("%02x",packet[cnt]);
@@ -193,7 +197,11 @@ void loop()
 			Serial.print(", with SNR ");	Serial.print(lora_snr);
 			Serial.print(" and offset ");	Serial.print(offset);	Serial.println(" Hz");
 			
-			if(offset>100)			lora_offset-=20.0;
+#if 1			
+			Serial.printf("Rx packet: BeaconLat = %.6f, BeaconLong = %.6f, BeaconHeight = %.1f, BeaconAcc = %.2f\t%s Mode\r\n",beaconlat,beaconlon,beaconheight,beaconhacc,lora_mode?"High Rate":"Long Range");
+#endif
+			
+			if(offset>100)			lora_offset-=200.0;
 			else if(offset<-100)	lora_offset+=200.0;
 			else					lora_offset+=offset;
 			
