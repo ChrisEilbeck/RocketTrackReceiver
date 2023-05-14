@@ -79,7 +79,7 @@ function DrawTextData()
 	var ctx=canvas.getContext("2d");
 	
 	var bat_volt="4.150V";
-	var lora_freq="434.650MHz";
+	var lora_freq="434.150MHz";
 	var lora_mode="Long Range";
 	var lora_rssi="-123";
 	var lora_snr="10";

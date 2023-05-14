@@ -81,7 +81,7 @@ function DrawTextData(satcnt)
 	var batVolt=%BAT_VOLTAGE%;
 	var batStatus=%BAT_STATUS%;
 	
-	var frequency=434.650;
+	var frequency=434.150;
 	var loramode="%LORA_MODE%";
 	
 	var latitude="%LATITUDE%";

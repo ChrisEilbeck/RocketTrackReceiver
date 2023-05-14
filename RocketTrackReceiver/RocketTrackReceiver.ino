@@ -32,7 +32,7 @@
 
 unsigned long UpdateClientAt=0;
 
-#define LORA_FREQ           434650000
+#define LORA_FREQ           434150000
 
 double lora_frequency=LORA_FREQ;
 double lora_offset=4000;

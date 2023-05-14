@@ -1,8 +1,6 @@
 
 #define DEBUG 0
 
-#define STATIONMODE 1
-
 #include "network_creds.h"
 #include "Packetisation.h"
 #include "Webserver.h"
@@ -152,7 +150,7 @@ int SetupWebServer(void)
 	// Initialize SPIFFS
 	if(!SPIFFS.begin(true))
 	{
-		Serial.println("An Error has occurred while mounting SPIFFS");
+		Serial.println("An error has occurred while mounting SPIFFS");
 		return(1);
 	}
 	
@@ -187,6 +185,7 @@ int SetupWebServer(void)
 #endif
 	
 #if STATIONMODE
+#if 1
 	IPAddress LocalIP(192,168,0,171);
 	IPAddress Gateway(192,168,0,254);
 	IPAddress Subnet(255,255,255,0);
@@ -194,7 +193,8 @@ int SetupWebServer(void)
 	IPAddress DNS2(212,23,6,100);
 	
 	WiFi.config(LocalIP,Gateway,Subnet,DNS1,DNS2);
-	
+#endif
+		
 	// Connect to existing Wi-Fi network
 	WiFi.begin(ssid, password);
 	while(WiFi.status()!=WL_CONNECTED)
@@ -218,7 +218,7 @@ int SetupWebServer(void)
 	Serial.println(IP);
 #endif
 	
-	if(!MDNS.begin("esp32"))
+	if(!MDNS.begin("rocketrx"))
 	{
 		Serial.println("Error starting mDNS");
 		return(1);
