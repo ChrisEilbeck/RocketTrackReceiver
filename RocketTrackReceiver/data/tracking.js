@@ -29,7 +29,7 @@ function DrawTrackingPlot()
 	var bearing=GreatCircleBearing(tx_latitude,tx_longitude,rx_latitude,rx_longitude);
 	var maxrange;
 	
-	maxrange=DrawTrackingCrosshairs(range,rx_heading);
+	maxrange=DrawTrackingCrosshairs(range,-rx_heading);
 	DrawTextData();
 	
 	DrawSpotAt(range,bearing,maxrange,rx_heading);
@@ -184,19 +184,22 @@ function DrawSpotAt(range,bearing,maxrange,rx_heading)
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
-	bearing=30
+//	bearing=30
 	
+	console.log("rx_heading = "+rx_heading);
 	console.log("bearing before = "+bearing);
 	
-	bearing=90-bearing;
+	bearing-=90;
 	
-	bearing+=180;
+//	bearing+=180;
 	
 	// adjust for the bearing of the receiver
 	bearing-=rx_heading;
+	
+	
+	
 	while(bearing>360.0)	{	bearing-=360.0;		}
 	while(bearing<0.0)		{	bearing+=360.0;		}
-	
 	
 	console.log("bearing after = "+bearing);
 	

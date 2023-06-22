@@ -86,7 +86,11 @@ void setup()
 	Wire.begin(21,22);
 	
 	Serial.print("\n--------\tRocketTrack Flight Telemetry Receiver\t--------\r\n\n");
-
+	
+#if 0
+	packhack();
+#endif
+	
 	// mandatory peripherals
 	
 	if(SetupPMIC())				{	Serial.print("PMIC Setup failed, halting ...\r\n");					while(1);				}
@@ -151,11 +155,35 @@ void setup()
 #endif
 	
 #endif
-	uint8_t *packet=(uint8_t *)"\x00\xC9\xC9\x96\x9E\xFE\x6C\x44\x0E\x1F\x4D\x00\x0B\xCA\x09\x00";
+#if 1
+//	uint8_t *packet=(uint8_t *)"\x00\xC9\xC9\x96\x9E\xFE\x6C\x44\x0E\x1F\x4D\x00\x0B\xCA\x09\x00";
 //	uint8_t *packet=(uint8_t *)"\x00\xCC\xDC\x2E\x9F\xFE\xB6\xB7\x0A\x1F\x3A\x00\x0F\xC9\xE3\x00";
+	
+	// smeaton's pier, st ives
+	uint8_t *packet=(uint8_t *)"\x00\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
 	uint16_t packetlength=16;
+
+	UnpackPacket(packet,packetlength);
+#else
+	Serial.print("Hanging ...\r\n");
+	while(1);
+#endif
+}
+
+void packhack(void)
+{
+	uint8_t packet[16];
+	uint16_t packetlength;
+	
+	PackPacket(packet,&packetlength);
+	DumpHexPacket(packet,packetlength);
 	
 	UnpackPacket(packet,packetlength);
+
+#if 0
+	Serial.print("Hanging ...\r\n");
+	while(1);
+#endif
 }
 
 void loop()

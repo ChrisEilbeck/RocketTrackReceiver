@@ -1,0 +1,209 @@
+
+#include "Display.h"
+#include "GPS.h"
+#include "GreatCircle.h"
+
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3c ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+
+#define DISPLAY_UPDATE_PERIOD	200
+
+Adafruit_SSD1306 display(SCREEN_WIDTH,SCREEN_HEIGHT,&Wire,OLED_RESET);
+
+int display_update_suspend=0;
+
+int SetupDisplay(void)
+{
+	// SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+	if(!display.begin(SSD1306_SWITCHCAPVCC,SCREEN_ADDRESS))
+	{
+		Serial.println(F("SSD1306 allocation failed"));
+		return(1);
+	}
+	
+	Serial.println(F("SSD1306 display configured ..."));
+	
+	display.setRotation(1);
+	
+	display.clearDisplay();
+	
+	display.setTextSize(3);					// Normal 1:1 pixel scale
+	display.setTextColor(SSD1306_WHITE);	// Draw white text
+	display.cp437(true);					// Use full 256 char 'Code Page 437' font
+	
+	display.setCursor(8,16);
+	display.write("RKT");
+	display.setCursor(8,48);
+	display.write("Trk");
+	display.setCursor(16,80);
+	display.write("RX");
+	
+	display.display();
+	
+	return(0);
+}
+
+void PollDisplay(void)
+{
+	static int DisplayState=0;
+	static int LastDisplayChange=3000;
+	
+	if(millis()<display_update_suspend)
+		return;
+	
+	if(millis()>=(LastDisplayChange+DISPLAY_UPDATE_PERIOD))
+	{
+		display.clearDisplay();
+		
+		// portrait
+		display.setRotation(1);
+		
+		// draw white on black if logging is active, inverted otherwise
+		display.setTextColor(SSD1306_WHITE);
+		
+		display.setCursor(0,0);
+		
+		char buffer[32];
+		
+		display.setTextSize(1);
+		
+		sprintf(buffer,"%04d/%02d/%02d\r\n",gps_year,gps_month,gps_day);
+		display.print(buffer);
+		
+		sprintf(buffer,"  %02d%02d%02d\r\n",gps_hour,gps_min,gps_sec);
+		display.print(buffer);
+		
+		switch(DisplayState)
+		{
+			case 0 ... 8:	display.setTextSize(1);
+							display.print("Receiver\r\n\n");
+							display.printf("Lat:\r\n %.6f\r\n",rxlat/1e7);
+							display.printf("Lon:\r\n %.6f\r\n",rxlon/1e7);		
+							display.printf("Altitude:\r\n %.1f m\r\n",rxhMSL/1e3);							
+							break;
+			
+			case 9 ... 15:	display.setTextSize(1);
+							display.print("Receiver\r\n\n# Sats:\r\n  ");
+							display.setTextSize(2);
+							display.println(numCh);
+							break;
+			
+			case 16 ... 24:	display.setTextSize(1);
+							display.printf("Beacon %d\r\n\n",beaconid);
+							display.printf("Lat:\r\n %.6f\r\n",beaconlat/1e7);
+							display.printf("Lon:\r\n %.6f\r\n",beaconlon/1e7);		
+							display.printf("Altitude:\r\n %.1f m\r\n",beaconheight/1e3);
+							break;
+			
+			case 25 ... 29:	display.setTextSize(1);
+							display.printf("Beacon %d\r\n\n# Sats:\r\n  ",beaconid);
+							display.setTextSize(2);
+							display.println(beaconnumsats);
+							break;
+			
+			case 30 ... 39:	display.setTextSize(1);
+							display.printf("Beacon %d\r\n\nBearing:\r\n  ",beaconid);
+							display.setTextSize(1);
+							display.printf("%.1f",GreatCircleBearing(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
+							break;
+			
+			case 40 ... 49:	display.setTextSize(1);
+							display.printf("Beacon %d\r\n\nRange:\r\n  ",beaconid);
+							display.setTextSize(1);
+							display.printf("%.1fm",GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
+							break;
+			
+#if 0
+			case 8 ... 11:	display.setTextSize(1);
+							display.print("\r\nGPS Alt\r\nCurr\r\n");
+							display.setTextSize(2);
+							display.printf("%.1f\r\n",gps_hMSL/1e3);
+							display.setTextSize(1);
+							display.print("Max\r\n");
+							display.setTextSize(2);
+							display.printf("%.1f\r\n",max_gps_hMSL/1e3);
+							break;
+							
+			case 12 ... 15:	display.setTextSize(1);
+							display.print("\r\nBaro Alt\r\nCurr\r\n");
+							display.setTextSize(2);
+							display.printf("%.1f\r\n",baro_height);
+							display.setTextSize(1);
+							display.print("Max\r\n");
+							display.setTextSize(2);
+							display.printf("%.1f\r\n",max_baro_height);
+							break;
+#endif
+							
+			default:		
+							DisplayState=0;
+							break;
+		}
+		
+		display.setTextSize(3);
+		display.setCursor(0,104);
+		if(gpsFix==3)		display.println("3dFix");
+		else if(gpsFix==2)	display.println("2dFix");
+		else				display.println("NoFix");
+			
+		display.display();
+
+//		SetTXIndicator(tx_active);
+		
+		DisplayState++;
+//		if(DisplayState>=16)
+//			DisplayState=0;
+		
+		LastDisplayChange=millis();
+	}
+}
+
+#if 0
+void SetTXIndicator(int on)
+{
+	if(on)
+	{
+		display.setTextSize(2);
+		display.setCursor(48,128-32);
+		display.print("T");
+		display.setCursor(48,128-16);
+		display.print("X");
+	}
+	else
+	{
+		display.setTextSize(2);
+		display.setCursor(48,128-32);
+		display.print(" ");
+		display.setCursor(48,128-16);
+		display.print(" ");
+	}
+	
+	display.display();
+}
+#endif
+#if 0
+void ShowModeChange(void)
+{
+	display.clearDisplay();
+
+	display.setTextSize(4);
+	display.setCursor(8,48);
+	
+	if(strcmp(lora_mode,"High Rate")==0)	{	display.print("HR");	}
+	else									{	display.print("LR");	}
+
+	display.setTextSize(2);
+	display.setCursor(8,85);
+	display.print("Mode");
+	
+	display.display();
+
+	display_update_suspend=millis()+3000;	
+}
+#endif

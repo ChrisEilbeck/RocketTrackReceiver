@@ -134,9 +134,9 @@ String trackingprocessor(const String& var)
  	else if(var=="RX_LATITUDE")		{	sprintf(buffer,"%2.6f",rxlat/1e7);			}
 	else if(var=="RX_LONGITUDE")	{	sprintf(buffer,"%3.6f",rxlon/1e7);			}
 	else if(var=="RX_ALTITUDE")		{	sprintf(buffer,"%.1f",rxheight/1e3);		}
-	else if(var=="TX_LATITUDE")		{	sprintf(buffer,"%2.6f",beaconlat);			}
-	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",beaconlon);			}
-	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",beaconheight);		}
+	else if(var=="TX_LATITUDE")		{	sprintf(buffer,"%2.6f",beaconlat/1e7);		}
+	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",beaconlon/1e7);		}
+	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",beaconheight/1e3);	}
 	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);					}
 	else if(var=="RX_HEADING")		{	sprintf(buffer,"%.1f",rx_heading);			}
 	

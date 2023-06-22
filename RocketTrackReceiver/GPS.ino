@@ -382,6 +382,8 @@ void UnpackNAVSVINFO(uint8_t *buffer)
 	globalFlags=*(buffer+11);
 	reserved2=*((uint16_t *)(buffer+12));
 	
+	uint8_t channels_used=0;
+	
 	uint8_t cnt;
 	for(cnt=0;cnt<numCh;cnt++)
 	{
@@ -393,7 +395,11 @@ void UnpackNAVSVINFO(uint8_t *buffer)
 		elev[cnt]=*((int8_t *)(buffer+19+12*cnt));
 		azim[cnt]=*((int16_t *)(buffer+20+12*cnt));
 		prRes[cnt]=*((int32_t *)(buffer+22+12*cnt));
+		
+		if(quality[cnt]&0x01)	channels_used++;
 	}
+	
+	numCh=channels_used;
 	
 #if (DEBUG>2)
 	Serial.printf("\tnumCh = %d\r\n",numCh);

@@ -1,4 +1,5 @@
 
+
 #include "MPU9250.h"
 
 #if 0
@@ -23,11 +24,22 @@ int SetupCompass(void)
 {
 	Serial.print("SetupCompass()\r\n");
 	
+	int fail=0;
+	
+#if 0
+	if(!mpu.setup(0x68))			{	Serial.println("MPU connection failed at 0x68");	fail=1;	}
+	else	if(!mpu.setup(0x69))	{	Serial.println("MPU connection failed at 0x69");	fail=1;	}
+
+	if(fail)
+		return(1);
+#else
 	if(!mpu.setup(0x69))
 	{
-		Serial.println("MPU connection failed. Please check your connection with `connection_check` example.");
+		Serial.println("MPU connection failed at 0x69");
 		return(1);
 	}
+#endif
+
 	
 	Serial.print("\tSetting sensor bias values\r\n");
 	
