@@ -5,9 +5,11 @@
 // and picked up by the web server
 
 uint8_t beaconid=0;
-float beaconlat=52.2;
-float beaconlon=-2.21;
-float beaconheight=250.0;
+
+// St Ives Lighthouse on Smeaton's Pier
+float beaconlat=50.213461;
+float beaconlon=-5.476708;
+float beaconheight=10.0;
 float beaconvoltage=4.200;
 float beaconhacc=1.23;
 uint8_t beaconnumsats=6;

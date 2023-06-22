@@ -50,6 +50,13 @@ uint32_t rxvAcc=0;
 
 uint8_t hAccValue=0;
 
+uint16_t gps_year;
+uint8_t gps_month;
+uint8_t gps_day;
+uint8_t gps_hour;
+uint8_t gps_min;
+uint8_t gps_sec;
+
 void CalculateChecksum(uint8_t *buffer,uint16_t bufferptr,uint8_t *CK_A,uint8_t *CK_B)
 {
 	uint16_t cnt;
@@ -120,22 +127,6 @@ void EnableRawMeasurements(void)
 #endif
 }
 
-void DisableNMEAProtocol(unsigned char Protocol)
-{
-	unsigned char Disable[]={	0xB5,0x62,0x06,0x01,0x08,0x00,0xF0,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00	};
-	
-	Disable[7]=Protocol;
-	
-	FixUBXChecksum(Disable,sizeof(Disable));
-	
-	SendUBX(Disable,sizeof(Disable));
-	
-#if (DEBUG>0)
-	Serial.print("Disable NMEA ");
-	Serial.println(Protocol);
-#endif
-}
-
 void SetMessageRate(uint8_t id1,uint8_t id2,uint8_t rate)
 {
 	unsigned char Disable[]={	0xB5,0x62,0x06,0x01,0x08,0x00,id1,id2,0x00,rate,rate,0x00,0x00,0x01,0x00,0x00	};
@@ -181,46 +172,25 @@ void Set5Hz_Fix_Rate()
 
 int SetupGPS(void)
 {
-#if 0
-	// Switch GPS on,if we have control of that
-	pinMode(GPS_ON,OUTPUT);
-	digitalWrite(GPS_ON,1);
-#endif
-	
-#if (DEBUG>0)
 	Serial.println("Open GPS port");
-#endif
 	
-#if 1
-	// the gps will start at 9600 baud.  we need to change it to 115200, switch a load 
-	// of messages off, enable some ubx messages then change the measurement rate to 
-	// every 200ms
+	// this could do with some autobauding
 	
 	Serial1.begin(9600,SERIAL_8N1,34,12);	// Pins for T-Beam v0.8 (3 push buttons) and up
-  
-	delay(500);
-	
-  #if 1
-	ChangeBaudRate(115200);
-	
-	Serial1.flush();
-	Serial1.end();
-	
-	Serial1.begin(115200,SERIAL_8N1,34,12);	// Pins for T-Beam v0.8 (3 push buttons) and up
-  #endif
-	
-  #if 0
-	Set5Hz_Fix_Rate();
-  #endif
 
-  #if 0
+	// this also assumes we're using a u-Blox receiver, not always true
+
+	#warning "this only support a u-Blox GPS receiver"
+
+#if 0
+	// turn off all NMEA output	
 	SetMessageRate(0xf0,0x00,0x01);	// GPGGA
 	SetMessageRate(0xf0,0x01,0x01);	// GPGLL
-	SetMessageRate(0xf0,0x02,0x05);	// GPGSA
-	SetMessageRate(0xf0,0x03,0x05);	// GPGSV
-	SetMessageRate(0xf0,0x04,0x01);	// GPRMC
-	SetMessageRate(0xf0,0x05,0x01);	// GPVTG
-  #else	
+	SetMessageRate(0xf0,0x02,0x01);	// GPGSA
+	SetMessageRate(0xf0,0x03,0x01);	// GPGSV
+	SetMessageRate(0xf0,0x04,0x00);	// GPRMC
+	SetMessageRate(0xf0,0x05,0x00);	// GPVTG
+#else
 	// turn off all NMEA output	
 	SetMessageRate(0xf0,0x00,0x00);	// GPGGA
 	SetMessageRate(0xf0,0x01,0x00);	// GPGLL
@@ -228,47 +198,12 @@ int SetupGPS(void)
 	SetMessageRate(0xf0,0x03,0x00);	// GPGSV
 	SetMessageRate(0xf0,0x04,0x00);	// GPRMC
 	SetMessageRate(0xf0,0x05,0x00);	// GPVTG
-  #endif	
-	
-  #if 1
+
 	SetMessageRate(0x01,0x02,0x01);	// NAV-POSLLH every fix
-	SetMessageRate(0x01,0x03,0x01);	// NAV-STATUS every fix
-	SetMessageRate(0x01,0x30,0x01);	// NAV-SVINFO every fix
-  #endif	
-
-	delay(100);
-  #if 1
-	SetMessageRate(0x01,0x02,0x01);	// NAV-POSLLH every fix
-	SetMessageRate(0x01,0x03,0x01);	// NAV-STATUS every fix
-	SetMessageRate(0x01,0x30,0x01);	// NAV-SVINFO every fix
-  #endif	
-
-  #if 0
-	// turn on the useful UBX messages
-	
-	SetMessageRate(0x01,0x02,0x01);	// NAV-POSLLH every fix
-
-    #if 0
-	SetMessageRate(0x01,0x03,0x05);	// NAV-STATUS every 5th fix
-	SetMessageRate(0x01,0x30,0x05);	// NAV-SVINFO every 5th fix
-    #else
-	SetMessageRate(0x01,0x03,0x01);	// NAV-STATUS every fix
-	SetMessageRate(0x01,0x30,0x01);	// NAV-SVINFO every fix
-    #endif
-
-    #if 0
-	EnableRawMeasurements();
-    #endif
-	
-    #if 0
-	SetMessageRate(0x02,0x10,0x05);	// RXM-RAW every 5th fix
-    #else
-	SetMessageRate(0x02,0x10,0x00);	// RXM-RAW off
-    #endif
-  #endif
-	
-#else
-	Serial1.begin(9600,SERIAL_8N1,12,15);	// For version 0.7 (2 push buttons) and down
+	SetMessageRate(0x01,0x03,0x05);	// NAV-STATUS every fifth fix
+	SetMessageRate(0x01,0x30,0x05);	// NAV-SVINFO every fifth fix
+	SetMessageRate(0x01,0x21,0x05);	// NAV-TIMEUTC every fifth fix
+	Set5Hz_Fix_Rate();
 #endif
 	
 	return(0);
@@ -353,10 +288,12 @@ void ProcessUBX(uint8_t *buffer,uint16_t bufferptr)
 //		return;	// failed the checksum test
 //	}
 	
+//	Serial.print("UBX rx\r\n");
+	
 	if((buffer[2]==0x01)&&(buffer[3]==0x02))	UnpackNAVPOSLLH(buffer);
 	if((buffer[2]==0x01)&&(buffer[3]==0x03))	UnpackNAVSTATUS(buffer);
 	if((buffer[2]==0x01)&&(buffer[3]==0x30))	UnpackNAVSVINFO(buffer);
-	
+	if((buffer[2]==0x01)&&(buffer[3]==0x21))	UnpackNAVTIMEUTC(buffer);
 }
 
 void UnpackNAVPOSLLH(uint8_t *buffer)
@@ -409,6 +346,28 @@ void UnpackNAVSTATUS(uint8_t *buffer)
 	if(gpsFix==0x00)		Serial.print("No Fix\r\n");
 	else if(gpsFix==0x02)	Serial.print("2D Fix\r\n");
 	else if(gpsFix==0x03)	Serial.print("3D Fix\r\n");
+#endif
+}
+
+void UnpackNAVTIMEUTC(uint8_t *buffer)
+{
+#if (DEBUG>1)
+	Serial.println("NAV-TIMEUTC");
+#endif
+	
+	iTOW=*((uint32_t *)(buffer+6));
+	
+	gps_year=*((uint16_t *)(buffer+18));
+	gps_month=*(buffer+20);
+	gps_day=*(buffer+21);
+	gps_hour=*(buffer+22);
+	gps_min=*(buffer+23);
+	gps_sec=*(buffer+24);
+	
+#if (DEBUG>2)
+	char timebuffer[32];
+	sprintf(timebuffer,"%04d/%02d/%02d %02d:%02d:%02d\r\n",gps_year,gps_month,gps_day,gps_hour,gps_min,gps_sec);
+	display.print(timebuffer);	
 #endif
 }
 

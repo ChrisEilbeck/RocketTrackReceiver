@@ -1,27 +1,41 @@
 
+function RotatePoint(x,y,angle)
+{
+	inx=x;
+	iny=y;
+	
+	x=inx*cos(angle)-iny*sin(angle);
+	y=inx*sin(angle)+iny*cos(angle);
+}
+
 function DrawTrackingPlot()
 {
 	var rx_latitude="52.1";
 	var rx_longitude="-2.31";
-	var tx_latitude="52.2";
-	var tx_longitude="-2.21";
+	var tx_latitude="50.213461";
+	var tx_longitude="-5.476708";
+	var rx_heading=-30;
 	
-	rx_latitude="%RX_LATITUDE%";
-	rx_longitude="%RX_LONGITUDE%";
-	tx_latitude="%TX_LATITUDE%";
-	tx_longitude="%TX_LONGITUDE%";
+	if(1)
+	{
+		rx_latitude="%RX_LATITUDE%";
+		rx_longitude="%RX_LONGITUDE%";
+		tx_latitude="%TX_LATITUDE%";
+		tx_longitude="%TX_LONGITUDE%";
+		rx_heading="%RX_HEADING%";
+	}
 	
 	var range=GreatCircleDistance(rx_latitude,rx_longitude,tx_latitude,tx_longitude);
 	var bearing=GreatCircleBearing(tx_latitude,tx_longitude,rx_latitude,rx_longitude);
 	var maxrange;
 	
-	maxrange=DrawTrackingCrosshairs(range);
+	maxrange=DrawTrackingCrosshairs(range,rx_heading);
 	DrawTextData();
 	
-	DrawSpotAt(range,bearing,maxrange);
+	DrawSpotAt(range,bearing,maxrange,rx_heading);
 }
 
-function DrawTrackingCrosshairs(range)
+function DrawTrackingCrosshairs(range,rx_heading)
 {
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
@@ -48,6 +62,13 @@ function DrawTrackingCrosshairs(range)
 	
 	var cnt;
 	
+	ctx.rotate(rx_heading*Math.PI/180);
+	
+	ctx.font="40px Comic Sans MS";
+	ctx.fillStyle="black";
+	ctx.textAlign="center";
+	ctx.fillText("N",0,-1.02*radius);
+	
 	for(cnt=1;cnt<=numcircles;cnt++)
 	{
 		ctx.beginPath();
@@ -69,6 +90,8 @@ function DrawTrackingCrosshairs(range)
 	ctx.moveTo(-canvas.width/2,0);
 	ctx.lineTo(canvas.width/2,0);
 	ctx.stroke();
+	
+	ctx.rotate(-rx_heading*Math.PI/180);
 	
 	return(maxrange);
 }
@@ -92,23 +115,26 @@ function DrawTextData()
 	var numsats=5;
 	var id=1;
 	var hdop=1.5;
+	var hacc=5;
 	
 	// these will be filled in by templating in the asyncwebserver
-	
- 	bat_volt="%BEACON_VOLTAGE%";
- 	lora_freq="%LORA_FREQUENCY%";
- 	lora_mode="%LORA_MODE%";
- 	lora_rssi="%LORA_RSSI%";
- 	lora_snr="%LORA_SNR%";
- 	rx_latitude="%RX_LATITUDE%";
- 	rx_longitude="%RX_LONGITUDE%";
- 	rx_altitude="%RX_ALTITUDE%";
- 	tx_latitude="%TX_LATITUDE%";
- 	tx_longitude="%TX_LONGITUDE%";
- 	tx_altitude="%TX_ALTITUDE%";
-	numsats="%NUMSATS%";
-	id="%BEACON_ID%";
-	hacc="%BEACON_HACC%";
+	if(1)
+	{
+		bat_volt="%BEACON_VOLTAGE%";
+		lora_freq="%LORA_FREQUENCY%";
+		lora_mode="%LORA_MODE%";
+		lora_rssi="%LORA_RSSI%";
+		lora_snr="%LORA_SNR%";
+		rx_latitude="%RX_LATITUDE%";
+		rx_longitude="%RX_LONGITUDE%";
+		rx_altitude="%RX_ALTITUDE%";
+		tx_latitude="%TX_LATITUDE%";
+		tx_longitude="%TX_LONGITUDE%";
+		tx_altitude="%TX_ALTITUDE%";
+		numsats="%NUMSATS%";
+		id="%BEACON_ID%";
+		hacc="%BEACON_HACC%";
+	}
 	
 	console.log(rx_latitude+" "+rx_longitude+" "+rx_altitude);
 	console.log(tx_latitude+" "+tx_longitude+" "+tx_altitude);
@@ -153,12 +179,27 @@ function DrawTextData()
 	ctx.fillText("SNR: "+lora_snr,0.45*canvas.width,0.30*canvas.height);
 }
 
-function DrawSpotAt(range,bearing,maxrange)
+function DrawSpotAt(range,bearing,maxrange,rx_heading)
 {
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
-	bearing-=90;
+	bearing=30
+	
+	console.log("bearing before = "+bearing);
+	
+	bearing=90-bearing;
+	
+	bearing+=180;
+	
+	// adjust for the bearing of the receiver
+	bearing-=rx_heading;
+	while(bearing>360.0)	{	bearing-=360.0;		}
+	while(bearing<0.0)		{	bearing+=360.0;		}
+	
+	
+	console.log("bearing after = "+bearing);
+	
 	bearing*=Math.PI/180;
 	
 	var radius=0.9*canvas.width/2*range/maxrange;

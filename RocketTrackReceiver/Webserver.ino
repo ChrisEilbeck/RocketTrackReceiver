@@ -138,6 +138,7 @@ String trackingprocessor(const String& var)
 	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",beaconlon);			}
 	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",beaconheight);		}
 	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);					}
+	else if(var=="RX_HEADING")		{	sprintf(buffer,"%.1f",rx_heading);			}
 	
 	if(strlen(buffer)>0)
 		return(buffer);

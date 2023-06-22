@@ -41,6 +41,9 @@ int last_good_receive=0;
 int lora_rssi=-123;
 int lora_snr=9;
 
+bool use_compass=true;
+float rx_heading=-45;
+
 extern uint8_t crypto_key[32];
 
 // initialize the library with the numbers of the interface pins
@@ -82,7 +85,6 @@ void setup()
 	// I2C
 	Wire.begin(21,22);
 	
-
 	Serial.print("\n--------\tRocketTrack Flight Telemetry Receiver\t--------\r\n\n");
 
 	// mandatory peripherals
@@ -98,6 +100,9 @@ void setup()
 	if(SetupGPS())				{	Serial.print("GPS Setup failed, halting ...\r\n");					while(1);				}
 	if(SetupCrypto())			{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
 //	if(SetupScheduler())		{	Serial.print("Scheduler Setup failed, halting ...\r\n");			while(1);				}
+	
+	if(SetupDisplay())			{	Serial.print("OLED display setup failed, ignoring\r\n");									}
+	if(SetupCompass())			{	Serial.print("MPU9250 setup failed, disabling ...\r\n");			use_compass=false;		}
 	
 #if 0
 	DumpHexPacket(crypto_key,32);
@@ -214,6 +219,8 @@ void loop()
 	}
 	
 	PollGPS();
+	PollDisplay();
+	if(use_compass)		PollCompass();
 	
 	UpdateClient();
 }
