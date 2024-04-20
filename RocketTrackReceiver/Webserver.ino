@@ -13,6 +13,8 @@
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
+int track_compass=1;
+
 String statusprocessor(const String& var)
 {
 //	Serial.println("webserver process entry");
@@ -138,7 +140,13 @@ String trackingprocessor(const String& var)
 	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",beaconlon/1e7);		}
 	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",beaconheight/1e3);	}
 	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);					}
-	else if(var=="RX_HEADING")		{	sprintf(buffer,"%.1f",rx_heading);			}
+	else if(var=="RX_HEADING")		
+	{
+		if(track_compass)
+			sprintf(buffer,"%.1f",rx_heading);
+		else
+			sprintf(buffer,"0.0");
+	}
 	
 	if(strlen(buffer)>0)
 		return(buffer);
@@ -186,22 +194,22 @@ int SetupWebServer(void)
 #endif
 	
 #if STATIONMODE
-#if 1
-	IPAddress LocalIP(192,168,0,171);
-	IPAddress Gateway(192,168,0,254);
-	IPAddress Subnet(255,255,255,0);
-	IPAddress DNS1(212,23,3,100);
-	IPAddress DNS2(212,23,6,100);
+	#if 0
+		IPAddress LocalIP(192,168,0,10);
+		IPAddress Gateway(192,168,0,254);
+		IPAddress Subnet(255,255,255,0);
+		IPAddress DNS1(212,23,3,100);
+		IPAddress DNS2(212,23,6,100);
 	
-	WiFi.config(LocalIP,Gateway,Subnet,DNS1,DNS2);
-#endif
+		WiFi.config(LocalIP,Gateway,Subnet,DNS1,DNS2);
+	#endif
 		
 	// Connect to existing Wi-Fi network
-	WiFi.begin(ssid, password);
+	WiFi.begin(ssid,password);
 	while(WiFi.status()!=WL_CONNECTED)
 	{
 		delay(1000);
-		Serial.println("Connecting to WiFi...");
+		Serial.print("Connecting to WiFi with ssid \"");	Serial.print(ssid);	Serial.print("\", password \"");	Serial.print(password);	Serial.println("\"");
 	}
 	
 	// Print ESP32 Local IP Address
@@ -209,7 +217,7 @@ int SetupWebServer(void)
 #else
 	// Act as an Access Point
 
-	Serial.print("Setting AP (Access Point)...");
+	Serial.print("Setting up WiFi AP with ssid \"");		Serial.print(ssid);	Serial.print("\", password \"");	Serial.print(password);	Serial.println("\"");
 	
 	// Remove the password parameter, if you want the AP (Access Point) to be open
 	WiFi.softAP(ssid,password);
@@ -217,13 +225,13 @@ int SetupWebServer(void)
 	IPAddress IP=WiFi.softAPIP();
 	Serial.print("AP IP address: ");
 	Serial.println(IP);
-#endif
 	
 	if(!MDNS.begin("rocketrx"))
 	{
 		Serial.println("Error starting mDNS");
 		return(1);
 	}
+#endif
 	
 	// Route for root / web page
 	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)					{	request->redirect("/tracking.html");		});	
@@ -237,15 +245,31 @@ int SetupWebServer(void)
 		request->send(SPIFFS,"/status.js",String(),false,statusprocessor);
 	});	
 	
-	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/tracking.html");		});	
+	server.on("/beacon_up.html",HTTP_GET,[](AsyncWebServerRequest *request)		
+	{
+		Serial.println("beacon_up.html");
+		request->send(SPIFFS,"/beacon_up.html");
+		track_compass=1;
+	});
+	
+	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		Serial.println("north_up.html");
+		request->send(SPIFFS,"/north_up.html");
+		track_compass=0;
+	});
+	
+	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+//		Serial.println("tracking.html");
+		request->send(SPIFFS,"/tracking.html");
+	});
+	
 	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/tracking.css");		});	
 	
 	server.on("/tracking.js",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-#if 0
-		Serial.println("Returning modified /tracking.js");
-#endif
-			
+//		Serial.println("Returning modified /tracking.js");
 		request->send(SPIFFS,"/tracking.js",String(),false,trackingprocessor);
 	});	
 	
@@ -257,20 +281,6 @@ int SetupWebServer(void)
 	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/engineering.html");	});	
 	server.on("/engineering.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/engineering.css");	});	
 	server.on("/engineering.js",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.js");	});	
-	
-	server.on("/longrange.html",HTTP_POST,[](AsyncWebServerRequest *request)
-	{
-		Serial.println("Setting to Long Range mode");
-		SetLoRaMode(0);
-		request->redirect("/engineering.html");
-	});	
-	
-	server.on("/highrate.html",HTTP_POST,[](AsyncWebServerRequest *request)
-	{
-		Serial.println("Setting to High Rate mode");
-		SetLoRaMode(1);
-		request->redirect("/engineering.html");
-	});	
 #endif
 	
 	// Start server

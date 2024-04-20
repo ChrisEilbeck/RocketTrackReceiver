@@ -82,128 +82,73 @@ void PollDisplay(void)
 		switch(DisplayState)
 		{
 			case 0 ... 8:	display.setTextSize(1);
-							display.print("Receiver\r\n\n");
+							display.print("\nReceiver\r\n\n");
 							display.printf("Lat:\r\n %.6f\r\n",rxlat/1e7);
 							display.printf("Lon:\r\n %.6f\r\n",rxlon/1e7);		
 							display.printf("Altitude:\r\n %.1f m\r\n",rxhMSL/1e3);							
 							break;
 			
 			case 9 ... 15:	display.setTextSize(1);
-							display.print("Receiver\r\n\n# Sats:\r\n  ");
+							display.print("\nReceiver\r\n\n# Sats:\r\n\n  ");
 							display.setTextSize(2);
 							display.println(numCh);
 							break;
 			
 			case 16 ... 24:	display.setTextSize(1);
-							display.printf("Beacon %d\r\n\n",beaconid);
+							display.printf("\nBeacon %d\r\n\n",beaconid);
 							display.printf("Lat:\r\n %.6f\r\n",beaconlat/1e7);
 							display.printf("Lon:\r\n %.6f\r\n",beaconlon/1e7);		
 							display.printf("Altitude:\r\n %.1f m\r\n",beaconheight/1e3);
 							break;
 			
 			case 25 ... 29:	display.setTextSize(1);
-							display.printf("Beacon %d\r\n\n# Sats:\r\n  ",beaconid);
+							display.printf("\nBeacon %d\r\n\n# Sats:\r\n\n  ",beaconid);
 							display.setTextSize(2);
 							display.println(beaconnumsats);
 							break;
 			
 			case 30 ... 39:	display.setTextSize(1);
-							display.printf("Beacon %d\r\n\nBearing:\r\n  ",beaconid);
-							display.setTextSize(1);
-							display.printf("%.1f",GreatCircleBearing(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
+							display.printf("\nBeacon %d\r\n\nBearing:\r\n\n",beaconid);
+							display.setTextSize(2);
+							display.printf("%.1f\r\n  deg",GreatCircleBearing(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
 							break;
 			
 			case 40 ... 49:	display.setTextSize(1);
-							display.printf("Beacon %d\r\n\nRange:\r\n  ",beaconid);
-							display.setTextSize(1);
-							display.printf("%.1fm",GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
+							display.printf("\nBeacon %d\r\n\nRange:\r\n\n",beaconid);
+							display.setTextSize(2);
+														
+							if(GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7)<2000)
+								display.printf("%.1f\n    m",GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
+							else
+								display.printf("%.1f\n   km",GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7)/1000);
+							
 							break;
 			
-#if 0
-			case 8 ... 11:	display.setTextSize(1);
-							display.print("\r\nGPS Alt\r\nCurr\r\n");
+			case 50 ... 59:	display.setTextSize(1);
+							display.printf("\nReceiver\r\n\nHeading:\r\n\n");
 							display.setTextSize(2);
-							display.printf("%.1f\r\n",gps_hMSL/1e3);
-							display.setTextSize(1);
-							display.print("Max\r\n");
-							display.setTextSize(2);
-							display.printf("%.1f\r\n",max_gps_hMSL/1e3);
+							display.printf("%.1f\r\n  deg",get_compass_bearing());
 							break;
-							
-			case 12 ... 15:	display.setTextSize(1);
-							display.print("\r\nBaro Alt\r\nCurr\r\n");
-							display.setTextSize(2);
-							display.printf("%.1f\r\n",baro_height);
-							display.setTextSize(1);
-							display.print("Max\r\n");
-							display.setTextSize(2);
-							display.printf("%.1f\r\n",max_baro_height);
-							break;
-#endif
-							
+			
 			default:		
 							DisplayState=0;
 							break;
 		}
 		
-		display.setTextSize(3);
+		display.setTextSize(2);
 		display.setCursor(0,104);
-		if(gpsFix==3)		display.println("3dFix");
-		else if(gpsFix==2)	display.println("2dFix");
-		else				display.println("NoFix");
-			
+		if(gpsFix==3)		display.print("3d ");
+		else if(gpsFix==2)	display.print("2d ");
+		else				display.print("No ");
+		
+		if(lora_mode==1)	display.print("HR");
+		else				display.print("LR");
+		
 		display.display();
-
-//		SetTXIndicator(tx_active);
 		
 		DisplayState++;
-//		if(DisplayState>=16)
-//			DisplayState=0;
 		
 		LastDisplayChange=millis();
 	}
 }
 
-#if 0
-void SetTXIndicator(int on)
-{
-	if(on)
-	{
-		display.setTextSize(2);
-		display.setCursor(48,128-32);
-		display.print("T");
-		display.setCursor(48,128-16);
-		display.print("X");
-	}
-	else
-	{
-		display.setTextSize(2);
-		display.setCursor(48,128-32);
-		display.print(" ");
-		display.setCursor(48,128-16);
-		display.print(" ");
-	}
-	
-	display.display();
-}
-#endif
-#if 0
-void ShowModeChange(void)
-{
-	display.clearDisplay();
-
-	display.setTextSize(4);
-	display.setCursor(8,48);
-	
-	if(strcmp(lora_mode,"High Rate")==0)	{	display.print("HR");	}
-	else									{	display.print("LR");	}
-
-	display.setTextSize(2);
-	display.setCursor(8,85);
-	display.print("Mode");
-	
-	display.display();
-
-	display_update_suspend=millis()+3000;	
-}
-#endif

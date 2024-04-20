@@ -1,8 +1,17 @@
 
 uint8_t batvolt=0x00;
 bool livepmicdata=false;
+bool PMIC_semaphore=false;
+
+bool short_button_press=false;
+bool long_button_press=false;
 
 AXP20X_Class axp;
+
+void PMIC_Interrupt(void)
+{
+    PMIC_semaphore=true;
+}
 
 int SetupPMIC(void)
 {
@@ -28,6 +37,14 @@ int SetupPMIC(void)
 	else						{	Serial.print("Charging is disabled\r\n\n");	}
 	
 	axp.adc1Enable(AXP202_BATT_CUR_ADC1,true);
+
+    //! attachInterrupt to gpio 35
+    pinMode(PMIC_IRQ,INPUT_PULLUP);
+    attachInterrupt(PMIC_IRQ,PMIC_Interrupt,FALLING);
+    axp.clearIRQ();
+
+    //! enable all irq channel
+    axp.enableIRQ(AXP202_ALL_IRQ, true);
 	
 	return(0);
 }
@@ -36,6 +53,18 @@ void PollPMIC(void)
 {
 	static uint32_t updateat=0;
 	
+	if(PMIC_semaphore)
+	{
+        axp.readIRQ();
+        Serial.println("axp20x irq enter!");
+
+        if(axp.isPEKShortPressIRQ())	{	short_button_press=true;	}
+        if(axp.isPEKLongtPressIRQ())	{	long_button_press=true;		}
+		        
+	    axp.clearIRQ();
+        PMIC_semaphore=false;
+	}
+
 	if(millis()>updateat)
 	{
 		float batteryvoltage=axp.getBattVoltage();

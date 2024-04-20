@@ -18,6 +18,7 @@
 
 #include <LoRa.h>
 
+#include "HardwareAbstraction.h"
 #include "Packetisation.h"
 
 // RFM98
@@ -159,8 +160,12 @@ void setup()
 //	uint8_t *packet=(uint8_t *)"\x00\xC9\xC9\x96\x9E\xFE\x6C\x44\x0E\x1F\x4D\x00\x0B\xCA\x09\x00";
 //	uint8_t *packet=(uint8_t *)"\x00\xCC\xDC\x2E\x9F\xFE\xB6\xB7\x0A\x1F\x3A\x00\x0F\xC9\xE3\x00";
 	
-	// smeaton's pier, st ives
-	uint8_t *packet=(uint8_t *)"\x00\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
+	// Smeaton's Pier Lighthouse, St Ives
+//	uint8_t *packet=(uint8_t *)"\x00\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
+
+	// Bredon Hill, 18.6kn at 97.3 degrees
+	uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
+
 	uint16_t packetlength=16;
 
 	UnpackPacket(packet,packetlength);
@@ -188,8 +193,21 @@ void packhack(void)
 
 void loop()
 {
+	PollLoRa(LoRa.parsePacket(),0);
+	PollGPS();
+	PollDisplay();
+	PollSerial();	
+	PollScheduler();
+	PollClient();
+	PollPMIC();
+	
+	if(use_compass)
+		PollCompass();
+}
+
+void PollLoRa(int packetSize,int fakepacket)
+{
 	// try to parse packet
-	int packetSize=LoRa.parsePacket();
 	if(packetSize)
 	{
 		uint8_t *packet=(uint8_t *)malloc(packetSize);
@@ -203,6 +221,8 @@ void loop()
 			// received a packet
 			Serial.print("Received packet '");
 			
+			// TODO: need to check the integrity of the received packet at this point and bail if it doesn't decode properly
+			
 			int cnt=0;
 			
 			// read packet
@@ -211,7 +231,7 @@ void loop()
 			
 			DecryptPacket(packet);
 			UnpackPacket(packet,cnt);
-
+			
 			for(cnt=0;cnt<packetSize;cnt++)
 			{
 				Serial.printf("%02x",packet[cnt]);
@@ -225,6 +245,7 @@ void loop()
 				Serial.print((char)packet[cnt]);
 			}
 #endif
+			
 			// print RSSI of packet
 			Serial.print("' with RSSI ");	Serial.print(lora_rssi);
 			Serial.print(", with SNR ");	Serial.print(lora_snr);
@@ -245,15 +266,9 @@ void loop()
 		
 		last_good_receive=millis();
 	}
-	
-	PollGPS();
-	PollDisplay();
-	if(use_compass)		PollCompass();
-	
-	UpdateClient();
 }
 
-void UpdateClient(void)
+void PollClient(void)
 {
 	if(millis()>=UpdateClientAt)
 	{
@@ -276,9 +291,12 @@ void UpdateClient(void)
 		
 		UpdateClientAt=millis()+100;
 	}
-	
+}
+
+void PollScheduler(void)
+{	
 	if(		(		(lora_mode==0)
-				&&	(millis()>(last_good_receive+30000))	)
+				&&	(millis()>(last_good_receive+20000))	)
 		||	(		(lora_mode==1)
 				&&	(millis()>(last_good_receive+5000))	)	)
 	{
@@ -290,3 +308,125 @@ void UpdateClient(void)
 	}
 }
   
+void PollSerial(void)
+{
+	static uint8_t cmd[128];
+	static uint16_t cmdptr=0;
+	char rxbyte;
+	
+	while(Serial.available())
+	{ 
+		rxbyte=Serial.read();
+		
+		cmd[cmdptr++]=rxbyte;
+		
+		if((rxbyte=='\r')||(rxbyte=='\n'))
+		{
+			ProcessCommand(cmd,cmdptr);
+			memset(cmd,0,sizeof(cmd));
+			cmdptr=0;
+		}
+		else if(cmdptr>=sizeof(cmd))
+		{
+			cmdptr--;
+		}
+	}
+}
+
+void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
+{
+	int OK=0;
+	
+	switch(cmd[0]|0x20)
+	{
+		case 'c':	OK=CompassCommandHandler(cmd,cmdptr);			break;
+//		case 'a':	OK=AccelerometerCommandHandler(cmd,cmdptr);		break;
+//		case 'b':	OK=BarometerCommandHandler(cmd,cmdptr);			break;
+//		case 'y':	OK=GyroCommandHandler(cmd,cmdptr);				break;
+//		case 'g':	OK=GPSCommandHandler(cmd,cmdptr);				break;
+//		case 'l':	OK=LORACommandHandler(cmd,cmdptr);				break;
+		case 'p':	OK=PMICCommandHandler(cmd,cmdptr);				break;
+//		case 'e':	OK=LEDCommandHandler(cmd,cmdptr);				break;
+//		case 'o':	OK=LongRangeCommandHandler(cmd,cmdptr);			break;
+//		case 'h':	OK=HighRateCommandHandler(cmd,cmdptr);			break;
+//		case 'n':	OK=NeopixelCommandHandler(cmd,cmdptr);			break;
+//		case 'z':	OK=BeeperCommandHandler(cmd,cmdptr);			break;
+		
+		case 'x':	OK=1;
+					i2c_bus_scanner();
+					break;
+		
+		case '?':	Serial.print("RocketTrack Test Ha Menu\r\n=================\r\n\n");
+					Serial.print("c\t-\tCompass\r\n");
+					Serial.print("p\t-\tPower Management IC\r\n");
+//					Serial.print("g\t-\tGPS\r\n");
+//					Serial.print("l\t-\tLoRa\r\n");
+//					Serial.print("p\t-\tPMIC\r\n");
+//					Serial.print("h\t-\tHigh Rate Mode\r\n");
+//					Serial.print("o\t-\tLong Range Mode\r\n");
+//					Serial.print("e\t-\tLed\r\n");
+//					Serial.print("n\t-\tNeopixel\r\n");
+//					Serial.print("b\t-\tBeeper\r\n");
+//					Serial.print("t\t-\tTransmitter Mode\r\n");
+//					Serial.print("r\t-\tReceiver Mode\r\n");
+					Serial.print("?\t-\tShow this menu\r\n");
+					OK=1;
+					break;
+					
+		default:	// do nothing
+					break;
+	}
+	
+	if(OK)	{	Serial.println("ok ...");	}
+	else	{	Serial.println("?");	}
+}
+
+void i2c_bus_scanner(void)
+{
+	byte error, address;
+	int nDevices;
+	
+	Serial.println("Scanning...");
+	
+	nDevices = 0;
+	for(address = 1; address < 127; address++ ) 
+	{
+		// The i2c_scanner uses the return value of
+		// the Write.endTransmisstion to see if
+		// a device did acknowledge to the address.
+		Wire.beginTransmission(address);
+		error = Wire.endTransmission();
+		
+		if (error == 0)
+		{
+			Serial.print("I2C device found at address 0x");
+			if (address<16) 
+				Serial.print("0");
+			Serial.print(address,HEX);
+			
+			if(address==0x34)	Serial.print("\tAXP192 PMIC");
+			if(address==0x3C)	Serial.print("\tSSD1306 OLED Display");
+			if(address==0x3D)	Serial.print("\tSSD1306 OLED Display");
+			if(address==0x68)	Serial.print("\tMPU6050 Accelerometer/Magnetometer/Gyro");
+			if(address==0x69)	Serial.print("\tMPU6050 Accelerometer/Magnetometer/Gyro");
+			if(address==0x77)	Serial.print("\tBME280 Barometer");
+			
+			Serial.println("");
+			
+			nDevices++;
+		}
+		else if (error==4) 
+		{
+			Serial.print("Unknown error at address 0x");
+			if (address<16) 
+				Serial.print("0");
+			Serial.println(address,HEX);
+		}    
+	}
+	
+	if (nDevices == 0)
+		Serial.println("No I2C devices found\n");
+	else
+		Serial.println("done\n");
+}
+

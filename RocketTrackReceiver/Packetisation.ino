@@ -6,10 +6,19 @@
 
 uint8_t beaconid=0;
 
-// St Ives Lighthouse on Smeaton's Pier
-float beaconlat=50.213461*1e7;
-float beaconlon=-5.476708*1e7;
-float beaconheight=123.0*1e3;
+#if 0
+	// St Ives Lighthouse on Smeaton's Pier
+	float beaconlat=50.213461*1e7;
+	float beaconlon=-5.476708*1e7;
+	float beaconheight=123.0*1e3;
+#endif
+#if 1
+	// Bredon Hill
+	float beaconlat=52.059956*1e7;
+	float beaconlon=-2.064869*1e7;
+	float beaconheight=500.0*1e3;
+#endif
+
 float beaconvoltage=4.200;
 float beaconhacc=1.23;
 uint8_t beaconnumsats=6;

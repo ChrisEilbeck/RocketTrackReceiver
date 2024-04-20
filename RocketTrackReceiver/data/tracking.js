@@ -25,6 +25,8 @@ function DrawTrackingPlot()
 		rx_heading="%RX_HEADING%";
 	}
 	
+	console.log("input RX_HEADING = "+rx_heading);
+	
 	var range=GreatCircleDistance(rx_latitude,rx_longitude,tx_latitude,tx_longitude);
 	var bearing=GreatCircleBearing(tx_latitude,tx_longitude,rx_latitude,rx_longitude);
 	var maxrange;
@@ -46,16 +48,17 @@ function DrawTrackingCrosshairs(range,rx_heading)
 	var numcircles;
 	var percircle;
 	
-	if(range>10000)		{	numcircles=4;	percircle=5000;		maxrange=20000;	}
-	else if(range>5000)	{	numcircles=5;	percircle=2000;		maxrange=10000;	}
-	else if(range>2000)	{	numcircles=5;	percircle=1000;		maxrange=5000;	}
-	else if(range>1000)	{	numcircles=4;	percircle=500;		maxrange=2000;	}
-	else if(range>500)	{	numcircles=4;	percircle=250;		maxrange=1000;	}
-	else if(range>200)	{	numcircles=5;	percircle=100;		maxrange=500;	}
-	else if(range>100)	{	numcircles=4;	percircle=50;		maxrange=200;	}
-	else if(range>50)	{	numcircles=4;	percircle=25;		maxrange=100;	}
-	else if(range>20)	{	numcircles=5;	percircle=10;		maxrange=50;	}
-	else				{	numcircles=4;	percircle=5;		maxrange=20;	}
+	if(range>25000)			{	numcircles=5;	percircle=10000;	maxrange=50000;	}
+	else if(range>10000)	{	numcircles=4;	percircle=5000;		maxrange=20000;	}
+	else if(range>5000)		{	numcircles=5;	percircle=2000;		maxrange=10000;	}
+	else if(range>2000)		{	numcircles=5;	percircle=1000;		maxrange=5000;	}
+	else if(range>1000)		{	numcircles=4;	percircle=500;		maxrange=2000;	}
+	else if(range>500)		{	numcircles=4;	percircle=250;		maxrange=1000;	}
+	else if(range>200)		{	numcircles=5;	percircle=100;		maxrange=500;	}
+	else if(range>100)		{	numcircles=4;	percircle=50;		maxrange=200;	}
+	else if(range>50)		{	numcircles=4;	percircle=25;		maxrange=100;	}
+	else if(range>20)		{	numcircles=5;	percircle=10;		maxrange=50;	}
+	else					{	numcircles=4;	percircle=5;		maxrange=20;	}
 	
 // 	console.log("Range = "+range);
 // 	console.log("Drawing "+numcircles+" of "+percircle+" m each");
@@ -184,7 +187,7 @@ function DrawSpotAt(range,bearing,maxrange,rx_heading)
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
-//	bearing=30
+//	bearing=0
 	
 	console.log("rx_heading = "+rx_heading);
 	console.log("bearing before = "+bearing);
@@ -195,8 +198,6 @@ function DrawSpotAt(range,bearing,maxrange,rx_heading)
 	
 	// adjust for the bearing of the receiver
 	bearing-=rx_heading;
-	
-	
 	
 	while(bearing>360.0)	{	bearing-=360.0;		}
 	while(bearing<0.0)		{	bearing+=360.0;		}

@@ -3,14 +3,23 @@
 		<link rel="stylesheet" href="tracking.css">
 		<script src="tracking.js"></script>
 		<meta http-equiv="refresh" content="1">
-		<!--
-		<meta http-equiv="refresh" content="0.2">
-		-->
 	</head>
 	<body onload="DrawTrackingPlot()">
-		<!--
-			<a href="/config.html">Config</a>
-		-->
-		<canvas id="trackingplot" width="800" height="800">Your browser does not support the canvas element.</canvas>
+<!--
+		<form action="getkml.html">
+			<button class="kmlbutton" type="submit" formmethod="get">Get KML Pin</button>
+		</form>
+-->
+		<canvas id="trackingplot" width="1000" height="1000">Your browser does not support the canvas element.</canvas>
+		<table>
+			<tr>
+				<td><form action="/altitude.html"><button class="menubuttons" type="submit" formmethod="get">Altitude<br>Plot</button></form></td>
+				<td><form action="/config.html"><button class="menubuttons" type="submit" formmethod="get">Configure<br>Settings</button></form></td>
+			</tr>
+			<tr>
+				<td><form action="/north_up.html"><button class="menubuttons" type="submit" formmethod="get">North<br>Upwards</button></form></td>
+				<td><form action="/beacon_up.html"><button class="menubuttons" type="submit" formmethod="get">Beacon Bearing<br>Upwards</button></form></td>
+			</tr>
+		</table>
 	</body>
 </html>

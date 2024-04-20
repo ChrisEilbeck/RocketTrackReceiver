@@ -445,10 +445,10 @@ int GPSCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 		
 		case '?':	Serial.print("GPS Test Harness\r\n================\r\n\n");
-					Serial.print("p\t-\tCheck positon\r\n");
-					Serial.print("f\t-\tCheck fix status\r\n");
-					Serial.print("s\t-\tCheck satellite status\r\n");
-					Serial.print("l\t-\tLive GPS data on/off\r\n");
+					Serial.print("f\t-\tDisplay fix status\r\n");
+					Serial.print("p\t-\tDisplay positon\r\n");
+					Serial.print("s\t-\tDisplay satellite status\r\n");
+					Serial.print("l\t-\tLive GPS data display on/off\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
 		

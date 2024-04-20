@@ -1,5 +1,5 @@
 
-#define DEBUG 1
+#define DEBUG 0
 
 float GreatCircleDistance(float lat1,float lon1,float lat2,float lon2)
 {
