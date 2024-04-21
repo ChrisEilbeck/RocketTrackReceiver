@@ -4,6 +4,7 @@
 		<script src="config.js"></script>
 	</head>
 	<body>
+		<!--
 		<h1>Radio Config</h1>
 		<div id="controlbuttons">
 			<button class="controlbutton" id="defaults">Reset to Defaults</button>
@@ -48,95 +49,21 @@
 				</tr>
 			</table>
 		</div>
-		<h2>Long Range Mode</h2>
-		<div id="longrangemode">
+		-->
+		<div id="compasscalibrate">
+			<h1>Compass Configuration</h1>
 			<table>
 				<tr>
-					<td><label for="longrange_sf">Spreading Factor</label></td>
-					<td>
-						<select name="longrange_sf" id="longrange_sf">
-							<option value="6">SF6</option>
-							<option value="7">SF7</option>
-							<option value="8">SF8</option>
-							<option value="9">SF9</option>
-							<option value="10">SF10</option>
-							<option value="11">SF11</option>
-							<option value="12">SF12</option>
-						</select>
-					</td>
+					<td><form action="cal_accel.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Accelerometer</button></form></td>
 				</tr>
 				<tr>
-					<td><label for="longrange_bw">Bandwidth</td>
-					<td>
-						<select name="longrange_bw" id="longrange_bw">
-							<option value="7K8">7.8KHz</option>
-							<option value="10K4">10.4KHz</option>
-							<option value="20K8">20.8KHz</option>
-							<option value="31K2">31.25KHz</option>
-							<option value="41K7">41.7KHz</option>
-							<option value="62K5">62.5KHz</option>
-							<option value="125K">125KHz</option>
-							<option value="250K">250KHz</option>
-							<option value="500K">500KHz</option>
-						</select>
-					</td>
+					<td><form action="cal_compass.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Compass</button></form></td>
 				</tr>
 				<tr>
-					<td><label for="longrange_cr">Coding Rate</label>
-					<td>
-						<select name="longrange_cr" id="longrange_cr">
-							<option value="5">CR5/8</option>
-							<option value="6">CR6/8</option>
-							<option value="7">CR7/8</option>
-							<option value="8">CR8/8</option>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<h2>High Rate Mode</h2>
-		<div id="highratemode">
-			<table>
-				<tr>
-					<td><label for="highrate_sf">Spreading Factor</label></td>
-					<td>
-						<select name="highrate_sf" id="highrate_sf">
-							<option value="6">SF6</option>
-							<option value="7">SF7</option>
-							<option value="8">SF8</option>
-							<option value="9">SF9</option>
-							<option value="10">SF10</option>
-							<option value="11">SF11</option>
-							<option value="12">SF12</option>
-						</select>
-					</td>
+					<td><form action="store_calibration.html"><button type="submit" class="menubutton" formmethod="get">Store<br>Calibration<br>Values</button></form></td>
 				</tr>
 				<tr>
-					<td><label for="highrate_bw">Bandwidth</td>
-					<td>
-						<select name="highrate_bw" id="highrate_bw">
-							<option value="7K8">7.8KHz</option>
-							<option value="10K4">10.4KHz</option>
-							<option value="20K8">20.8KHz</option>
-							<option value="31K2">31.25KHz</option>
-							<option value="41K7">41.7KHz</option>
-							<option value="62K5">62.5KHz</option>
-							<option value="125K">125KHz</option>
-							<option value="250K">250KHz</option>
-							<option value="500K">500KHz</option>
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td><label for="highrate_cr">Coding Rate</label>
-					<td>
-						<select name="highrate_cr" id="highrate_cr">
-							<option value="5">CR5/8</option>
-							<option value="6">CR6/8</option>
-							<option value="7">CR7/8</option>
-							<option value="8">CR8/8</option>
-						</select>
-					</td>
+					<td><form action="reset_calibration.html"><button type="submit" class="menubutton" formmethod="get">Reset<br>Calibration<br>Values</button></form></td>
 				</tr>
 			</table>
 		</div>

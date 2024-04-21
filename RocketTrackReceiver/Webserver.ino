@@ -234,10 +234,10 @@ int SetupWebServer(void)
 #endif
 	
 	// Route for root / web page
-	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)					{	request->redirect("/tracking.html");		});	
+	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)						{	request->redirect("/tracking.html");			});	
 	
-	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/status.html");		});	
-	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.css");		});	
+	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html");			});	
+	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.css");			});	
 	
 	server.on("/status.js",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
@@ -265,7 +265,7 @@ int SetupWebServer(void)
 		request->send(SPIFFS,"/tracking.html");
 	});
 	
-	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/tracking.css");		});	
+	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.css");		});	
 	
 	server.on("/tracking.js",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
@@ -273,14 +273,30 @@ int SetupWebServer(void)
 		request->send(SPIFFS,"/tracking.js",String(),false,trackingprocessor);
 	});	
 	
-#if 0
-	server.on("/config.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/config.html");		});	
-	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.css");		});	
-	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.js");			});	
+	server.on("/config.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.html");		});	
+	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.css");		});	
+	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.js");			});	
 	
-	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/engineering.html");	});	
-	server.on("/engineering.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/engineering.css");	});	
-	server.on("/engineering.js",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.js");	});	
+	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.html");	});	
+	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");		});	
+//	server.on("/cal_accel.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.js");		});	
+	
+	server.on("/cal_compass.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_compass.html");	});	
+	server.on("/cal_compass.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_compass.css");	});	
+//	server.on("/cal_compass.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_compass.js");	});	
+	
+	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.html");	});	
+	server.on("/store_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.css");		});	
+//	server.on("/store_calibration.js",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.js");		});	
+	
+	server.on("/reset_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.html");	});	
+	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");		});	
+//	server.on("/reset_calibration.js",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.js");		});	
+	
+#if 0
+	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.html");	});	
+	server.on("/engineering.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.css");	});	
+	server.on("/engineering.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/engineering.js");	});	
 #endif
 	
 	// Start server

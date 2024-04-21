@@ -14,9 +14,22 @@ p
 	text-align: center;
 }
 
+table
+{
+	text-align: center;
+	width: 100%;
+}
+
 #controlbuttons
 {
 	text-align: center;
+}
+
+.controlbutton
+{
+	margin-left: auto;
+	margin-right: auto;
+	width: 25%;
 }
 
 #frequencycontrol
@@ -27,16 +40,24 @@ p
 	width: 80%;
 }
 
-.controlbutton
-{
-	margin-left: auto;
-	margin-right: auto;
-	width: 25%;
-}
-
 .fbutton
 {
 	margin-left: auto;
 	margin-right: auto;
+}
+
+#compasscalibrate
+{
+	text-align: center;
+//	width: 80%
+}
+
+.menubutton
+{
+	margin-left: auto;
+	margin-right: auto;
+//	width: 50%;
+	font-size: 30px;
+	border-radius: 15px;
 }
 
