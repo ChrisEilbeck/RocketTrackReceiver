@@ -5,42 +5,13 @@ bool compass_live_mode=false;
 
 #include "NvMemory.h"
 
-#if 0
-	// no battery
-	float AccBiasX=-19.32;		float AccBiasY=39.22;		float AccBiasZ=-67.66;
-	float GyroBiasX=-0.23;		float GyroBiasY=2.14;		float GyroBiasZ=-0.14;
-	float MagBiasX=292.13;		float MagBiasY=238.12;		float MagBiasZ=-3.48;
-	float MagScaleX=0.87;		float MagScaleY=1.52;		float MagScaleZ=0.84;
-#endif
-#if 0
-	// with panasonic 18650
-	float AccBiasX=-76.10;		float AccBiasY=47.33;		float AccBiasZ=-64.94;
-	float GyroBiasX=-0.29;		float GyroBiasY=2.56;		float GyroBiasZ=-0.45;
-	float MagBiasX=492.87;		float MagBiasY=212.87;		float MagBiasZ=581.00;
-	float MagScaleX=0.94;		float MagScaleY=1.49;		float MagScaleZ=0.79;
-#endif
-#if 1
-	// on antenna boom
-	float AccBiasX=-68.10;		float AccBiasY=186.83;		float AccBiasZ=-80.80;
-	float GyroBiasX=-0.15;		float GyroBiasY=2.17;		float GyroBiasZ=-0.23;
-	float MagBiasX=437.31;		float MagBiasY=324.71;		float MagBiasZ=560.13;
-	float MagScaleX=1.03;		float MagScaleY=1.28;		float MagScaleZ=0.80;
-#endif
+// on antenna boom
+float AccBiasX=-68.10;		float AccBiasY=186.83;		float AccBiasZ=-80.80;
+float GyroBiasX=-0.15;		float GyroBiasY=2.17;		float GyroBiasZ=-0.23;
+float MagBiasX=437.31;		float MagBiasY=324.71;		float MagBiasZ=560.13;
+float MagScaleX=1.03;		float MagScaleY=1.28;		float MagScaleZ=0.80;
 
-#if 0
-	< calibration parameters >
-	accel bias [g]: 
-	-68.10, 186.83, -80.80
-	gyro bias [deg/s]: 
-	-0.15, 2.17, -0.23
-	mag bias [mG]: 
-	437.31, 324.71, 560.13
-	mag scale []: 
-	1.03, 1.28, 0.80
-#endif
-
-//float Declination=-1-1/60;
-float Declination=0.0f;
+float Declination=-1-1/60;
 
 MPU9250 mpu;
 
@@ -49,20 +20,44 @@ int SetupCompass(void)
 	Serial.print("SetupCompass()\r\n");
 	
 	int fail=0;
+	int cnt=0;
 	
-#if 0
-	if(!mpu.setup(0x68))			{	Serial.println("MPU connection failed at 0x68");	fail=1;	}
-	else	if(!mpu.setup(0x69))	{	Serial.println("MPU connection failed at 0x69");	fail=1;	}
-
-	if(fail)
-		return(1);
-#else
-	if(!mpu.setup(0x69))
+	for(cnt=0;cnt<5;cnt++)
 	{
-		Serial.println("MPU connection failed at 0x69");
+		Serial.print("\tTrying 0x68 ... ");
+		if(mpu.setup(0x68))
+		{
+			Serial.println("OK");
+			fail=0;
+			break;
+		}
+		else
+		{
+			Serial.println("fail");
+			fail=1;
+		}
+		
+		Serial.print("\tTrying 0x69 ... ");
+		if(mpu.setup(0x69))
+		{
+			Serial.println("OK");
+			fail=0;
+			break;
+		}
+		else
+		{
+			Serial.println("fail");
+			fail=1;
+		}
+		
+		delay(250);
+	}
+	
+	if((cnt==5)&&fail)
+	{
+		Serial.println("MPU connection failed");
 		return(1);
 	}
-#endif
 	
 #if 0
 	CalibrateCompass();
@@ -70,13 +65,7 @@ int SetupCompass(void)
 #endif
 	
 	Serial.print("\tSetting sensor bias values\r\n");
-	
-	mpu.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
-	mpu.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
-	mpu.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
-	mpu.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
-	mpu.setMagneticDeclination(Declination);
-	
+	SetSensorBiasValues();
 	Serial.print("SetupCompass() complete ...\r\n");
 	
 	return(0);
@@ -84,15 +73,15 @@ int SetupCompass(void)
 
 void CalibrateCompass(void)
 {
-	Serial.println("Accel Gyro calibration will start in 5sec.");
+	Serial.println("Accel Gyro calibration will start in 2sec.");
 	Serial.println("Please leave the device still on the flat plane.");
 	mpu.verbose(true);
-	delay(5000);
+	delay(2000);
 	mpu.calibrateAccelGyro();
 	
-	Serial.println("Mag calibration will start in 5sec.");
+	Serial.println("Mag calibration will start in 2sec.");
 	Serial.println("Please Wave device in a figure eight until done.");
-	delay(5000);
+	delay(2000);
 	mpu.calibrateMag();
 	
 	print_calibration();
@@ -158,6 +147,9 @@ float get_compass_bearing(void)
 	static float mag_x_dampened=0.0f;
 	static float mag_y_dampened=0.0f;
 
+	// might need to remap these because it only seems to really work
+	// properly when the LoRa antenna is pointing down or up
+
 	float mag_pitch=-mpu.getRoll()*DEG_TO_RAD;
 	float mag_roll=mpu.getPitch()*DEG_TO_RAD;
 	
@@ -182,6 +174,7 @@ float get_compass_bearing(void)
 	heading=mpu.getYaw();
 #endif
 	
+	// constrain to 0 to <360 degrees
 	while(heading<0)    heading+=360;
 	while(heading>360)  heading-=360;
 	
@@ -310,4 +303,22 @@ int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	}
 	
 	return(retval);
+}
+
+void SetSensorBiasValues(void)
+{
+	mpu.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
+	mpu.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
+	mpu.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
+	mpu.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
+	mpu.setMagneticDeclination(Declination);
+}
+
+void ResetCompassCalibration(void)
+{
+	// with panasonic 18650
+	AccBiasX=-76.10;	AccBiasY=47.33;		AccBiasZ=-64.94;
+	GyroBiasX=-0.29;	GyroBiasY=2.56;		GyroBiasZ=-0.45;
+	MagBiasX=492.87;	MagBiasY=212.87;	MagBiasZ=581.00;
+	MagScaleX=0.94;		MagScaleY=1.49;		MagScaleZ=0.79;
 }

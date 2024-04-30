@@ -157,66 +157,15 @@ String trackingprocessor(const String& var)
 int SetupWebServer(void)
 {
 	// Initialize SPIFFS
+	
 	if(!SPIFFS.begin(true))
 	{
 		Serial.println("An error has occurred while mounting SPIFFS");
 		return(1);
 	}
 	
-#if 0
-	File root=SPIFFS.open("/");
-	File file=root.openNextFile();
-	
-	while(file)
-	{
-		Serial.print("FILE: ");
-		Serial.println(file.name());
-		
-		file=root.openNextFile();
-	}
-#endif
-#if 0
-	File status=SPIFFS.open("/status.html");
-	if(!status)
-	{
-		Serial.println("Error opening /status.html");
-	}
-	else
-	{
-//    while(status.available())
-
-      uint8_t buf[64];
-      status.read(buf,64);
-			Serial.print((char *)buf);
-    		
-		close(status);
-	}
-#endif
-	
-#if STATIONMODE
-	#if 0
-		IPAddress LocalIP(192,168,0,10);
-		IPAddress Gateway(192,168,0,254);
-		IPAddress Subnet(255,255,255,0);
-		IPAddress DNS1(212,23,3,100);
-		IPAddress DNS2(212,23,6,100);
-	
-		WiFi.config(LocalIP,Gateway,Subnet,DNS1,DNS2);
-	#endif
-		
-	// Connect to existing Wi-Fi network
-	WiFi.begin(ssid,password);
-	while(WiFi.status()!=WL_CONNECTED)
-	{
-		delay(1000);
-		Serial.print("Connecting to WiFi with ssid \"");	Serial.print(ssid);	Serial.print("\", password \"");	Serial.print(password);	Serial.println("\"");
-	}
-	
-	// Print ESP32 Local IP Address
-	Serial.println(WiFi.localIP());
-#else
 	// Act as an Access Point
-
+	
 	Serial.print("Setting up WiFi AP with ssid \"");		Serial.print(ssid);	Serial.print("\", password \"");	Serial.print(password);	Serial.println("\"");
 	
 	// Remove the password parameter, if you want the AP (Access Point) to be open
@@ -226,77 +175,101 @@ int SetupWebServer(void)
 	Serial.print("AP IP address: ");
 	Serial.println(IP);
 	
-	if(!MDNS.begin("rocketrx"))
+	if(!MDNS.begin(ssid))
 	{
 		Serial.println("Error starting mDNS");
 		return(1);
 	}
-#endif
 	
 	// Route for root / web page
-	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)						{	request->redirect("/tracking.html");			});	
+	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)						{	request->redirect("/index.html");											});
 	
-	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html");			});	
-	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.css");			});	
+	server.on("/index.html",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/index.html");										});
+	server.on("/index.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/index.css");											});
 	
-	server.on("/status.js",HTTP_GET,[](AsyncWebServerRequest *request)
+	server.on("/logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/logo.jpg");										});
+	
+	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html");										});
+	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.css");										});
+	server.on("/status.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.js",String(),false,statusprocessor);			});
+	
+	server.on("/beacon_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/beacon_up.html");	track_compass=1;				});
+	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/north_up.html");		track_compass=0;				});
+	
+	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.html");										});
+	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.css");										});
+	server.on("/tracking.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.js",String(),false,trackingprocessor);		});
+	
+	server.on("/telemetry.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);	});
+	server.on("/telemetry.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.css");										});
+
+	server.on("/config.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.html");										});
+	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.css");										});
+	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.js");											});
+	
+	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		Serial.println("Returning modified /status.js");
-		request->send(SPIFFS,"/status.js",String(),false,statusprocessor);
-	});	
-	
-	server.on("/beacon_up.html",HTTP_GET,[](AsyncWebServerRequest *request)		
-	{
-		Serial.println("beacon_up.html");
-		request->send(SPIFFS,"/beacon_up.html");
-		track_compass=1;
+		request->send(SPIFFS,"/cal_accel.html");
+		
+		Serial.println("Starting accelerometer calibration");
+		
+		mpu.verbose(true);
+		delay(2000);
+		mpu.calibrateAccelGyro();
+		mpu.verbose(false);
+		
+		print_calibration();
+		
+		Serial.println("Accelerometer calibration complete");
 	});
 	
-	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");									});
+	
+	server.on("/cal_compass.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		Serial.println("north_up.html");
-		request->send(SPIFFS,"/north_up.html");
-		track_compass=0;
+		request->send(SPIFFS,"/cal_compass.html");
+		
+		Serial.println("Starting accelerometer calibration");
+		
+		mpu.verbose(true);
+		delay(2000);
+		mpu.calibrateMag();
+		mpu.verbose(false);
+		
+		print_calibration();
+		
+		Serial.println("Magnetometer calibration complete");
+	});
+
+	server.on("/cal_compass.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_compass.css");								});
+	
+	server.on("/cal_complete.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.html");								});
+	server.on("/cal_complete.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.css");								});
+
+	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		request->send(SPIFFS,"/store_calibration.html");
+		
+		StoreCompassCalibration();
+		SetSensorBiasValues();
 	});
 	
-	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	server.on("/store_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.css");							});
+	
+	server.on("/reset_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-//		Serial.println("tracking.html");
-		request->send(SPIFFS,"/tracking.html");
+		request->send(SPIFFS,"/reset_calibration.html");
+		
+		ResetCompassCalibration();
+		SetSensorBiasValues();
 	});
 	
-	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.css");		});	
-	
-	server.on("/tracking.js",HTTP_GET,[](AsyncWebServerRequest *request)
-	{
-//		Serial.println("Returning modified /tracking.js");
-		request->send(SPIFFS,"/tracking.js",String(),false,trackingprocessor);
-	});	
-	
-	server.on("/config.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.html");		});	
-	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.css");		});	
-	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.js");			});	
-	
-	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.html");	});	
-	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");		});	
-//	server.on("/cal_accel.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.js");		});	
-	
-	server.on("/cal_compass.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_compass.html");	});	
-	server.on("/cal_compass.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_compass.css");	});	
-//	server.on("/cal_compass.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_compass.js");	});	
-	
-	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.html");	});	
-	server.on("/store_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.css");		});	
-//	server.on("/store_calibration.js",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.js");		});	
-	
-	server.on("/reset_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.html");	});	
-	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");		});	
-//	server.on("/reset_calibration.js",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.js");		});	
+	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");							});
 	
 #if 0
-	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.html");	});	
-	server.on("/engineering.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.css");	});	
-	server.on("/engineering.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/engineering.js");	});	
+	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.html");								});
+	server.on("/engineering.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.css");								});
+	server.on("/engineering.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/engineering.js");								});
 #endif
 	
 	// Start server

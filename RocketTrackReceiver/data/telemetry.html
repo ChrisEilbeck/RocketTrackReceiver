@@ -1,0 +1,29 @@
+<html>
+	<header>
+		<link rel="stylesheet" href="telemetry.css">
+		<meta http-equiv="refresh" content="1">
+	</header>
+	<body>
+		<h1>Telemetry Mode</h1>
+		<table class="datasection">
+			<tr><td class="datatag">Beacon ID:</td><td class="datavalue">%BEACON_ID%</td></tr>
+			<tr><td class="datatag">Longitude:</td><td class="datavalue">%TX_LATITUDE%</td></tr>
+			<tr><td class="datatag">Latitude:</td><td class="datavalue">%TX_LONGITUDE%</td></tr>
+			<tr><td class="datatag">Range (m):</td><td class="datavalue">%RANGE%</td></tr>
+			<tr><td class="datatag">Altitude (m):</td><td class="datavalue">%ALTITUDE%</td></tr>
+			<tr><td class="datatag">Battery Voltage:</td><td class="datavalue">%BEACON_VOLTAGE%</td></tr>
+			<tr><td class="datatag">Signal Strength:</td><td class="datavalue">%LORA_RSSI%</td></tr>
+			<tr><td class="datatag">LoRa Mode:</td><td class="datavalue">%LORA_MODE%</td></tr>
+		</table>
+		<table class="buttonsection">
+			<tr>
+				<td><form action="tracking.html"><button class="menubuttons" type="submit" formmethod="get">Tracking<br>Mode</button></form></td>
+				<td><form action="telemetry.html"><button class="menubuttons" type="submit" formmethod="get">Telemetry<br>Mode</button></form></td>
+			</tr>
+			<tr>
+				<td><form action="altitude.html"><button class="menubuttons" type="submit" formmethod="get">Altitude<br>Plot</button></form></td>
+				<td><form action="config.html"><button class="menubuttons" type="submit" formmethod="get">Configure<br>Settings</button></form></td>
+			</tr>
+		</table>
+	</body>
+</html>
