@@ -127,19 +127,20 @@ String trackingprocessor(const String& var)
 	{
 		if(lora_mode==1)	sprintf(buffer,"High Rate");	else	sprintf(buffer,"Long Range");
 	}
-	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.3f",beaconvoltage);		}
-	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",beaconid);				}
-	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",beaconhacc);			}
-	else if(var=="LORA_FREQUENCY")	{	sprintf(buffer,"%.3f",lora_frequency/1e6);	}
-	else if(var=="LORA_RSSI")		{	sprintf(buffer,"%d",lora_rssi);				}
-	else if(var=="LORA_SNR")		{	sprintf(buffer,"%d",lora_snr);				}
- 	else if(var=="RX_LATITUDE")		{	sprintf(buffer,"%2.6f",rxlat/1e7);			}
-	else if(var=="RX_LONGITUDE")	{	sprintf(buffer,"%3.6f",rxlon/1e7);			}
-	else if(var=="RX_ALTITUDE")		{	sprintf(buffer,"%.1f",rxheight/1e3);		}
-	else if(var=="TX_LATITUDE")		{	sprintf(buffer,"%2.6f",beaconlat/1e7);		}
-	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",beaconlon/1e7);		}
-	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",beaconheight/1e3);	}
-	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);					}
+	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.3f",beaconvoltage);				}
+	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",beaconid);						}
+	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",beaconhacc);					}
+	else if(var=="LORA_FREQUENCY")	{	sprintf(buffer,"%.3f",lora_frequency/1e6);			}
+	else if(var=="LORA_RSSI")		{	sprintf(buffer,"%d",lora_rssi);						}
+	else if(var=="LORA_SNR")		{	sprintf(buffer,"%d",lora_snr);						}
+ 	else if(var=="RX_LATITUDE")		{	sprintf(buffer,"%2.6f",rxlat/1e7);					}
+	else if(var=="RX_LONGITUDE")	{	sprintf(buffer,"%3.6f",rxlon/1e7);					}
+	else if(var=="RX_ALTITUDE")		{	sprintf(buffer,"%.1f",rxheight/1e3);				}
+	else if(var=="ALTITUDE")		{	sprintf(buffer,"%.1f",(beaconheight-rxheight)/1e3);	}
+	else if(var=="TX_LATITUDE")		{	sprintf(buffer,"%2.6f",beaconlat/1e7);				}
+	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",beaconlon/1e7);				}
+	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",beaconheight/1e3);			}
+	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);							}
 	else if(var=="RX_HEADING")		
 	{
 		if(track_compass)
@@ -265,6 +266,8 @@ int SetupWebServer(void)
 	});
 	
 	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");							});
+	
+	server.on("/favicon.ico",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/favicon.ico");									});
 	
 #if 0
 	server.on("/engineering.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/engineering.html");								});
