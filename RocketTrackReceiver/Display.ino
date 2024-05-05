@@ -2,6 +2,7 @@
 #include "Display.h"
 #include "GPS.h"
 #include "GreatCircle.h"
+#include "LoRaReceiver.h"
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -141,8 +142,7 @@ void PollDisplay(void)
 		else if(gpsFix==2)	display.print("2d ");
 		else				display.print("No ");
 		
-		if(lora_mode==1)	display.print("HR");
-		else				display.print("LR");
+		display.print(LoRaGetMode()==LORA_LONG_RANGE_MODE?"LR":"HR");
 		
 		display.display();
 		

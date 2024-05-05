@@ -6,7 +6,7 @@
 //#include <Adafruit_BME280.h>
 #include <Adafruit_BMP280.h>
 
-int baro_enable=1;
+bool baro_enable=true;
 
 bool baro_trigger=false;
 int baro_gps_sync=0;
@@ -36,7 +36,7 @@ int SetupBarometer(void)
 	if(!baro.begin(BARO_ADDRESS))
 	{
 		Serial.println("Barometer not found, disabling");
-		baro_enable=0;
+		baro_enable=false;
 		
 		return(1);
 	}	

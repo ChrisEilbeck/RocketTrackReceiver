@@ -15,6 +15,10 @@ float Declination=-1-1/60;
 
 MPU9250 mpu;
 
+bool use_compass=true;
+
+byte CompassAddresses[]={0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x00};
+
 int SetupCompass(void)
 {
 	Serial.print("SetupCompass()\r\n");
@@ -22,40 +26,27 @@ int SetupCompass(void)
 	int fail=0;
 	int cnt=0;
 	
-	for(cnt=0;cnt<5;cnt++)
+	for(cnt=0;cnt<(sizeof(CompassAddresses)/sizeof(byte));cnt++)
 	{
-		Serial.print("\tTrying 0x68 ... ");
-		if(mpu.setup(0x68))
+		if(CompassAddresses[cnt]==0x00)
 		{
-			Serial.println("OK");
-			fail=0;
-			break;
+			fail=1;
 		}
 		else
 		{
-			Serial.println("fail");
-			fail=1;
+			Serial.printf("\tTrying 0x%02x ... ",CompassAddresses[cnt]);
+			
+			if(mpu.setup(CompassAddresses[cnt]))	{	Serial.println("OK");	fail=0;		break;	}
+			else									{	Serial.println("fail");	fail=1;				}
+			
+			delay(250);
 		}
-		
-		Serial.print("\tTrying 0x69 ... ");
-		if(mpu.setup(0x69))
-		{
-			Serial.println("OK");
-			fail=0;
-			break;
-		}
-		else
-		{
-			Serial.println("fail");
-			fail=1;
-		}
-		
-		delay(250);
 	}
 	
-	if((cnt==5)&&fail)
+	if(fail)
 	{
 		Serial.println("MPU connection failed");
+		use_compass=false;
 		return(1);
 	}
 	
@@ -90,6 +81,9 @@ void CalibrateCompass(void)
 
 void PollCompass(void)
 {
+	if(!use_compass)
+		return;
+
 	if(mpu.update())
 	{
 		static uint32_t prev_ms=0;
@@ -116,47 +110,67 @@ float get_compass_bearing(void)
 {
 	float heading=0.0f;
 
-#if 0
-	if(mpu.getAccZ()>0.85)
-	{
-		// flat with the display pointing up
-		heading=atan2(mpu.getMagY(),mpu.getMagX())*180/PI;;
-		heading=-heading;
-		heading+=Declination;
-	}
-	else if(mpu.getAccZ()<-0.85)
-	{
-		heading=atan2(mpu.getMagY(),mpu.getMagX())*180/PI;;
-		heading+=Declination;
-	}
-	else if(mpu.getAccX()>0.85)
-	{
-		heading=atan2(mpu.getMagX(),mpu.getMagZ())*180/PI-90.0f;
-		heading+=Declination;
-	}
-	else if(mpu.getAccX()<-0.85)
-	{
-		heading=atan2(mpu.getMagX(),mpu.getMagZ())*180/PI-90.0f;
-		heading=-heading;
-		heading+=Declination;
-	}
-	else
-		heading=0.0f;
-#endif
-#if 1
 	static float mag_x_dampened=0.0f;
 	static float mag_y_dampened=0.0f;
 
 	// might need to remap these because it only seems to really work
 	// properly when the LoRa antenna is pointing down or up
 
-	float mag_pitch=-mpu.getRoll()*DEG_TO_RAD;
-	float mag_roll=mpu.getPitch()*DEG_TO_RAD;
+	float mag_pitch=mpu.getPitch();
+	float mag_roll=mpu.getRoll();
 	
-	float mag_x=mpu.getMagX();
-	float mag_y=mpu.getMagY();
-	float mag_z=mpu.getMagZ();
+	float mag_x=0.0;
+	float mag_y=0.0;
+	float mag_z=0.0;
+
+#if 0
+	if(			(mag_roll<-135.0)||(mag_roll>=135.0)	)
+	{
 	
+	}
+	else if(	(mag_roll>=-135.0)&&(mag_roll<-45.0)	)
+	{
+		mag_pitch=-mpu.getRoll()*DEG_TO_RAD;
+		mag_roll=mpu.getPitch()*DEG_TO_RAD;
+		mag_x=mpu.getMagX();
+		mag_y=mpu.getMagY();
+		mag_z=mpu.getMagZ();	
+	}
+	else if(	(mag_roll>=-45.0)&&(mag_roll<45.0)		)
+	{
+	
+	}
+	else if(	(mag_roll>=45.0)&&(mag_roll<135.0)		)
+	{
+		mag_pitch=mpu.getRoll()*DEG_TO_RAD;
+		mag_roll=mpu.getPitch()*DEG_TO_RAD;
+		mag_x=mpu.getMagX();
+		mag_y=mpu.getMagY();
+		mag_z=mpu.getMagZ();
+	}
+	else
+	{
+		// should never happen
+		
+		Serial.printf("Bad mag_roll reading in get_compass_bearing() - %f\r\n",mag_roll);
+	}
+
+
+
+	mag_roll*=DEG_TO_RAD;
+	mag_pitch*=DEG_TO_RAD;
+
+
+
+#else
+	mag_pitch=-mpu.getRoll()*DEG_TO_RAD;
+	mag_roll=mpu.getPitch()*DEG_TO_RAD;
+	
+	mag_x=mpu.getMagX();
+	mag_y=mpu.getMagY();
+	mag_z=mpu.getMagZ();
+#endif
+		
 	// ----- Apply the standard tilt formulas
 	float mag_x_hor=mag_x*cos(mag_pitch)+mag_y*sin(mag_roll)*sin(mag_pitch)-mag_z*cos(mag_roll)*sin(mag_pitch);
 	float mag_y_hor=mag_y*cos(mag_roll)+mag_z*sin(mag_roll);
@@ -169,7 +183,7 @@ float get_compass_bearing(void)
 	heading=atan2(mag_x_dampened,mag_y_dampened)*RAD_TO_DEG;	// Magnetic North
 	
 	heading+=Declination;
-#endif
+
 #if 0
 	heading=mpu.getYaw();
 #endif
@@ -322,3 +336,4 @@ void ResetCompassCalibration(void)
 	MagBiasX=492.87;	MagBiasY=212.87;	MagBiasZ=581.00;
 	MagScaleX=0.94;		MagScaleY=1.49;		MagScaleZ=0.79;
 }
+
