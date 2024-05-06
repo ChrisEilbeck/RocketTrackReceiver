@@ -15,6 +15,7 @@
 #include <SPI.h>
 
 #include "HardwareAbstraction.h"
+#include "Logging.h"
 #include "LoRaReceiver.h"
 #include "Packetisation.h"
 
@@ -91,6 +92,8 @@ void setup()
 
 	UnpackPacket(packet,packetlength);
 #endif
+
+	Serial.printf("flight data size = %d\r\n",sizeof(fix)*MAX_FIXES);
 }
 
 void packhack(void)
