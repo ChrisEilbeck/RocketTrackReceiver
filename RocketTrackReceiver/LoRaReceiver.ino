@@ -1,5 +1,7 @@
 
+#include "Logging.h"
 #include "LoRaReceiver.h"
+#include "Packetisation.h"
 
 #include <LoRa.h>
 
@@ -115,7 +117,8 @@ void PollLoRaReceiver(int fakepacket)
 			Serial.print(" and offset ");	Serial.print(offset);	Serial.println(" Hz");
 			
 #if 1			
-			Serial.printf("Rx packet: BeaconLat = %.6f, BeaconLong = %.6f, BeaconHeight = %.1f, BeaconAcc = %.2f\t%s Mode\r\n",beaconlat,beaconlon,beaconheight,beaconhacc,lora_mode?"High Rate":"Long Range");
+			Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+				lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
 #endif
 			
 			if(offset>100)			lora_offset-=200.0;

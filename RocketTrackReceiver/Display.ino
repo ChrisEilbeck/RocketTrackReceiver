@@ -2,7 +2,9 @@
 #include "Display.h"
 #include "GPS.h"
 #include "GreatCircle.h"
+#include "Logging.h"
 #include "LoRaReceiver.h"
+#include "Packetisation.h"
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -84,9 +86,9 @@ void PollDisplay(void)
 		{
 			case 0 ... 8:	display.setTextSize(1);
 							display.print("\nReceiver\r\n\n");
-							display.printf("Lat:\r\n %.6f\r\n",rxlat/1e7);
-							display.printf("Lon:\r\n %.6f\r\n",rxlon/1e7);		
-							display.printf("Altitude:\r\n %.1f m\r\n",rxhMSL/1e3);							
+							display.printf("Lat:\r\n %.6f\r\n",rxfix.latitude);
+							display.printf("Lon:\r\n %.6f\r\n",rxfix.longitude);		
+							display.printf("Altitude:\r\n %.1f m\r\n",rxfix.height);							
 							break;
 			
 			case 9 ... 15:	display.setTextSize(1);
@@ -96,32 +98,32 @@ void PollDisplay(void)
 							break;
 			
 			case 16 ... 24:	display.setTextSize(1);
-							display.printf("\nBeacon %d\r\n\n",beaconid);
-							display.printf("Lat:\r\n %.6f\r\n",beaconlat/1e7);
-							display.printf("Lon:\r\n %.6f\r\n",beaconlon/1e7);		
-							display.printf("Altitude:\r\n %.1f m\r\n",beaconheight/1e3);
+							display.printf("\nBeacon %d\r\n\n",lastfix.id);
+							display.printf("Lat:\r\n %.6f\r\n",lastfix.latitude);
+							display.printf("Lon:\r\n %.6f\r\n",lastfix.longitude);		
+							display.printf("Altitude:\r\n %.1f m\r\n",lastfix.height);
 							break;
 			
 			case 25 ... 29:	display.setTextSize(1);
-							display.printf("\nBeacon %d\r\n\n# Sats:\r\n\n  ",beaconid);
+							display.printf("\nBeacon %d\r\n\n# Sats:\r\n\n  ",lastfix.id);
 							display.setTextSize(2);
-							display.println(beaconnumsats);
+							display.println(lastfix.numsats);
 							break;
 			
 			case 30 ... 39:	display.setTextSize(1);
-							display.printf("\nBeacon %d\r\n\nBearing:\r\n\n",beaconid);
+							display.printf("\nBeacon %d\r\n\nBearing:\r\n\n",lastfix.id);
 							display.setTextSize(2);
-							display.printf("%.1f\r\n  deg",GreatCircleBearing(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
+							display.printf("%.1f\r\n  deg",GreatCircleBearing(lastfix.latitude,lastfix.longitude,rxfix.latitude,rxfix.longitude));
 							break;
 			
 			case 40 ... 49:	display.setTextSize(1);
-							display.printf("\nBeacon %d\r\n\nRange:\r\n\n",beaconid);
+							display.printf("\nBeacon %d\r\n\nRange:\r\n\n",lastfix.id);
 							display.setTextSize(2);
 														
-							if(GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7)<2000)
-								display.printf("%.1f\n    m",GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7));
+							if(GreatCircleDistance(lastfix.latitude,lastfix.longitude,rxfix.latitude,rxfix.longitude)<2000)
+								display.printf("%.1f\n    m",GreatCircleDistance(lastfix.latitude,lastfix.longitude,rxfix.latitude,rxfix.longitude));
 							else
-								display.printf("%.1f\n   km",GreatCircleDistance(beaconlat/1e7,beaconlon/1e7,rxlat/1e7,rxlon/1e7)/1000);
+								display.printf("%.1f\n   km",GreatCircleDistance(lastfix.latitude,lastfix.longitude,rxfix.latitude,rxfix.longitude)/1000);
 							
 							break;
 			

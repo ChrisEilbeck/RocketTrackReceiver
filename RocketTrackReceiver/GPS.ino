@@ -1,4 +1,7 @@
 
+#include "Logging.h"
+#include "Packetisation.h"
+
 #define DEBUG 1
 
 #define GPS_PASSTHROUGH 0
@@ -41,9 +44,9 @@ int16_t azim[MAX_CHANNELS];
 int32_t prRes[MAX_CHANNELS];
 
 // from NAV-POSLLH
-int32_t rxlon=-2.31*1e7;
-int32_t rxlat=52.1*1e7;
-int32_t rxheight=200*1e3;
+int32_t rxlon=-2.31;
+int32_t rxlat=52.1;
+int32_t rxheight=200;
 int32_t rxhMSL=0;
 uint32_t rxhAcc=0;
 uint32_t rxvAcc=0;
@@ -313,6 +316,10 @@ void UnpackNAVPOSLLH(uint8_t *buffer)
 	if((rxhAcc/500)>255)	hAccValue=255;
 	else					hAccValue=(uint8_t)(rxhAcc/500);
 	
+	rxfix.longitude=(float)rxlon/1e7;
+	rxfix.latitude=(float)rxlat/1e7;
+	rxfix.height=(float)rxheight/1e3;
+	
 #if 0
 	Serial.printf("\t\thAcc = %ld mm\n",hAcc);
 #endif
@@ -323,8 +330,7 @@ void UnpackNAVPOSLLH(uint8_t *buffer)
 	
 	Serial.print("\r\n");
 	
-	Serial.printf("\t\tLat = %.6f, Lon = %.6f, ",rxlat/1e7,rxlon/1e7,rxheight/1e3);
-	Serial.printf("height = %.1f\r\n",rxheight/1e3);
+	Serial.printf("\t\tLat = %.6f, Lon = %.6f, ",rxfix.latitude,rxfix.longitude,rxfix.height);
 #endif
 }
 

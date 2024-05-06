@@ -2,6 +2,7 @@
 #define DEBUG 0
 
 #include "network_creds.h"
+#include "Logging.h"
 #include "Packetisation.h"
 #include "Webserver.h"
 
@@ -43,15 +44,15 @@ String statusprocessor(const String& var)
 	}
 	else if(var=="LATITUDE")
 	{
-		if(rxlat>0)	sprintf(buffer,"%2.6f N",rxlat/1e7);	else	sprintf(buffer,"%2.6f S",-rxlat/1e7);
+		if(rxlat>0)	sprintf(buffer,"%2.6f N",rxlat);	else	sprintf(buffer,"%2.6f S",-rxlat);
 	}
 	else if(var=="LONGITUDE")
 	{
-		if(rxlon>0)	sprintf(buffer,"%3.6f E",rxlon/1e7);	else	sprintf(buffer,"%3.6f W",-rxlon/1e7);
+		if(rxlon>0)	sprintf(buffer,"%3.6f E",rxlon);	else	sprintf(buffer,"%3.6f W",-rxlon);
 	}
 	else if(var=="ALTITUDE")
 	{
-		sprintf(buffer,"%.1f",rxheight/1e3);
+		sprintf(buffer,"%.1f",rxheight);
 	}
 	else if(var=="NUM_CHANNELS")
 	{
@@ -127,20 +128,20 @@ String trackingprocessor(const String& var)
 	{
 		if(lora_mode==1)	sprintf(buffer,"High Rate");	else	sprintf(buffer,"Long Range");
 	}
-	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.3f",beaconvoltage);				}
-	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",beaconid);						}
-	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",beaconhacc);					}
-	else if(var=="LORA_FREQUENCY")	{	sprintf(buffer,"%.3f",lora_frequency/1e6);			}
-	else if(var=="LORA_RSSI")		{	sprintf(buffer,"%d",lora_rssi);						}
-	else if(var=="LORA_SNR")		{	sprintf(buffer,"%d",lora_snr);						}
- 	else if(var=="RX_LATITUDE")		{	sprintf(buffer,"%2.6f",rxlat/1e7);					}
-	else if(var=="RX_LONGITUDE")	{	sprintf(buffer,"%3.6f",rxlon/1e7);					}
-	else if(var=="RX_ALTITUDE")		{	sprintf(buffer,"%.1f",rxheight/1e3);				}
-	else if(var=="ALTITUDE")		{	sprintf(buffer,"%.1f",(beaconheight-rxheight)/1e3);	}
-	else if(var=="TX_LATITUDE")		{	sprintf(buffer,"%2.6f",beaconlat/1e7);				}
-	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",beaconlon/1e7);				}
-	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",beaconheight/1e3);			}
-	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);							}
+	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.3f",lastfix.voltage);					}
+	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",lastfix.id);						}
+	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",lastfix.accuracy);				}
+	else if(var=="LORA_FREQUENCY")	{	sprintf(buffer,"%.3f",lora_frequency/1e6);				}
+	else if(var=="LORA_RSSI")		{	sprintf(buffer,"%d",lastfix.rssi);						}
+	else if(var=="LORA_SNR")		{	sprintf(buffer,"%d",lastfix.snr);						}
+ 	else if(var=="RX_LATITUDE")		{	sprintf(buffer,"%2.6f",rxfix.latitude);					}
+	else if(var=="RX_LONGITUDE")	{	sprintf(buffer,"%3.6f",rxfix.longitude);				}
+	else if(var=="RX_ALTITUDE")		{	sprintf(buffer,"%.1f",rxfix.height);					}
+	else if(var=="ALTITUDE")		{	sprintf(buffer,"%.1f",(lastfix.height-rxfix.height));	}
+	else if(var=="TX_LATITUDE")		{	sprintf(buffer,"%2.6f",lastfix.latitude);				}
+	else if(var=="TX_LONGITUDE")	{	sprintf(buffer,"%3.6f",lastfix.longitude);				}
+	else if(var=="TX_ALTITUDE")		{	sprintf(buffer,"%.1f",lastfix.height);					}
+	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);								}
 	else if(var=="RX_HEADING")		
 	{
 		if(track_compass)
