@@ -187,8 +187,11 @@ int SetupWebServer(void)
 	
 	server.on("/index.html",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/index.html");										});
 	server.on("/index.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/index.css");											});
+
+	server.on("/overall.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/overall.css");										});
 	
-	server.on("/logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/logo.jpg");										});
+	server.on("/logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/logo.jpg");											});
+	server.on("/small_logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/small_logo.jpg");									});
 	
 	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html");										});
 	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.css");										});
