@@ -68,26 +68,47 @@ int SetupLoRaReceiver(void)
 	return(0);
 }
 
+int ValidatePacket(uint8_t *packet,uint16_t packetsize,int packetrssi,float packetsnr)
+{
+	// check the length is 16 byts
+	if(packetsize!=16)		return(0);
+	
+	// check the beacon id is between 0 and 15
+	if(packet[0]>15)		return(0);	
+	
+	// check the snr is -10 or better
+	if(packetsnr<-10)		return(0);
+	
+	// check the packet counter is more than the last good one
+	
+	
+	// check the battery voltage is sensible
+	
+	
+	// for now, check the accuracy is 00
+//	if(packet[12]!=0)		return(0);
+	
+	return(1);
+}
+
 void PollLoRaReceiver(int fakepacket)
 {
-	int packetSize=LoRa.parsePacket();
+	int packetsize=LoRa.parsePacket();
 
 	// try to parse packet
-	if(packetSize)
+	if(packetsize)
 	{
-		uint8_t *packet=(uint8_t *)malloc(packetSize);
+		uint8_t *packet=(uint8_t *)malloc(packetsize);
 		
 		if(packet!=NULL)
 		{
-			int offset=LoRa.packetFrequencyError();
-			lora_rssi=LoRa.packetRssi();
-			lora_snr=LoRa.packetSnr();
+			int packetoffset=LoRa.packetFrequencyError();
+			int packetrssi=LoRa.packetRssi();
+			float packetsnr=LoRa.packetSnr();
 			
 			// received a packet
-			Serial.print("Received packet '");
-			
-			// TODO: need to check the integrity of the received packet at this point and bail if it doesn't decode properly
-			
+			Serial.print("Received packet ");
+
 			int cnt=0;
 			
 			// read packet
@@ -95,38 +116,50 @@ void PollLoRaReceiver(int fakepacket)
 				packet[cnt++]=LoRa.read();
 			
 			DecryptPacket(packet);
-			UnpackPacket(packet,cnt);
+						
+			Serial.print("'");
 			
-			for(cnt=0;cnt<packetSize;cnt++)
-			{
+			for(cnt=0;cnt<packetsize;cnt++)
 				Serial.printf("%02x",packet[cnt]);
-			}
+			
+			Serial.print("'");
 			
 #if DISPLAY_ASCII_PACKET
 			Serial.print("', '");
 			
-			for(cnt=0;cnt<packetSize;cnt++)
+			for(cnt=0;cnt<packetsize;cnt++)
 			{
 				Serial.print((char)packet[cnt]);
 			}
 #endif
 			
-			// print RSSI of packet
-			Serial.print("' with RSSI ");	Serial.print(lora_rssi);
-			Serial.print(", with SNR ");	Serial.print(lora_snr);
-			Serial.print(" and offset ");	Serial.print(offset);	Serial.println(" Hz");
+			// TODO: need to check the integrity of the received packet at this point and bail if it doesn't decode properly
+
+			if(!ValidatePacket(packet,packetsize,packetrssi,packetsnr))
+			{
+				Serial.print("with errors\r\n");		
+			}
+			else
+			{
+				UnpackPacket(packet,cnt);
+				
+				lastfix.rssi=(int8_t)packetrssi;
+				lastfix.snr=(int8_t)packetsnr;
+				
+				if(packetoffset>100)		lora_offset-=200.0;
+				else if(packetoffset<-100)	lora_offset+=200.0;
+				else						lora_offset+=packetoffset;
+				
+				LoRa.setFrequency(lora_frequency+lora_offset);
+			}
+
+			Serial.print(" with RSSI ");	Serial.print(packetrssi);
+			Serial.print(", with SNR ");	Serial.print(packetsnr);
+			Serial.print(" and offset ");	Serial.print(packetoffset);	Serial.println(" Hz");
 			
-#if 1			
 			Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
 				lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
-#endif
-			
-			if(offset>100)			lora_offset-=200.0;
-			else if(offset<-100)	lora_offset+=200.0;
-			else					lora_offset+=offset;
-			
-			LoRa.setFrequency(lora_frequency+lora_offset);
-			
+						
 			free(packet);
 		}
 		
@@ -220,8 +253,10 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	{
 
 		case 'x':
-#if 1		
+#if 1
 					Serial.println((char *)cmd);
+#endif
+#if 0
 					Serial.println(cmdptr);
 #endif	
 		
@@ -231,8 +266,11 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 						uint16_t packetlength=16;
 						for(int cnt=0;cnt<sizeof(packet);cnt++)
 							packet[cnt]=16*hexnibble(cmd[3+2*cnt])+hexnibble(cmd[4+2*cnt]);
-							
-						UnpackPacket(packet,packetlength);
+						
+						if(!ValidatePacket(packet,packetlength,-100,3))
+							Serial.println("Rejecting errored packet");
+						else
+							UnpackPacket(packet,packetlength);
 					}
 					else
 					{

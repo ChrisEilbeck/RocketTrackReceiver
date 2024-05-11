@@ -5,11 +5,37 @@ bool compass_live_mode=false;
 
 #include "NvMemory.h"
 
+// old values
+
+#if 0
 // on antenna boom
 float AccBiasX=-68.10;		float AccBiasY=186.83;		float AccBiasZ=-80.80;
 float GyroBiasX=-0.15;		float GyroBiasY=2.17;		float GyroBiasZ=-0.23;
 float MagBiasX=437.31;		float MagBiasY=324.71;		float MagBiasZ=560.13;
 float MagScaleX=1.03;		float MagScaleY=1.28;		float MagScaleZ=0.80;
+#endif
+
+
+/*
+X-Axis sensitivity offset value 1.20
+Y-Axis sensitivity offset value 1.20
+Z-Axis sensitivity offset value 1.16
+< calibration parameters >
+accel bias [g]: 
+-68.17, 193.17, -71.03
+gyro bias [deg/s]: 
+-0.33, 2.38, -0.09
+mag bias [mG]: 
+501.83, 371.61, 633.19
+mag scale []: 
+1.04, 1.21, 0.82
+*/
+
+// on antenna boom using 3d printed mount, with cable attached but this'll have to do for now
+float AccBiasX=-68.17;		float AccBiasY=193.17;		float AccBiasZ=-71.03;
+float GyroBiasX=-0.33;		float GyroBiasY=2.38;		float GyroBiasZ=-0.09;
+float MagBiasX=501.83;		float MagBiasY=371.61;		float MagBiasZ=633.19;
+float MagScaleX=1.04;		float MagScaleY=1.21;		float MagScaleZ=0.82;
 
 float Declination=-1-1/60;
 

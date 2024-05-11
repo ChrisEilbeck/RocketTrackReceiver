@@ -8,7 +8,7 @@ typedef struct
 	uint8_t id;
 	uint8_t gpsfix;
 	uint8_t numsats;
-	uint8_t snr;
+	int8_t snr;
 	int8_t rssi;
 	uint8_t spare1;
 	uint8_t spare2;

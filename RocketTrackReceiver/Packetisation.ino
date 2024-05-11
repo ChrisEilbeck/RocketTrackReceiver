@@ -79,8 +79,10 @@ void PackPacket(uint8_t *TxPacket,uint16_t *TxPacketLength)
 
 void UnpackPacket(uint8_t *RxPacket,uint16_t RxPacketLength)
 {
+#if 0
 	Serial.print("UnpackPacket()\r\n");
-	
+#endif
+		
 	lastfix.id=RxPacket[0];
 	
 	lastfix.numsats=RxPacket[1]&0x03f;
@@ -101,11 +103,14 @@ void UnpackPacket(uint8_t *RxPacket,uint16_t RxPacketLength)
 	
 	lastfix.counter=RxPacket[14]+(RxPacket[15]<<8);
 	
-#if 1
+#if 0
 	Serial.printf("Beacon ID:\t%d\r\n",lastfix.id);
 	Serial.printf("Beacon Latitude:\t%.6f\r\n",lastfix.latitude);
 	Serial.printf("Beacon Longitude:\t%.6f\r\n",lastfix.longitude);
-	Serial.printf("Beacon Hght:\t%.6f\r\n",lastfix.height);
+	Serial.printf("Beacon Height:\t%.6f\r\n",lastfix.height);
+	Serial.printf("Beacon Voltage:\t%.1f mV\r\n",lastfix.voltage);
+	Serial.printf("Beacon Accuracy:\t%.3f\r\n",lastfix.accuracy);
+	Serial.printf("Beacon Count Value:\t%d\r\n",lastfix.counter);
 #endif
 }
 
