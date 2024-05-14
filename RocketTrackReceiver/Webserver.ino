@@ -128,7 +128,7 @@ String trackingprocessor(const String& var)
 	{
 		if(lora_mode==1)	sprintf(buffer,"High Rate");	else	sprintf(buffer,"Long Range");
 	}
-	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.3f",lastfix.voltage);					}
+	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.0f mV",lastfix.voltage);				}
 	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",lastfix.id);						}
 	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",lastfix.accuracy);				}
 	else if(var=="LORA_FREQUENCY")	{	sprintf(buffer,"%.3f",lora_frequency/1e6);				}
@@ -148,6 +148,13 @@ String trackingprocessor(const String& var)
 			sprintf(buffer,"%.1f",rx_heading);
 		else
 			sprintf(buffer,"0.0");
+	}
+	else if(var=="RANGE")
+	{
+		float range=GreatCircleDistance(lastfix.latitude,lastfix.longitude,rxfix.latitude,rxfix.longitude);
+		
+		if(range<=2000)	sprintf(buffer,"%.1f m",range);
+		else			sprintf(buffer,"%.1f Km",range/1e3);
 	}
 	
 	if(strlen(buffer)>0)
@@ -182,6 +189,9 @@ int SetupWebServer(void)
 		Serial.println("Error starting mDNS");
 		return(1);
 	}
+	
+	server.onNotFound([](AsyncWebServerRequest *request)							{	request->redirect("/");
+																						Serial.print("server.notfound triggered: ");								});
 	
 	// Route for root / web page
 	server.on("/",HTTP_GET,[](AsyncWebServerRequest *request)						{	request->redirect("/index.html");											});

@@ -17,22 +17,22 @@ h1
 {
 	width: 350px;
 	font-size: 50px;
-	border-radius: 25px;
-	padding-top: 25px;
-	padding-bottom: 25px;
-	margin-top: 25px;
-	margin-bottom: 25px;
+	border-radius: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	margin-top: 20px;
+	margin-bottom: 20px;
 }
 
 .bigbutton
 {
 	width: 700px;
 	font-size: 50px;
-	border-radius: 25px;
-	padding-top: 25px;
-	padding-bottom: 25px;
-	margin-top: 25px;
-	margin-bottom: 25px;
+	border-radius: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	margin-top: 20px;
+	margin-bottom: 20px;
 	background-color: red;
 	color: white;
 }
