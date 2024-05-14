@@ -1,25 +1,39 @@
 
 h1
 {
-	height: 5%;
+	font-size: 100px;
 	width: 100%;
-	font-size: 64px;
 	text-align: center;
 }
 
 .buttonsection
 {
-	padding-top: 25px;
-	height: 20%;
+	padding-top: 100px;
 	width: 100%;
 	text-align: center;
 }
 
-.menubuttons
+.menubutton
 {
-	width: 400px;
-	height: 128px;
-	font-size: 48px;
-	border-radius: 15px;
+	width: 350px;
+	font-size: 50px;
+	border-radius: 25px;
+	padding-top: 25px;
+	padding-bottom: 25px;
+	margin-top: 25px;
+	margin-bottom: 25px;
+}
+
+.bigbutton
+{
+	width: 700px;
+	font-size: 50px;
+	border-radius: 25px;
+	padding-top: 25px;
+	padding-bottom: 25px;
+	margin-top: 25px;
+	margin-bottom: 25px;
+	background-color: red;
+	color: white;
 }
 

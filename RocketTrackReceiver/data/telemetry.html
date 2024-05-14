@@ -16,14 +16,33 @@
 			<tr><td class="datatag">Signal Strength:</td><td class="datavalue">%LORA_RSSI%</td></tr>
 			<tr><td class="datatag">LoRa Mode:</td><td class="datavalue">%LORA_MODE%</td></tr>
 		</table>
+		<!--
 		<table class="buttonsection">
 			<tr>
-				<td><form action="tracking.html"><button class="menubuttons" type="submit" formmethod="get">Tracking<br>Mode</button></form></td>
-				<td><form action="telemetry.html"><button class="menubuttons" type="submit" formmethod="get">Telemetry<br>Mode</button></form></td>
+				<td><form action="tracking.html"><button class="menubutton" type="submit" formmethod="get">Tracking<br>Mode</button></form></td>
+				<td><form action="telemetry.html"><button class="menubutton" type="submit" formmethod="get">Telemetry<br>Mode</button></form></td>
 			</tr>
 			<tr>
-				<td><form action="altitude.html"><button class="menubuttons" type="submit" formmethod="get">Altitude<br>Plot</button></form></td>
-				<td><form action="config.html"><button class="menubuttons" type="submit" formmethod="get">Configure<br>Settings</button></form></td>
+				<td><form action="altitude.html"><button class="menubutton" type="submit" formmethod="get">Altitude<br>Plot</button></form></td>
+				<td><form action="config.html"><button class="menubutton" type="submit" formmethod="get">Configure<br>Settings</button></form></td>
+			</tr>
+		</table>
+		-->
+		<table class="buttonsection">
+			<tr>
+				<td><form action="tracking.html"><button class="menubutton" type="submit" formmethod="get">Tracking<br>Mode</button></form></td>
+				<td><form action="telemetry.html"><button class="menubutton" type="submit" formmethod="get">Telemetry<br>Mode</button></form></td>
+			</tr>
+			<tr>
+				<td><form action="altitude.html"><button class="menubutton" type="submit" formmethod="get">Altitude<br>Plot</button></form></td>
+				<td><form action="config.html"><button class="menubutton" type="submit" formmethod="get">Configure<br>Settings</button></form></td>
+			</tr>
+			<tr>
+				<td><form action="status.html"><button class="menubutton" type="submit" formmethod="get">Receiver<br>Status</button></form></td>
+				<td><form action="engineering.html"><button class="menubutton" type="submit" formmethod="get">Engineering<br>Mode</button></form></td>
+			</tr>
+			<tr>
+				<td colspan="2"><form action="getkml.html"><button colspan="2" class="bigbutton" type="submit" formmethod="get">Get Google<br>Maps Location</button></form></td>
 			</tr>
 		</table>
 	</body>
