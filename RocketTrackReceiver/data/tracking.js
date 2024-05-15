@@ -75,6 +75,7 @@ function DrawTrackingCrosshairs(range,rx_heading)
 	for(cnt=1;cnt<=numcircles;cnt++)
 	{
 		ctx.beginPath();
+		ctx.lineWidth=5;
 		ctx.arc(0,0,radius*cnt/numcircles,0,2*Math.PI);
 		ctx.stroke();
 		ctx.font="20px Comic Sans MS";
