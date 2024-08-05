@@ -3,6 +3,6 @@
 
 #include "network_creds.h"
 
-char *ssid="rocketrx";
-char *password="eggsbenedict";
+char *ssid="RocketRx";
+char *password="marsflightcrew";
 
