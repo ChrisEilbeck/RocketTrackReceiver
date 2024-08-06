@@ -129,6 +129,7 @@ String trackingprocessor(const String& var)
 		if(lora_mode==1)	sprintf(buffer,"High Rate");	else	sprintf(buffer,"Long Range");
 	}
 	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.0f mV",lastfix.voltage);				}
+	else if(var=="BAT_VOLTAGE")		{	sprintf(buffer,"%.3f",axp.getBattVoltage()/1000);		}
 	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",lastfix.id);						}
 	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",lastfix.accuracy);				}
 	else if(var=="LORA_FREQUENCY")	{	sprintf(buffer,"%.3f",lora_frequency/1e6);				}
@@ -179,7 +180,7 @@ int SetupWebServer(void)
 	
 	// Remove the password parameter, if you want the AP (Access Point) to be open
 	WiFi.softAP(ssid,password);
-
+	
 	IPAddress IP=WiFi.softAPIP();
 	Serial.print("AP IP address: ");
 	Serial.println(IP);

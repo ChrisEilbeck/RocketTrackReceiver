@@ -124,7 +124,8 @@ function DrawTextData()
 	// these will be filled in by templating in the asyncwebserver
 	if(1)
 	{
-		bat_volt="%BEACON_VOLTAGE%";
+		beacon_volt="%BEACON_VOLTAGE%";
+		receiver_volt="%BAT_VOLTAGE%";
 		lora_freq="%LORA_FREQUENCY%";
 		lora_mode="%LORA_MODE%";
 		lora_rssi="%LORA_RSSI%";
@@ -167,7 +168,8 @@ function DrawTextData()
 	ctx.fillText(numsats+" / "+hacc,-0.45*canvas.width,0.30*canvas.height);
 	ctx.fillText("B: "+bearing,-0.45*canvas.width,0.35*canvas.height);
 	ctx.fillText("R: "+range+" m",-0.45*canvas.width,0.40*canvas.height);
-	ctx.fillText("V: "+bat_volt,-0.45*canvas.width,0.45*canvas.height);
+	ctx.fillText("Vtx: "+beacon_volt,-0.45*canvas.width,0.45*canvas.height);
+	ctx.fillText("Vrx: "+receiver_volt,-0.45*canvas.width,0.50*canvas.height);
 	
 	ctx.textAlign="right";
 	ctx.fillText("Beacon:",0.45*canvas.width,-0.45*canvas.height);
