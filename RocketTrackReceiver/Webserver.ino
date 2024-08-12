@@ -226,17 +226,7 @@ int SetupWebServer(void)
 	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel.html");
-		
-		Serial.println("Starting accelerometer calibration");
-		
-		mpu.verbose(true);
-		delay(2000);
-		mpu.calibrateAccelGyro();
-		mpu.verbose(false);
-		
-		print_calibration();
-		
-		Serial.println("Accelerometer calibration complete");
+		CalibrateAccelGyro();		
 	});
 	
 	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");									});
@@ -244,17 +234,8 @@ int SetupWebServer(void)
 	server.on("/cal_compass.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_compass.html");
+		CalibrateCompass();
 		
-		Serial.println("Starting accelerometer calibration");
-		
-		mpu.verbose(true);
-		delay(2000);
-		mpu.calibrateMag();
-		mpu.verbose(false);
-		
-		print_calibration();
-		
-		Serial.println("Magnetometer calibration complete");
 	});
 
 	server.on("/cal_compass.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_compass.css");								});

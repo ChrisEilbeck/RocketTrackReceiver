@@ -15,22 +15,6 @@ float MagBiasX=437.31;		float MagBiasY=324.71;		float MagBiasZ=560.13;
 float MagScaleX=1.03;		float MagScaleY=1.28;		float MagScaleZ=0.80;
 #endif
 
-
-/*
-X-Axis sensitivity offset value 1.20
-Y-Axis sensitivity offset value 1.20
-Z-Axis sensitivity offset value 1.16
-< calibration parameters >
-accel bias [g]: 
--68.17, 193.17, -71.03
-gyro bias [deg/s]: 
--0.33, 2.38, -0.09
-mag bias [mG]: 
-501.83, 371.61, 633.19
-mag scale []: 
-1.04, 1.21, 0.82
-*/
-
 // on antenna boom using 3d printed mount, with cable attached but this'll have to do for now
 float AccBiasX=-68.17;		float AccBiasY=193.17;		float AccBiasZ=-71.03;
 float GyroBiasX=-0.33;		float GyroBiasY=2.38;		float GyroBiasZ=-0.09;
@@ -39,7 +23,7 @@ float MagScaleX=1.04;		float MagScaleY=1.21;		float MagScaleZ=0.82;
 
 float Declination=-1-1/60;
 
-MPU9250 mpu;
+MPU9250 mpu9250;
 
 bool use_compass=true;
 
@@ -62,7 +46,7 @@ int SetupCompass(void)
 		{
 			Serial.printf("\tTrying 0x%02x ... ",CompassAddresses[cnt]);
 			
-			if(mpu.setup(CompassAddresses[cnt]))	{	Serial.println("OK");	fail=0;		break;	}
+			if(mpu9250.setup(CompassAddresses[cnt]))	{	Serial.println("OK");	fail=0;		break;	}
 			else									{	Serial.println("fail");	fail=1;				}
 			
 			delay(250);
@@ -88,29 +72,12 @@ int SetupCompass(void)
 	return(0);
 }
 
-void CalibrateCompass(void)
-{
-	Serial.println("Accel Gyro calibration will start in 2sec.");
-	Serial.println("Please leave the device still on the flat plane.");
-	mpu.verbose(true);
-	delay(2000);
-	mpu.calibrateAccelGyro();
-	
-	Serial.println("Mag calibration will start in 2sec.");
-	Serial.println("Please Wave device in a figure eight until done.");
-	delay(2000);
-	mpu.calibrateMag();
-	
-	print_calibration();
-	mpu.verbose(false);
-}
-
 void PollCompass(void)
 {
 	if(!use_compass)
 		return;
 
-	if(mpu.update())
+	if(mpu9250.update())
 	{
 		static uint32_t prev_ms=0;
 		if(millis()>(prev_ms+200))
@@ -126,7 +93,7 @@ void PollCompass(void)
 		
 		if(millis()>updateat)
 		{
-			Serial.printf("Heading: %.1f, Pitch: %.1f, Roll: %.1f, Yaw: %.1f\r\n",get_compass_bearing(),mpu.getPitch(),mpu.getRoll(),mpu.getYaw());
+			Serial.printf("Heading: %.1f, Pitch: %.1f, Roll: %.1f, Yaw: %.1f\r\n",get_compass_bearing(),mpu9250.getPitch(),mpu9250.getRoll(),mpu9250.getYaw());
 			updateat=millis()+200;
 		}
 	}
@@ -142,8 +109,8 @@ float get_compass_bearing(void)
 	// might need to remap these because it only seems to really work
 	// properly when the LoRa antenna is pointing down or up
 
-	float mag_pitch=mpu.getPitch();
-	float mag_roll=mpu.getRoll();
+	float mag_pitch=mpu9250.getPitch();
+	float mag_roll=mpu9250.getRoll();
 	
 	float mag_x=0.0;
 	float mag_y=0.0;
@@ -156,11 +123,11 @@ float get_compass_bearing(void)
 	}
 	else if(	(mag_roll>=-135.0)&&(mag_roll<-45.0)	)
 	{
-		mag_pitch=-mpu.getRoll()*DEG_TO_RAD;
-		mag_roll=mpu.getPitch()*DEG_TO_RAD;
-		mag_x=mpu.getMagX();
-		mag_y=mpu.getMagY();
-		mag_z=mpu.getMagZ();	
+		mag_pitch=-mpu9250.getRoll()*DEG_TO_RAD;
+		mag_roll=mpu9250.getPitch()*DEG_TO_RAD;
+		mag_x=mpu9250.getMagX();
+		mag_y=mpu9250.getMagY();
+		mag_z=mpu9250.getMagZ();	
 	}
 	else if(	(mag_roll>=-45.0)&&(mag_roll<45.0)		)
 	{
@@ -168,11 +135,11 @@ float get_compass_bearing(void)
 	}
 	else if(	(mag_roll>=45.0)&&(mag_roll<135.0)		)
 	{
-		mag_pitch=mpu.getRoll()*DEG_TO_RAD;
-		mag_roll=mpu.getPitch()*DEG_TO_RAD;
-		mag_x=mpu.getMagX();
-		mag_y=mpu.getMagY();
-		mag_z=mpu.getMagZ();
+		mag_pitch=mpu9250.getRoll()*DEG_TO_RAD;
+		mag_roll=mpu9250.getPitch()*DEG_TO_RAD;
+		mag_x=mpu9250.getMagX();
+		mag_y=mpu9250.getMagY();
+		mag_z=mpu9250.getMagZ();
 	}
 	else
 	{
@@ -189,12 +156,12 @@ float get_compass_bearing(void)
 
 
 #else
-	mag_pitch=-mpu.getRoll()*DEG_TO_RAD;
-	mag_roll=mpu.getPitch()*DEG_TO_RAD;
+	mag_pitch=-mpu9250.getRoll()*DEG_TO_RAD;
+	mag_roll=mpu9250.getPitch()*DEG_TO_RAD;
 	
-	mag_x=mpu.getMagX();
-	mag_y=mpu.getMagY();
-	mag_z=mpu.getMagZ();
+	mag_x=mpu9250.getMagX();
+	mag_y=mpu9250.getMagY();
+	mag_z=mpu9250.getMagZ();
 #endif
 		
 	// ----- Apply the standard tilt formulas
@@ -211,7 +178,7 @@ float get_compass_bearing(void)
 	heading+=Declination;
 
 #if 0
-	heading=mpu.getYaw();
+	heading=mpu9250.getYaw();
 #endif
 	
 	// constrain to 0 to <360 degrees
@@ -225,32 +192,32 @@ void print_calibration()
 {
 	Serial.println("< calibration parameters >");
 	Serial.println("accel bias [g]: ");
-	Serial.print(mpu.getAccBiasX() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
+	Serial.print(mpu9250.getAccBiasX() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
 	Serial.print(", ");
-	Serial.print(mpu.getAccBiasY() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
+	Serial.print(mpu9250.getAccBiasY() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
 	Serial.print(", ");
-	Serial.print(mpu.getAccBiasZ() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
+	Serial.print(mpu9250.getAccBiasZ() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
 	Serial.println();
 	Serial.println("gyro bias [deg/s]: ");
-	Serial.print(mpu.getGyroBiasX() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
+	Serial.print(mpu9250.getGyroBiasX() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
 	Serial.print(", ");
-	Serial.print(mpu.getGyroBiasY() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
+	Serial.print(mpu9250.getGyroBiasY() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
 	Serial.print(", ");
-	Serial.print(mpu.getGyroBiasZ() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
+	Serial.print(mpu9250.getGyroBiasZ() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
 	Serial.println();
 	Serial.println("mag bias [mG]: ");
-	Serial.print(mpu.getMagBiasX());
+	Serial.print(mpu9250.getMagBiasX());
 	Serial.print(", ");
-	Serial.print(mpu.getMagBiasY());
+	Serial.print(mpu9250.getMagBiasY());
 	Serial.print(", ");
-	Serial.print(mpu.getMagBiasZ());
+	Serial.print(mpu9250.getMagBiasZ());
 	Serial.println();
 	Serial.println("mag scale []: ");
-	Serial.print(mpu.getMagScaleX());
+	Serial.print(mpu9250.getMagScaleX());
 	Serial.print(", ");
-	Serial.print(mpu.getMagScaleY());
+	Serial.print(mpu9250.getMagScaleY());
 	Serial.print(", ");
-	Serial.print(mpu.getMagScaleZ());
+	Serial.print(mpu9250.getMagScaleZ());
 	Serial.println();
 }
 
@@ -272,10 +239,10 @@ int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					Serial.println("Accel Gyro calibration will start in 2sec.");
 					Serial.println("Please leave the device still on the flat plane.");
 					
-					mpu.verbose(true);
+					mpu9250.verbose(true);
 					delay(2000);
-					mpu.calibrateAccelGyro();
-					mpu.verbose(false);
+					mpu9250.calibrateAccelGyro();
+					mpu9250.verbose(false);
 					
 					break;
 		
@@ -283,10 +250,10 @@ int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					Serial.println("Mag calibration will start in 2sec.");
 					Serial.println("Please Wave device in a figure eight until done.");
 					
-					mpu.verbose(true);
+					mpu9250.verbose(true);
 					delay(2000);
-					mpu.calibrateMag();
-					mpu.verbose(false);
+					mpu9250.calibrateMag();
+					mpu9250.verbose(false);
 					
 					print_calibration();
 					
@@ -305,15 +272,15 @@ int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 		
 		case 'p':	// pitch
-					Serial.printf("Pitch: %.1f\r\n",mpu.getPitch());
+					Serial.printf("Pitch: %.1f\r\n",mpu9250.getPitch());
 					break;
 		
 		case 'r':	// roll
-					Serial.printf("Roll: %.1f\r\n",mpu.getRoll());
+					Serial.printf("Roll: %.1f\r\n",mpu9250.getRoll());
 					break;
 		
 		case 'y':	// yaw
-					Serial.printf("Yaw: %.1f\r\n",mpu.getYaw());
+					Serial.printf("Yaw: %.1f\r\n",mpu9250.getYaw());
 					break;
 		
 		case 'l':	// live mode toggle
@@ -347,11 +314,11 @@ int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 
 void SetSensorBiasValues(void)
 {
-	mpu.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
-	mpu.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
-	mpu.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
-	mpu.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
-	mpu.setMagneticDeclination(Declination);
+	mpu9250.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
+	mpu9250.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
+	mpu9250.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
+	mpu9250.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
+	mpu9250.setMagneticDeclination(Declination);
 }
 
 void ResetCompassCalibration(void)
@@ -361,5 +328,39 @@ void ResetCompassCalibration(void)
 	GyroBiasX=-0.29;	GyroBiasY=2.56;		GyroBiasZ=-0.45;
 	MagBiasX=492.87;	MagBiasY=212.87;	MagBiasZ=581.00;
 	MagScaleX=0.94;		MagScaleY=1.49;		MagScaleZ=0.79;
+}
+
+void CalibrateCompass(void)
+{
+	Serial.println("Starting accelerometer calibration");
+	
+	Serial.println("Mag calibration will start in 2sec.");
+	Serial.println("Please Wave device in a figure eight until done.");
+
+	mpu9250.verbose(true);
+	delay(2000);
+	mpu9250.calibrateMag();
+	mpu9250.verbose(false);
+	
+	print_calibration();
+	
+	Serial.println("Magnetometer calibration complete");
+}
+
+void CalibrateAccelGyro(void)
+{
+	Serial.println("Starting accelerometer calibration");
+	
+	Serial.println("\tAccel Gyro calibration will start in 2sec.");
+	Serial.println("\tPlease leave the device still on the flat plane.");
+
+	mpu9250.verbose(true);
+	delay(2000);
+	mpu9250.calibrateAccelGyro();
+	mpu9250.verbose(false);
+	
+	print_calibration();
+	
+	Serial.println("Accelerometer calibration complete");
 }
 

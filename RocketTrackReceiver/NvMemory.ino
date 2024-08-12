@@ -59,21 +59,21 @@ void StoreCompassCalibration(void)
 {
 	int64_t CompassCalAddress=COMPASS_CAL_ADDRESS;
 	
-	EEPROM.writeFloat(CompassCalAddress,mpu.getAccBiasX());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getAccBiasY());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getAccBiasZ());		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getAccBiasX());		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getAccBiasY());		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getAccBiasZ());		CompassCalAddress+=sizeof(float);
 	
-	EEPROM.writeFloat(CompassCalAddress,mpu.getGyroBiasX());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getGyroBiasY());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getGyroBiasZ());	CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getGyroBiasX());	CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getGyroBiasY());	CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getGyroBiasZ());	CompassCalAddress+=sizeof(float);
 	
-	EEPROM.writeFloat(CompassCalAddress,mpu.getMagBiasX());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getMagBiasY());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getMagBiasZ());		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagBiasX());		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagBiasY());		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagBiasZ());		CompassCalAddress+=sizeof(float);
 	
-	EEPROM.writeFloat(CompassCalAddress,mpu.getMagScaleX());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getMagScaleY());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu.getMagScaleZ());	CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagScaleX());	CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagScaleY());	CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagScaleZ());	CompassCalAddress+=sizeof(float);
 	
 	Serial.print("Compass calibration values stored to NvMemory\r\n");
 }
@@ -106,10 +106,10 @@ int RetrieveCompassCalibration(void)
 		return(1);
 	}
 
-	mpu.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
-	mpu.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
-	mpu.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
-	mpu.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
+	mpu9250.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
+	mpu9250.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
+	mpu9250.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
+	mpu9250.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
 	
 	Serial.print("Compass calibration values retrieved from NvMemory\r\n");
 

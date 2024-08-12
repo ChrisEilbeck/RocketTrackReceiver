@@ -224,6 +224,7 @@ void i2c_bus_scanner(void)
 			Serial.print(address,HEX);
 			
 			if(address==0x0c)	Serial.print("\tAK8963 Magnetometer");
+			if(address==0x1e)	Serial.print("\tHMC5883L Magnetometer");
 			if(address==0x34)	Serial.print("\tAXP192 PMIC");
 			if(address==0x3C)	Serial.print("\tSSD1306 OLED Display");
 			if(address==0x3D)	Serial.print("\tSSD1306 OLED Display");
