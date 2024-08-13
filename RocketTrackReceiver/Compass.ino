@@ -1,53 +1,72 @@
 
-bool compass_live_mode=false;
+#include <math.h>
 
-#include "MPU9250.h"
+#include <Adafruit_Sensor.h>
+#include <Adafruit_HMC5883_U.h>
+#include <MPU9250.h>
 
 #include "NvMemory.h"
 
 // old values
 
-#if 0
-// on antenna boom
-float AccBiasX=-68.10;		float AccBiasY=186.83;		float AccBiasZ=-80.80;
-float GyroBiasX=-0.15;		float GyroBiasY=2.17;		float GyroBiasZ=-0.23;
-float MagBiasX=437.31;		float MagBiasY=324.71;		float MagBiasZ=560.13;
-float MagScaleX=1.03;		float MagScaleY=1.28;		float MagScaleZ=0.80;
-#endif
-
 // on antenna boom using 3d printed mount, with cable attached but this'll have to do for now
+// these are for a mpu9250 stuck on the lora module of a t-beam
 float AccBiasX=-68.17;		float AccBiasY=193.17;		float AccBiasZ=-71.03;
 float GyroBiasX=-0.33;		float GyroBiasY=2.38;		float GyroBiasZ=-0.09;
 float MagBiasX=501.83;		float MagBiasY=371.61;		float MagBiasZ=633.19;
 float MagScaleX=1.04;		float MagScaleY=1.21;		float MagScaleZ=0.82;
 
-float Declination=-1-1/60;
+float Declination=-1-1/60;	// typical UK value
 
 MPU9250 mpu9250;
+Adafruit_HMC5883_Unified hmc5883l=Adafruit_HMC5883_Unified(12345);
+
+typedef enum
+{
+	COMPASS_NOT_FOUND=0,
+	USE_MPU9250,
+	USE_HMC5883L
+} mag_type;
 
 bool use_compass=true;
+bool use_tilt_compensation=true;
+int compass_type=COMPASS_NOT_FOUND;
+bool compass_live_mode=false;
 
-byte CompassAddresses[]={0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x00};
+byte MPU9250_Addresses[]={0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x00};
 
 int SetupCompass(void)
 {
 	Serial.print("SetupCompass()\r\n");
 	
 	int fail=0;
-	int cnt=0;
 	
-	for(cnt=0;cnt<(sizeof(CompassAddresses)/sizeof(byte));cnt++)
+	// try to setup a mpu9250 IMU and use its magnetometer first
+	
+	int cnt=0;
+	for(cnt=0;cnt<(sizeof(MPU9250_Addresses)/sizeof(byte));cnt++)
 	{
-		if(CompassAddresses[cnt]==0x00)
+		if(MPU9250_Addresses[cnt]==0x00)
 		{
 			fail=1;
 		}
 		else
 		{
-			Serial.printf("\tTrying 0x%02x ... ",CompassAddresses[cnt]);
+			Serial.printf("\tTrying 0x%02x ... ",MPU9250_Addresses[cnt]);
 			
-			if(mpu9250.setup(CompassAddresses[cnt]))	{	Serial.println("OK");	fail=0;		break;	}
-			else									{	Serial.println("fail");	fail=1;				}
+			if(mpu9250.setup(MPU9250_Addresses[cnt]))
+			{
+				Serial.println("Found MPU9250 OK");	
+				fail=0;
+				compass_type=USE_MPU9250;
+				use_tilt_compensation=true;
+				break;
+			}
+			else
+			{
+				Serial.println("fail");	
+				fail=1;
+			}
 			
 			delay(250);
 		}
@@ -55,15 +74,21 @@ int SetupCompass(void)
 	
 	if(fail)
 	{
-		Serial.println("MPU connection failed");
+		if(hmc5883l.begin())
+		{
+			Serial.println("Found HMC5883L OK");
+			fail=0;
+			compass_type=USE_HMC5883L;
+			use_tilt_compensation=false;
+		}
+	}
+	
+	if(fail)
+	{
+		Serial.println("Magnetometer setup failed, disabling ...");
 		use_compass=false;
 		return(1);
 	}
-	
-#if 0
-	CalibrateCompass();
-	while(1);
-#endif
 	
 	Serial.print("\tSetting sensor bias values\r\n");
 	SetSensorBiasValues();
@@ -314,11 +339,22 @@ int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 
 void SetSensorBiasValues(void)
 {
-	mpu9250.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
-	mpu9250.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
-	mpu9250.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
-	mpu9250.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
-	mpu9250.setMagneticDeclination(Declination);
+	switch(compass_type)
+	{
+		case USE_MPU9250:		Serial.println("Setting sensor bias values for MPU9250");
+								mpu9250.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
+								mpu9250.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
+								mpu9250.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
+								mpu9250.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
+								mpu9250.setMagneticDeclination(Declination);
+								break;
+		
+		case USE_HMC5883L:		Serial.println("Setting sensor bias values for HMC5883L not done yet ...");
+								break;
+		
+		default:				Serial.println("No compass detected, doing nothing ...");
+								break;
+	}
 }
 
 void ResetCompassCalibration(void)
@@ -363,4 +399,47 @@ void CalibrateAccelGyro(void)
 	
 	Serial.println("Accelerometer calibration complete");
 }
+
+void displaySensorDetails(void)
+{
+	sensor_t sensor;
+	hmc5883l.getSensor(&sensor);
+	Serial.println("------------------------------------");
+	Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+	Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+	Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+	Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" uT");
+	Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" uT");
+	Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" uT");  
+	Serial.println("------------------------------------");
+	Serial.println("");
+}
+
+void RemapSensorAxes(float pitch,float roll,float yaw,float *xmag,float *ymag,float *zmag)
+{
+	float xmagin=*xmag;
+	float ymagin=*ymag;
+	float zmagin=*zmag;
+	
+	float xmagout=0.0f;
+	float ymagout=0.0f;
+	float zmagout=0.0f;
+		
+	// general 3d rotation matrix
+	// see https://en.wikipedia.org/wiki/Rotation_matrix#In_three_dimensions
+	
+	float rm11,rm12,rm13,rm21,rm22,rm23,rm31,rm32,rm33;
+
+	rm11=cos(pitch)*cos(roll);		rm12=cos(pitch)*sin(roll)*sin(yaw)-sin(pitch)*cos(yaw);		rm13=cos(pitch)*sin(roll)*cos(yaw)-sin(pitch)*sin(yaw);
+	rm21=sin(pitch)*cos(roll);		rm22=sin(pitch)*sin(roll)*sin(yaw)-cos(pitch)*cos(yaw);		rm23=sin(pitch)*sin(roll)*cos(yaw)-cos(pitch)*sin(yaw);
+	rm31=-sin(roll);				rm32=cos(roll)*sin(yaw);									rm33=cos(roll)*cos(yaw);
+	
+	*xmag=rm11*xmagin+rm12*ymagin+rm13*zmagin;
+	*ymag=rm21*xmagin+rm22*ymagin+rm23*zmagin;
+	*zmag=rm31*xmagin+rm32*ymagin+rm33*zmagin;	
+}
+
+
+
+
 

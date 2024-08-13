@@ -1,4 +1,6 @@
 
+#include "HardwareAbstraction.h"
+
 #include "Display.h"
 #include "GPS.h"
 #include "GreatCircle.h"
@@ -32,7 +34,7 @@ int SetupDisplay(void)
 	
 	Serial.println(F("SSD1306 display configured ..."));
 	
-	display.setRotation(1);
+	display.setRotation(DISPLAY_ROTATION);
 	
 	display.clearDisplay();
 	
@@ -65,7 +67,7 @@ void PollDisplay(void)
 		display.clearDisplay();
 		
 		// portrait
-		display.setRotation(1);
+		display.setRotation(DISPLAY_ROTATION);
 		
 		// draw white on black if logging is active, inverted otherwise
 		display.setTextColor(SSD1306_WHITE);
