@@ -35,6 +35,9 @@ bool compass_live_mode=false;
 
 byte MPU9250_Addresses[]={0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x00};
 
+static float get_compass_bearing(void);
+static void SetSensorBiasValues(void);
+
 int SetupCompass(void)
 {
 	Serial.print("SetupCompass()\r\n");
@@ -102,30 +105,79 @@ void PollCompass(void)
 	if(!use_compass)
 		return;
 
-	if(mpu9250.update())
+	static uint32_t prev_ms=0;
+	if(millis()>(prev_ms+200))
 	{
-		static uint32_t prev_ms=0;
-		if(millis()>(prev_ms+200))
+		rx_heading=get_compass_bearing();
+				
+		if(compass_live_mode)
 		{
-			rx_heading=get_compass_bearing();
-			prev_ms=millis();
+			switch(compass_type)
+			{
+				case USE_MPU9250:	Serial.printf("Heading: %.1f, Pitch: %.1f, Roll: %.1f, Yaw: %.1f\r\n",rx_heading,mpu9250.getPitch(),mpu9250.getRoll(),mpu9250.getYaw());
+									break;
+				
+				case USE_HMC5883L:	Serial.printf("Heading: %.1f\r\n",rx_heading);
+									break;
+				
+				default:			// do nothing
+									break;
+			}
 		}
-	}
-
-	if(compass_live_mode)
-	{
-		static int updateat=0;
 		
-		if(millis()>updateat)
-		{
-			Serial.printf("Heading: %.1f, Pitch: %.1f, Roll: %.1f, Yaw: %.1f\r\n",get_compass_bearing(),mpu9250.getPitch(),mpu9250.getRoll(),mpu9250.getYaw());
-			updateat=millis()+200;
-		}
+		prev_ms=millis();
 	}
 }
 
 float get_compass_bearing(void)
 {
+	float retval=0.0;
+	
+	switch(compass_type)
+	{
+		case USE_MPU9250:	retval=TiltCompensatedCompass();
+							break;
+		
+		case USE_HMC5883L:	retval=NonTiltCompensatedCompass();
+							break;
+		
+		default:			// do nothing
+							break;
+	}
+	
+	return(retval);
+}
+
+float NonTiltCompensatedCompass(void)
+{
+	sensors_event_t event; 
+	hmc5883l.getEvent(&event);
+	
+	float magx=event.magnetic.x;
+	float magy=event.magnetic.y;
+	float magz=event.magnetic.z;
+
+	RemapSensorAxes(
+						PITCH_OFFSET*PI/180.0,ROLL_OFFSET*PI/180.0,YAW_OFFSET*PI/180.0,
+						&magx,&magy,&magz
+					);
+
+	float retval=180.0/PI*atan2(magy,magx);
+	retval=90-retval;
+	
+	while(retval<0.0)		retval+=360.0;
+	while(retval>=360.0)	retval-=360.0;
+
+
+	Serial.printf("X: %f, Y: %f, Z: %f, H: %.1f\r\n",magx,magy,magz,retval);
+
+	return(retval);
+}
+
+float TiltCompensatedCompass(void)
+{	
+	// FIXME: should take inputs, not read the mpu9250 directly
+
 	float heading=0.0f;
 
 	static float mag_x_dampened=0.0f;
@@ -173,13 +225,8 @@ float get_compass_bearing(void)
 		Serial.printf("Bad mag_roll reading in get_compass_bearing() - %f\r\n",mag_roll);
 	}
 
-
-
 	mag_roll*=DEG_TO_RAD;
 	mag_pitch*=DEG_TO_RAD;
-
-
-
 #else
 	mag_pitch=-mpu9250.getRoll()*DEG_TO_RAD;
 	mag_roll=mpu9250.getPitch()*DEG_TO_RAD;
@@ -420,11 +467,8 @@ void RemapSensorAxes(float pitch,float roll,float yaw,float *xmag,float *ymag,fl
 	float xmagin=*xmag;
 	float ymagin=*ymag;
 	float zmagin=*zmag;
-	
-	float xmagout=0.0f;
-	float ymagout=0.0f;
-	float zmagout=0.0f;
-		
+
+#if 0	
 	// general 3d rotation matrix
 	// see https://en.wikipedia.org/wiki/Rotation_matrix#In_three_dimensions
 	
@@ -437,6 +481,12 @@ void RemapSensorAxes(float pitch,float roll,float yaw,float *xmag,float *ymag,fl
 	*xmag=rm11*xmagin+rm12*ymagin+rm13*zmagin;
 	*ymag=rm21*xmagin+rm22*ymagin+rm23*zmagin;
 	*zmag=rm31*xmagin+rm32*ymagin+rm33*zmagin;	
+#else
+	// simple 180 degree about Z
+
+	*xmag=-*xmag;
+	*ymag=-*ymag;
+#endif
 }
 
 

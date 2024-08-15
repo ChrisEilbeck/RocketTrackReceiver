@@ -25,3 +25,8 @@
 
 #define DISPLAY_ROTATION	3
 
+// for offsetting the sensor axes from the axes of the lora receiver
+
+#define ROLL_OFFSET			0.0
+#define PITCH_OFFSET		0.0
+#define YAW_OFFSET			180.0
