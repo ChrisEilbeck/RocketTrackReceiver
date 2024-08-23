@@ -17,7 +17,7 @@ int baro_rate=100;
 int baro_period=1000;	// 10Hz
 int last_baro_time=0;
 
-#define BARO_ADDRESS	0x77
+#define BARO_ADDRESS	0x76
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 

@@ -63,6 +63,12 @@ int SetupCompass(void)
 				fail=0;
 				compass_type=USE_MPU9250;
 				use_tilt_compensation=true;
+
+				mpu9250.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
+				mpu9250.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
+				mpu9250.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
+				mpu9250.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
+
 				break;
 			}
 			else
@@ -135,7 +141,8 @@ float get_compass_bearing(void)
 	
 	switch(compass_type)
 	{
-		case USE_MPU9250:	retval=TiltCompensatedCompass();
+		case USE_MPU9250:	mpu9250.update_mag();
+							retval=TiltCompensatedCompass();
 							break;
 		
 		case USE_HMC5883L:	retval=NonTiltCompensatedCompass();
@@ -167,8 +174,7 @@ float NonTiltCompensatedCompass(void)
 	
 	while(retval<0.0)		retval+=360.0;
 	while(retval>=360.0)	retval-=360.0;
-
-
+	
 	Serial.printf("X: %f, Y: %f, Z: %f, H: %.1f\r\n",magx,magy,magz,retval);
 
 	return(retval);
@@ -180,6 +186,7 @@ float TiltCompensatedCompass(void)
 
 	float heading=0.0f;
 
+#if 0
 	static float mag_x_dampened=0.0f;
 	static float mag_y_dampened=0.0f;
 
@@ -252,6 +259,22 @@ float TiltCompensatedCompass(void)
 #if 0
 	heading=mpu9250.getYaw();
 #endif
+	
+	
+	
+#else
+
+	float mag_x=mpu9250.getMagX();
+	float mag_y=mpu9250.getMagY();
+	float mag_z=mpu9250.getMagZ();
+
+	heading=180.0/PI*atan2(mag_y,mag_x);
+	heading=90-heading;
+	
+	Serial.printf("Boom!\tX: %f, Y: %f, Z: %f, H: %.1f\r\n",mag_x,mag_y,mag_z,heading);
+	
+#endif	
+	
 	
 	// constrain to 0 to <360 degrees
 	while(heading<0)    heading+=360;
