@@ -212,6 +212,7 @@ int SetupWebServer(void)
 	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.css");										});
 	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.js");											});
 	
+#if 0
 	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel.html");
@@ -227,7 +228,7 @@ int SetupWebServer(void)
 		
 		Serial.println("Accelerometer calibration complete");
 	});
-	
+
 	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");									});
 	
 	server.on("/cal_compass.html",HTTP_GET,[](AsyncWebServerRequest *request)
@@ -270,6 +271,7 @@ int SetupWebServer(void)
 	});
 	
 	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");							});
+#endif
 	
 	server.on("/favicon.ico",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/favicon.ico");									});
 	
