@@ -16,7 +16,7 @@ int SetupCrypto(void)
 	uint8_t ct[16];
 	uint8_t tv[16]={	0xf3,0xee,0xd1,0xbd,0xb5,0xd2,0xa0,0x3c,0x06,0x4b,0x5a,0x7e,0x3d,0xb1,0x81,0xf8	};
 	
-	crypto_feed_watchdog();
+//	crypto_feed_watchdog();
 	cipher->setKey(key,cipher->keySize());
 	cipher->encryptBlock(ct,pt);
 	
@@ -39,7 +39,7 @@ void EncryptPacket(uint8_t *packet)
 {
 	uint8_t pt[16];
 	memcpy(pt,packet,16);
-	crypto_feed_watchdog();
+//	crypto_feed_watchdog();
 	cipher->setKey(crypto_key,cipher->keySize());
 	cipher->encryptBlock(packet,pt);
 }
@@ -48,7 +48,7 @@ void DecryptPacket(uint8_t *packet)
 {
 	uint8_t ct[16];
 	memcpy(ct,packet,16);
-	crypto_feed_watchdog();
+//	crypto_feed_watchdog();
 	cipher->setKey(crypto_key,cipher->keySize());
 	cipher->decryptBlock(packet,ct);
 }
