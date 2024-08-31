@@ -53,6 +53,17 @@ float MagScaleX=1.04;		float MagScaleY=1.21;		float MagScaleZ=0.82;
 
 float Declination=-1-1/60;
 
+float AccelMinX=0.0;
+float AccelMaxX=0.0;
+float AccelMinY=0.0;
+float AccelMaxY=0.0;
+float AccelMinZ=0.0;
+float AccelMaxZ=0.0;
+
+float GyroOffsetX=0.0;
+float GyroOffsetY=0.0;
+float GyroOffsetZ=0.0;
+
 // hardware devices
 
 //MPU9250 mpu9250;
@@ -152,6 +163,11 @@ int DetectSeparateBoards(void)
 		fail=1;
 	else
 		Serial.println("\tMPU6500 gyro/mag initialised ...");
+
+//	CalibrateMPU6500Accel();
+	CalibrateMPU6500Gyro();
+
+
 	
 	qmc5883l.init();
 	Serial.println("\tQMC5883L magnetometer initialised ...");
@@ -215,7 +231,7 @@ void PollIMU(void)
 		heading=(float)azimuth;
 		
 		mag.x=qmc5883l.getX();
-		mag.y=qmc5883l.getY();
+ 		mag.y=qmc5883l.getY();
 		mag.z=qmc5883l.getZ();
 #endif
 #if 1
@@ -547,4 +563,50 @@ int RetrieveCompassCalibration(void)
 												break;
 	}
 }
+
+void CalibrateMPU6500Accel(void)
+{
+
+
+
+}
+
+void CalibrateMPU6500Gyro(void)
+{
+	Serial.println("CalibrateMPU6500Gyro() entry");
+	Serial.println("\tPlace the unit on a flat surface and do not move it for 3 seconds ...");
+	
+	delay(1000);
+	
+	Serial.println("\tMeasuring ...");
+	
+	int now=millis();
+	int count=0;
+	
+	xyzFloat gyrosamples;
+	
+	while((millis()-now)<3000)
+	{
+		xyzFloat gyro;
+		gyro=mpu6500.getGyrValues();
+		
+		gyrosamples+=gyro;
+		
+#if 0
+		Serial.printf("\t\tX: %.1f, Y: %.1f, Z: %.1f\r\n",gyro.x,gyro.y,gyro.z);
+#endif
+		
+		count++;
+		delay(10);
+	}
+	
+	gyrosamples/=(float)count;
+	
+	Serial.printf("\tOffsets are X: %.3f, Y: %.3f, Z: %.3f\r\n",gyrosamples.x,gyrosamples.y,gyrosamples.z);
+	
+	mpu6500.setGyrOffsets(gyrosamples);	
+	
+	Serial.println("CalibrateMPU6500Gyro() exit");
+}
+
 
