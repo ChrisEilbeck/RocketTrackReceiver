@@ -62,7 +62,7 @@ void setup()
 	if(SetupCrypto())			{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
 
 	if(SetupDisplay())			{	Serial.print("OLED display setup failed, ignoring\r\n");									}
-	if(SetupCompass())			{	Serial.print("MPU9250 setup failed, disabling ...\r\n");									}
+	if(SetupIMU())			{	Serial.print("MPU9250 setup failed, disabling ...\r\n");									}
 	if(SetupBarometer())		{	Serial.print("Pressure Sensor Setup failed, disabling ...\r\n");							}
 	
 #if 0
@@ -121,7 +121,7 @@ void loop()
 	PollDisplay();
 	PollSerial();
 	PollPMIC();
-	PollCompass();
+	PollIMU();
 }
 
 void PollSerial(void)
@@ -155,7 +155,7 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[0]|0x20)
 	{
-		case 'c':	OK=CompassCommandHandler(cmd,cmdptr);			break;
+		case 'i':	OK=IMUCommandHandler(cmd,cmdptr);				break;
 //		case 'a':	OK=AccelerometerCommandHandler(cmd,cmdptr);		break;
 		case 'b':	OK=BarometerCommandHandler(cmd,cmdptr);			break;
 //		case 'y':	OK=GyroCommandHandler(cmd,cmdptr);				break;
@@ -176,7 +176,7 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 		
 		case '?':	Serial.print("RocketTrack Test Ha Menu\r\n=================\r\n\n");
 					Serial.print("b\t-\tBarometer\r\n");
-					Serial.print("c\t-\tCompass\r\n");
+					Serial.print("i\t-\tIMU\r\n");
 					Serial.print("p\t-\tPower Management IC\r\n");
 //					Serial.print("g\t-\tGPS\r\n");
 //					Serial.print("l\t-\tLoRa\r\n");

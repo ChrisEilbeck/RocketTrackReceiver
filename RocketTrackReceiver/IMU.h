@@ -1,10 +1,10 @@
 
 #pragma once
 
-int SetupCompass(void);
-void PollCompass(void);
+int SetupIMU(void);
+void PollIMU(void);
 
-int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr);
+int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr);
 
 typedef enum
 {

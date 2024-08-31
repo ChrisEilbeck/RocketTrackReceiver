@@ -1,7 +1,8 @@
 
 #pragma once
 
-#pragma message "Building for TTGO T-Beam"
+// disabled unnecessary message for now, CE, 29/08/2024
+//#pragma message "Building for TTGO T-Beam"
 
 #define SCK				5		// GPIO5  -- SX1278's SCK
 #define MISO			19		// GPIO19 -- SX1278's MISO

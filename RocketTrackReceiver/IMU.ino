@@ -5,10 +5,10 @@
 // BME180
 //
 
-#include "Compass.h"
+#include "IMU.h"
 #include "NvMemory.h"
 
-bool compass_live_mode=false;
+#include <MadgwickAHRS.h>
 
 //#include "MPU9250.h"
 #include "MPU9250_WE.h"
@@ -64,9 +64,12 @@ QMC5883LCompass qmc5883l;
 
 //BME180 bme180;
 
-//
+// for sensor fusion
+
+Madgwick filter;
 
 bool use_compass=true;
+bool compass_live_mode=false;
 int sensor_setup=NO_SENSORS;
 
 float roll=0.0;
@@ -75,11 +78,13 @@ float yaw=0.0;
 
 float heading=0.0;
 
-byte CompassAddresses[]={0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x00};
+byte MPU9250Addresses[]={0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x00};
 
-int SetupCompass(void)
+float imu_rate=10.0;	// Hz
+
+int SetupIMU(void)
 {
-	Serial.print("SetupCompass()\r\n");
+	Serial.print("SetupIMU()\r\n");
 	
 	int fail=1;
 	int cnt=0;
@@ -102,7 +107,12 @@ int SetupCompass(void)
 	
 	Serial.print("\tSetting sensor bias values\r\n");
 	SetSensorBiasValues();
-	Serial.print("SetupCompass() complete ...\r\n");
+	
+	filter.begin(imu_rate);
+	
+	
+	
+	Serial.print("SetupIMU() complete ...\r\n");
 	
 	return(0);
 }
@@ -112,17 +122,17 @@ int DetectMPU9250(void)
 	int cnt;
 	int fail=0;
 	
-	for(cnt=0;cnt<(sizeof(CompassAddresses)/sizeof(byte));cnt++)
+	for(cnt=0;cnt<(sizeof(MPU9250Addresses)/sizeof(byte));cnt++)
 	{
-		if(CompassAddresses[cnt]==0x00)
+		if(MPU9250Addresses[cnt]==0x00)
 		{
 			fail=1;
 		}
 		else
 		{
-			Serial.printf("\tTrying 0x%02x ... ",CompassAddresses[cnt]);
+			Serial.printf("\tTrying 0x%02x ... ",MPU9250Addresses[cnt]);
 			
-//			if(mpu9250.setup(CompassAddresses[cnt]))	{	Serial.println("OK");	fail=0;		break;	}
+//			if(mpu9250.setup(MPU9250Addresses[cnt]))	{	Serial.println("OK");	fail=0;		break;	}
 //			else										{	Serial.println("fail");	fail=1;				}
 			
 			delay(250);
@@ -167,7 +177,7 @@ int DetectCombinedBoard(void)
 	return(1);
 }
 
-void CalibrateCompass(void)
+void CalibrateIMU(void)
 {
 	Serial.println("Accel Gyro calibration will start in 2sec.");
 	Serial.println("Please leave the device still on the flat plane.");
@@ -184,48 +194,67 @@ void CalibrateCompass(void)
 //	mpu9250.verbose(false);
 }
 
-void PollCompass(void)
+void PollIMU(void)
 {
 	if(!use_compass)
 		return;
 
-#if 0
-	if(mpu9250.update())
-	{
-		static uint32_t prev_ms=0;
-		if(millis()>(prev_ms+200))
-		{
-			rx_heading=get_compass_bearing();
-			prev_ms=millis();
-		}
-	}
-#endif
-#if 1
-	qmc5883l.read();
-	int azimuth=qmc5883l.getAzimuth();
-	heading=(float)azimuth;
-#endif
-#if 1
-	xyzFloat gValue = mpu6500.getGValues();
-	xyzFloat gyr = mpu6500.getGyrValues();
-	float temp = mpu6500.getTemperature();
-	float resultantG = mpu6500.getResultantG(gValue);
+	static int update_filter_at=0;
 	
+	xyzFloat mag;
+	xyzFloat accel;
+	xyzFloat gyro;
+	
+	if(millis()>update_filter_at)
+	{
+		update_filter_at=millis()+(int)(1000/imu_rate);
+		
+#if 1
+		qmc5883l.read();
+		int azimuth=qmc5883l.getAzimuth();
+		heading=(float)azimuth;
+		
+		mag.x=qmc5883l.getX();
+		mag.y=qmc5883l.getY();
+		mag.z=qmc5883l.getZ();
 #endif
+#if 1
+		accel=mpu6500.getGValues();
+		gyro=mpu6500.getGyrValues();
+#endif
+		
+		filter.update(
+						gyro.x,gyro.y,gyro.z,
+						accel.x,accel.y,accel.z,
+						mag.x,mag.y,mag.z
+					);
+		
+#if 1
+		heading=90-filter.getYaw();
+		if(heading<0.0)		heading+=360.0;
+		if(heading>360.0)	heading-=360.0;
 
-
+		Serial.printf(
+						"Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",
+						filter.getRoll(),
+						filter.getPitch(),
+						filter.getYaw(),
+						heading
+					);
+#endif	
+	}
 
 	if(compass_live_mode)
 	{
-		static int updateat=0;
+		static int update_ui_at=0;
 		
-		if(millis()>updateat)
+		if(millis()>update_ui_at)
 		{
+			update_ui_at=millis()+200;
+			
 			Serial.printf("Heading: %.1f, Pitch: %.1f, Roll: %.1f, Yaw: %.1f\t",heading,pitch,roll,yaw);
-			Serial.printf("AccX: %.2f, AccY: %.2f, AccZ: %.2f, G: %.2f\t",gValue.x,gValue.y,gValue.z,resultantG);
-			Serial.printf("GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f, Temp: %.2f\r\n",gyr.x,gyr.y,gyr.z,temp);
-
-			updateat=millis()+200;
+			Serial.printf("AccX: %.2f, AccY: %.2f, AccZ: %.2f, G: %.2f\t",accel.x,accel.y,accel.z);
+			Serial.printf("GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",gyro.x,gyro.y,gyro.z);
 		}
 	}
 }
@@ -356,7 +385,7 @@ void print_calibration()
 #endif
 }
 
-int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
+int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 {
 	// ignore a single key stroke
 	if(cmdptr<=2)	return(0);
@@ -426,7 +455,7 @@ int CompassCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					
 					break;
 		
-		case '?':	Serial.print("Compass Test Harness\r\n================\r\n\n");
+		case '?':	Serial.print("IMU Test Harness\r\n================\r\n\n");
 					Serial.print("\ta\t-\tCalibrate the accelerometer\r\n");
 					Serial.print("\th\t-\tDisplay the compass heading\r\n");
 					Serial.print("\tl\t-\tEnable/disable live compass data display\r\n");
