@@ -11,58 +11,17 @@
 #include <MadgwickAHRS.h>
 
 //#include "MPU9250.h"
-#include "MPU9250_WE.h"
-//#include "MPU6500.h"
-//#include "QMC5883L.h"
 //#include "ICM20948.h"
 //#include "BME180.h"
 
+#include "MPU9250_WE.h"
 #include <QMC5883LCompass.h>
-
-// old values
-
-#if 0
-// on antenna boom
-float AccBiasX=-68.10;		float AccBiasY=186.83;		float AccBiasZ=-80.80;
-float GyroBiasX=-0.15;		float GyroBiasY=2.17;		float GyroBiasZ=-0.23;
-float MagBiasX=437.31;		float MagBiasY=324.71;		float MagBiasZ=560.13;
-float MagScaleX=1.03;		float MagScaleY=1.28;		float MagScaleZ=0.80;
-#endif
-
-
-/*
-X-Axis sensitivity offset value 1.20
-Y-Axis sensitivity offset value 1.20
-Z-Axis sensitivity offset value 1.16
-< calibration parameters >
-accel bias [g]: 
--68.17, 193.17, -71.03
-gyro bias [deg/s]: 
--0.33, 2.38, -0.09
-mag bias [mG]: 
-501.83, 371.61, 633.19
-mag scale []: 
-1.04, 1.21, 0.82
-*/
-
-// on antenna boom using 3d printed mount, with cable attached but this'll have to do for now
-float AccBiasX=-68.17;		float AccBiasY=193.17;		float AccBiasZ=-71.03;
-float GyroBiasX=-0.33;		float GyroBiasY=2.38;		float GyroBiasZ=-0.09;
-float MagBiasX=501.83;		float MagBiasY=371.61;		float MagBiasZ=633.19;
-float MagScaleX=1.04;		float MagScaleY=1.21;		float MagScaleZ=0.82;
 
 float Declination=-1-1/60;
 
-float AccelMinX=0.0;
-float AccelMaxX=0.0;
-float AccelMinY=0.0;
-float AccelMaxY=0.0;
-float AccelMinZ=0.0;
-float AccelMaxZ=0.0;
-
-float GyroOffsetX=0.0;
-float GyroOffsetY=0.0;
-float GyroOffsetZ=0.0;
+xyzFloat accelmin;
+xyzFloat accelmax;
+xyzFloat gyrooffset;
 
 // hardware devices
 
@@ -87,11 +46,12 @@ float roll=0.0;
 float pitch=0.0;
 float yaw=0.0;
 
-float heading=0.0;
-
 byte MPU9250Addresses[]={0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x68,0x69,0x00};
 
 float imu_rate=10.0;	// Hz
+
+void CalibrateMPU6500Accelerometer(const char *orientation,xyzFloat *vals);
+void CalibrateMPU6500Gyro(xyzFloat *vals);
 
 int SetupIMU(void)
 {
@@ -111,17 +71,10 @@ int SetupIMU(void)
 		return(1);
 	}
 	
-#if 0
-	CalibrateCompass();
-	while(1);
-#endif
-	
 	Serial.print("\tSetting sensor bias values\r\n");
 	SetSensorBiasValues();
 	
 	filter.begin(imu_rate);
-	
-	
 	
 	Serial.print("SetupIMU() complete ...\r\n");
 	
@@ -164,24 +117,8 @@ int DetectSeparateBoards(void)
 	else
 		Serial.println("\tMPU6500 gyro/mag initialised ...");
 
-//	CalibrateMPU6500Accel();
-	CalibrateMPU6500Gyro();
-
-
-	
 	qmc5883l.init();
 	Serial.println("\tQMC5883L magnetometer initialised ...");
-
-
-
-
-
-
-
-
-
-
-
 
 	return(fail);
 }
@@ -191,23 +128,6 @@ int DetectCombinedBoard(void)
 
 
 	return(1);
-}
-
-void CalibrateIMU(void)
-{
-	Serial.println("Accel Gyro calibration will start in 2sec.");
-	Serial.println("Please leave the device still on the flat plane.");
-//	mpu9250.verbose(true);
-	delay(2000);
-//	mpu9250.calibrateAccelGyro();
-	
-	Serial.println("Mag calibration will start in 2sec.");
-	Serial.println("Please Wave device in a figure eight until done.");
-	delay(2000);
-//	mpu9250.calibrateMag();
-	
-	print_calibration();
-//	mpu9250.verbose(false);
 }
 
 void PollIMU(void)
@@ -227,9 +147,7 @@ void PollIMU(void)
 		
 #if 1
 		qmc5883l.read();
-		int azimuth=qmc5883l.getAzimuth();
-		heading=(float)azimuth;
-		
+
 		mag.x=qmc5883l.getX();
  		mag.y=qmc5883l.getY();
 		mag.z=qmc5883l.getZ();
@@ -243,21 +161,7 @@ void PollIMU(void)
 						gyro.x,gyro.y,gyro.z,
 						accel.x,accel.y,accel.z,
 						mag.x,mag.y,mag.z
-					);
-		
-#if 1
-		heading=90-filter.getYaw();
-		if(heading<0.0)		heading+=360.0;
-		if(heading>360.0)	heading-=360.0;
-
-		Serial.printf(
-						"Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",
-						filter.getRoll(),
-						filter.getPitch(),
-						filter.getYaw(),
-						heading
-					);
-#endif	
+					);		
 	}
 
 	if(compass_live_mode)
@@ -267,10 +171,24 @@ void PollIMU(void)
 		if(millis()>update_ui_at)
 		{
 			update_ui_at=millis()+200;
-			
-			Serial.printf("Heading: %.1f, Pitch: %.1f, Roll: %.1f, Yaw: %.1f\t",heading,pitch,roll,yaw);
+
+#if 0			
+			Serial.printf("Heading: %.1f, Pitch: %.1f, Roll: %.1f, Yaw: %.1f\t",rx_heading,pitch,roll,yaw);
 			Serial.printf("AccX: %.2f, AccY: %.2f, AccZ: %.2f, G: %.2f\t",accel.x,accel.y,accel.z);
 			Serial.printf("GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",gyro.x,gyro.y,gyro.z);
+#else
+			rx_heading=90-filter.getYaw();
+			if(rx_heading<0.0)		rx_heading+=360.0;
+			if(rx_heading>360.0)	rx_heading-=360.0;
+			
+			Serial.printf(
+							"Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",
+							filter.getRoll(),
+							filter.getPitch(),
+							filter.getYaw(),
+							rx_heading
+						);
+#endif
 		}
 	}
 }
@@ -368,37 +286,6 @@ float get_compass_bearing(void)
 
 void print_calibration()
 {
-#if 0
-	Serial.println("< calibration parameters >");
-	Serial.println("accel bias [g]: ");
-	Serial.print(mpu9250.getAccBiasX() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
-	Serial.print(", ");
-	Serial.print(mpu9250.getAccBiasY() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
-	Serial.print(", ");
-	Serial.print(mpu9250.getAccBiasZ() * 1000.f / (float)MPU9250::CALIB_ACCEL_SENSITIVITY);
-	Serial.println();
-	Serial.println("gyro bias [deg/s]: ");
-	Serial.print(mpu9250.getGyroBiasX() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
-	Serial.print(", ");
-	Serial.print(mpu9250.getGyroBiasY() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
-	Serial.print(", ");
-	Serial.print(mpu9250.getGyroBiasZ() / (float)MPU9250::CALIB_GYRO_SENSITIVITY);
-	Serial.println();
-	Serial.println("mag bias [mG]: ");
-	Serial.print(mpu9250.getMagBiasX());
-	Serial.print(", ");
-	Serial.print(mpu9250.getMagBiasY());
-	Serial.print(", ");
-	Serial.print(mpu9250.getMagBiasZ());
-	Serial.println();
-	Serial.println("mag scale []: ");
-	Serial.print(mpu9250.getMagScaleX());
-	Serial.print(", ");
-	Serial.print(mpu9250.getMagScaleY());
-	Serial.print(", ");
-	Serial.print(mpu9250.getMagScaleZ());
-	Serial.println();
-#endif
 }
 
 int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
@@ -415,38 +302,6 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
-		case 'a':	// calibrate the gyro and accelerometer
-					Serial.println("Accel Gyro calibration will start in 2sec.");
-					Serial.println("Please leave the device still on the flat plane.");
-					
-//					mpu9250.verbose(true);
-					delay(2000);
-//					mpu9250.calibrateAccelGyro();
-//					mpu9250.verbose(false);
-					
-					break;
-		
-		case 'm':	// calibrate the magnetometer
-					Serial.println("Mag calibration will start in 2sec.");
-					Serial.println("Please Wave device in a figure eight until done.");
-					
-//					mpu9250.verbose(true);
-					delay(2000);
-//					mpu9250.calibrateMag();
-//					mpu9250.verbose(false);
-					
-					print_calibration();
-					
-					break;
-		
-		case 's':	// store the calibration values
-					StoreCompassCalibration();
-					break;
-		
-		case 't':	// retrieve the calibration values
-					RetrieveCompassCalibration();
-					break;					
-		
 		case 'h':	// compass heading
 					Serial.printf("Heading: %.1f\r\n",get_compass_bearing());
 					break;
@@ -472,16 +327,101 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 		
 		case '?':	Serial.print("IMU Test Harness\r\n================\r\n\n");
-					Serial.print("\ta\t-\tCalibrate the accelerometer\r\n");
 					Serial.print("\th\t-\tDisplay the compass heading\r\n");
 					Serial.print("\tl\t-\tEnable/disable live compass data display\r\n");
-					Serial.print("\tm\t-\tCalibrate the magnetometer\r\n");
 					Serial.print("\tp\t-\tRead current pitch value\r\n");
 					Serial.print("\tr\t-\tRead current roll value\r\n");
-					Serial.print("\ts\t-\tStore the calibration values\r\n");
-					Serial.print("\tt\t-\tRetrieve the calibration values\r\n");
 					Serial.print("\ty\t-\tRead current yaw value\r\n");
-					Serial.print("\th\t-\tRead current heading value\r\n");
+					Serial.print("?\t-\tShow this menu\r\n");
+					break;
+		
+		default:	retval=0;
+					break;
+	}
+	
+	return(retval);
+}
+
+int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
+{
+	// ignore a single key stroke
+	if(cmdptr<=2)	return(0);
+
+#if (DEBUG>0)
+	Serial.println((char *)cmd);
+#endif
+	
+	int retval=1;
+	uint8_t cnt;
+	
+	switch(cmd[1]|0x20)
+	{
+		case 'g':	// calibrate the gyro
+					CalibrateMPU6500Gyro(&gyrooffset);
+					break;
+		
+		case 'm':	// calibrate the magnetometer
+					Serial.println("Mag calibration will start in 2sec.");
+					Serial.println("Please Wave device in a figure eight until done.");
+					
+					break;
+		
+		case 'p':	// print valibration values
+					Serial.print("Accelerometer:\r\n");
+					Serial.printf("\tX: %.1f - %.1f\r\n",accelmin.x,accelmax.x);
+					Serial.printf("\tY: %.1f - %.1f\r\n",accelmin.y,accelmax.y);
+					Serial.printf("\tZ: %.1f - %.1f\r\n\n",accelmin.z,accelmax.z);
+					
+					Serial.print("Gyroscope:\r\n");
+					Serial.printf("\tX: %.1f\r\n",gyrooffset.x);
+					Serial.printf("\tY: %.1f\r\n",gyrooffset.y);
+					Serial.printf("\tZ: %.1f\r\n",gyrooffset.z);
+					
+					break;
+		
+		case 's':	// store the calibration values
+					mpu6500.setGyrOffsets(gyrooffset);	
+					mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+					
+					StoreCalibrationData();
+
+					break;
+		
+		case 't':	// retrieve the calibration values
+					RetrieveCalibrationData();
+
+					mpu6500.setGyrOffsets(gyrooffset);	
+					mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+					
+					break;					
+
+		case 'x':	if(cmd[2]=='-')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Nose down",&vals);		accelmin.x=vals.x;	}
+					if(cmd[2]=='+')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Nose up",&vals);			accelmax.x=vals.x;	}
+							
+					break;
+		
+		case 'y':	if(cmd[2]=='-')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Left down",&vals);		accelmin.y=vals.y;	}
+					if(cmd[2]=='+')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Right down",&vals);		accelmax.y=vals.y;	}
+					
+					break;
+		
+		case 'z':	if(cmd[2]=='+')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Flat and level",&vals);	accelmax.z=vals.z;	}
+					if(cmd[2]=='-')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Upside-down",&vals);		accelmin.z=vals.z;	}
+					
+					break;
+		
+		case '?':	Serial.print("IMU Test Harness\r\n================\r\n\n");
+					Serial.print("g\t-\tCalibrate the Gyro\r\n");
+					Serial.print("m\t-\tCalibrate the Magnetometer\r\n");
+					Serial.print("p\t-\tPrint calibration values\r\n");
+					Serial.print("s\t-\tStore the calibration values\r\n");
+					Serial.print("t\t-\tRetrieve the calibration values\r\n");
+					Serial.print("x-\t-\tCalibrate X- reading\r\n");
+					Serial.print("x+\t-\tCalibrate X+ reading\r\n");
+					Serial.print("y-\t-\tCalibrate Y- reading\r\n");
+					Serial.print("y+\t-\tCalibrate Y+ reading\r\n");
+					Serial.print("z-\t-\tCalibrate Z- reading\r\n");
+					Serial.print("z+\t-\tCalibrate Z+ reading\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
 		
@@ -494,25 +434,14 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 
 void SetSensorBiasValues(void)
 {
-#if 0
-	mpu9250.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
-	mpu9250.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
-	mpu9250.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
-	mpu9250.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
-	mpu9250.setMagneticDeclination(Declination);
-#endif
 }
 
 void ResetCompassCalibration(void)
 {
-	// with panasonic 18650
-	AccBiasX=-76.10;	AccBiasY=47.33;		AccBiasZ=-64.94;
-	GyroBiasX=-0.29;	GyroBiasY=2.56;		GyroBiasZ=-0.45;
-	MagBiasX=492.87;	MagBiasY=212.87;	MagBiasZ=581.00;
-	MagScaleX=0.94;		MagScaleY=1.49;		MagScaleZ=0.79;
 }
 
-int StoreCompassCalibration(void)
+#if 0
+void StoreCalibrationData(void)
 {
 	switch(sensor_setup)
 	{
@@ -538,7 +467,7 @@ int StoreCompassCalibration(void)
 	}
 }
 
-int RetrieveCompassCalibration(void)
+void RetrieveCalibrationData(void)
 {
 	switch(sensor_setup)
 	{
@@ -563,15 +492,54 @@ int RetrieveCompassCalibration(void)
 												break;
 	}
 }
+#endif
 
 void CalibrateMPU6500Accel(void)
 {
+	Serial.println("CalibrateMPU6500Accel() entry");
+	
+	Serial.printf("\tMinimums are X: %0.1f, Y: %0.1f, Z: %0.1f\r\n",accelmin.x,accelmin.y,accelmin.z);
+	Serial.printf("\tMaximums are X: %0.1f, Y: %0.1f, Z: %0.1f\r\n",accelmax.x,accelmax.y,accelmax.z);
 
+	mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 
-
+	Serial.println("CalibrateMPU6500Accel() exit");
 }
 
-void CalibrateMPU6500Gyro(void)
+void CalibrateMPU6500Accelerometer(const char *orientation,xyzFloat *vals)
+{
+	Serial.println("CalibrateAccelerometer() entry");
+	
+	Serial.print("\tPlace with ");
+	Serial.print(orientation);
+	Serial.print("\t");
+	
+	Serial.print("3 ...");	delay(1000);
+	Serial.print("2 ...");	delay(1000);
+	Serial.print("1 ...\r\n");	delay(1000);
+	Serial.println("\tMeasuring ...");
+	
+	int now=millis();
+	xyzFloat sum;
+	int cnt=0;
+		
+	while((millis()-now)<1000)
+	{
+		sum+=mpu6500.getAccRawValues();
+		cnt++;
+		delay(10);
+	}	
+	
+	sum/=(float)cnt;
+	
+	Serial.printf("\tMeasured X: %.1f, Y: %.1f, Z: %.1f\r\n",sum.x,sum.y,sum.z);	
+	
+	vals->x=sum.x;	vals->y=sum.y;	vals->z=sum.z;
+	
+	Serial.println("CalibrateAccelerometer() exit");
+}
+
+void CalibrateMPU6500Gyro(xyzFloat *vals)
 {
 	Serial.println("CalibrateMPU6500Gyro() entry");
 	Serial.println("\tPlace the unit on a flat surface and do not move it for 3 seconds ...");
@@ -581,32 +549,22 @@ void CalibrateMPU6500Gyro(void)
 	Serial.println("\tMeasuring ...");
 	
 	int now=millis();
-	int count=0;
-	
-	xyzFloat gyrosamples;
+	xyzFloat sum;
+	int cnt=0;
 	
 	while((millis()-now)<3000)
 	{
-		xyzFloat gyro;
-		gyro=mpu6500.getGyrValues();
-		
-		gyrosamples+=gyro;
-		
-#if 0
-		Serial.printf("\t\tX: %.1f, Y: %.1f, Z: %.1f\r\n",gyro.x,gyro.y,gyro.z);
-#endif
-		
-		count++;
+		sum+=mpu6500.getGyrRawValues();
+		cnt++;
 		delay(10);
 	}
 	
-	gyrosamples/=(float)count;
+	sum/=(float)cnt;
 	
-	Serial.printf("\tOffsets are X: %.3f, Y: %.3f, Z: %.3f\r\n",gyrosamples.x,gyrosamples.y,gyrosamples.z);
+	Serial.printf("\tMeasured X: %.1f, Y: %.1f, Z: %.1f\r\n",sum.x,sum.y,sum.z);	
 	
-	mpu6500.setGyrOffsets(gyrosamples);	
-	
+	vals->x=sum.x;	vals->y=sum.y;	vals->z=sum.z;
+		
 	Serial.println("CalibrateMPU6500Gyro() exit");
 }
-
 
