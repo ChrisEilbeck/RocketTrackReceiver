@@ -22,6 +22,8 @@ float Declination=-1-1/60;
 xyzFloat accelmin;
 xyzFloat accelmax;
 xyzFloat gyrooffset;
+xyzFloat magoffset;
+xyzFloat magscale;
 
 // hardware devices
 

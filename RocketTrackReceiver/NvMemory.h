@@ -7,8 +7,5 @@
 
 int SetupNvMemory(void);
 
-//void StoreCompassCalibration(void);
-//int RetrieveCompassCalibration(void);
-
 void StoreCalibrationData(void);
 int RetrieveCalibrationData(void);

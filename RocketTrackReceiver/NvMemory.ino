@@ -138,6 +138,14 @@ void StoreCalibrationData(void)
 	EEPROM.writeFloat(CompassCalAddress,gyrooffset.y);		CompassCalAddress+=sizeof(float);
 	EEPROM.writeFloat(CompassCalAddress,gyrooffset.z);		CompassCalAddress+=sizeof(float);
 	
+	EEPROM.writeFloat(CompassCalAddress,magoffset.x);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,magoffset.y);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,magoffset.z);		CompassCalAddress+=sizeof(float);
+	
+	EEPROM.writeFloat(CompassCalAddress,magscale.x);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,magscale.y);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,magscale.z);		CompassCalAddress+=sizeof(float);
+	
 	EEPROM.commit();
 	
 	Serial.print("Calibration values stored to NvMemory\r\n");
@@ -158,10 +166,20 @@ int RetrieveCalibrationData(void)
 	float gyrox=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 	float gyroy=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 	float gyroz=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
+
+	float magoffsetx=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
+	float magoffsety=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
+	float magoffsetz=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
+	
+	float magscalex=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
+	float magscaley=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
+	float magscalez=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
 	
 	if(		isnan(accminx)||isnan(accminy)||isnan(accminz)
 		||	isnan(accmaxx)||isnan(accmaxy)||isnan(accmaxz)
-		||	isnan(gyrox)||isnan(gyroy)||isnan(gyroz)		)
+		||	isnan(gyrox)||isnan(gyroy)||isnan(gyroz)
+		||	isnan(magoffsetx)||isnan(magoffsety)||isnan(magoffsetz)
+		||	isnan(magscalex)||isnan(magscaley)||isnan(magscalez)		)
 	{
 		return(1);
 	}
@@ -169,6 +187,8 @@ int RetrieveCalibrationData(void)
 	accelmin.x=accminx;		accelmin.y=accminy;		accelmin.z=accminz;
 	accelmax.x=accmaxx;		accelmax.y=accmaxy;		accelmax.z=accmaxz;
 	gyrooffset.x=gyrox;		gyrooffset.y=gyroy;		gyrooffset.z=gyroz;	
+	magoffset.x=magoffsetx;	magoffset.y=magoffsety;	magoffset.z=magoffset.z;
+	magscale.x=magscalex;	magscale.y=magscaley;	magscale.z=magscale.z;
 	
 	Serial.print("Calibration values retrieved from NvMemory\r\n");
 
