@@ -154,16 +154,21 @@ void PollIMU(void)
  		mag.y=qmc5883l.getY();
 		mag.z=qmc5883l.getZ();
 #endif
-#if 1
+
+		// these are values scaled to proper unit with offsets applied from
+		// the calibration data
 		accel=mpu6500.getGValues();
 		gyro=mpu6500.getGyrValues();
-#endif
 		
 		filter.update(
 						gyro.x,gyro.y,gyro.z,
 						accel.x,accel.y,accel.z,
 						mag.x,mag.y,mag.z
-					);		
+					);
+					
+		rx_heading=90-filter.getYaw();
+		if(rx_heading<0.0)		rx_heading+=360.0;
+		if(rx_heading>360.0)	rx_heading-=360.0;
 	}
 
 	if(compass_live_mode)
@@ -179,9 +184,6 @@ void PollIMU(void)
 			Serial.printf("AccX: %.2f, AccY: %.2f, AccZ: %.2f, G: %.2f\t",accel.x,accel.y,accel.z);
 			Serial.printf("GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",gyro.x,gyro.y,gyro.z);
 #else
-			rx_heading=90-filter.getYaw();
-			if(rx_heading<0.0)		rx_heading+=360.0;
-			if(rx_heading>360.0)	rx_heading-=360.0;
 			
 			Serial.printf(
 							"Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",
@@ -363,8 +365,14 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 		
 		case 'm':	// calibrate the magnetometer
-					Serial.println("Mag calibration will start in 2sec.");
-					Serial.println("Please Wave device in a figure eight until done.");
+					Serial.println("Please rotate about all axes for 10 seconds");
+					
+					qmc5883l.calibrate();
+					
+					magoffset.x=qmc5883l.getCalibrationOffset(0);	magoffset.y=qmc5883l.getCalibrationOffset(1);	magoffset.z=qmc5883l.getCalibrationOffset(1);
+					magscale.x=qmc5883l.getCalibrationOffset(0);	magscale.y=qmc5883l.getCalibrationOffset(1);	magscale.z=qmc5883l.getCalibrationOffset(1);
+					
+					Serial.println("Magnetometer calibration done ...");
 					
 					break;
 		
@@ -377,7 +385,15 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					Serial.print("Gyroscope:\r\n");
 					Serial.printf("\tX: %.1f\r\n",gyrooffset.x);
 					Serial.printf("\tY: %.1f\r\n",gyrooffset.y);
-					Serial.printf("\tZ: %.1f\r\n",gyrooffset.z);
+					Serial.printf("\tZ: %.1f\r\n\n",gyrooffset.z);
+					
+					Serial.print("Magnetometer:\r\n");
+					Serial.printf("\tX offset: %.1f\r\n",magoffset.x);
+					Serial.printf("\tY offset: %.1f\r\n",magoffset.y);
+					Serial.printf("\tZ offset: %.1f\r\n",magoffset.z);
+					Serial.printf("\tX scale: %.1f\r\n",magscale.x);
+					Serial.printf("\tY scale: %.1f\r\n",magscale.y);
+					Serial.printf("\tZ scale: %.1f\r\n\n",magscale.z);
 					
 					break;
 		

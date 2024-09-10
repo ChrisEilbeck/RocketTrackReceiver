@@ -12,7 +12,7 @@ int SetupNvMemory(void)
 
 void PollNvMemory(void)
 {
-
+	// not used but retained as a common module structure
 }
 
 int NvMemoryCommandHandler(uint8_t *cmd,uint16_t cmdptr)
@@ -46,7 +46,7 @@ int NvMemoryCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 					
 		case '?':	Serial.print("NvMemory Test Harness\r\n================\r\n\n");
-					Serial.print("\tx\t-\tDump hex display of eeprom contents\r\n");
+					Serial.print("x\t-\tDump hex display of eeprom contents\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
 		

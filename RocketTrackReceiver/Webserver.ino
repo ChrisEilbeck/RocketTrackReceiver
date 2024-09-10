@@ -208,71 +208,89 @@ int SetupWebServer(void)
 	server.on("/telemetry.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);	});
 	server.on("/telemetry.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.css");										});
 
-	server.on("/config.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/config.html");										});
-	server.on("/config.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.css");										});
-	server.on("/config.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/config.js");											});
+	server.on("/calibrate.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.html");										});
+	server.on("/calibrate.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.css");										});
+	server.on("/calibrate.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.js");											});
 	
-#if 0
 	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		request->send(SPIFFS,"/cal_accel.html");
-		
-		Serial.println("Starting accelerometer calibration");
-		
-		mpu.verbose(true);
-		delay(2000);
-		mpu.calibrateAccelGyro();
-		mpu.verbose(false);
-		
-		print_calibration();
-		
-		Serial.println("Accelerometer calibration complete");
+		#warning "more work here"
+
+		request->send(SPIFFS,"/cal_accel.html");		
 	});
 
-	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");									});
+//	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");									});
 	
-	server.on("/cal_compass.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	server.on("/cal_accel_xplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		request->send(SPIFFS,"/cal_compass.html");
+		#warning "more work here"
+		request->send(SPIFFS,"/cal_accel_xplus.html");
+	});
+	
+	server.on("/cal_accel_xminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		#warning "more work here"
+		request->send(SPIFFS,"/cal_accel_xminus.html");
+	});
+	
+	server.on("/cal_accel_yplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		#warning "more work here"
+		request->send(SPIFFS,"/cal_accel_yplus.html");
+	});
+	
+	server.on("/cal_accel_yminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		#warning "more work here"
+		request->send(SPIFFS,"/cal_accel_yminus.html");
+	});
+	
+	server.on("/cal_accel_zplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		#warning "more work here"
+		request->send(SPIFFS,"/cal_accel_zplus.html");
+	});
+	
+	server.on("/cal_accel_zminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		#warning "more work here"
+		request->send(SPIFFS,"/cal_accel_zminus.html");
+	});
 		
-		Serial.println("Starting accelerometer calibration");
+	server.on("/cal_magnetometer.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		request->send(SPIFFS,"/cal_magnetometer.html");
 		
-		mpu.verbose(true);
-		delay(2000);
-		mpu.calibrateMag();
-		mpu.verbose(false);
+		Serial.println("Starting magnetometer calibration");
 		
-		print_calibration();
+		#warning "more work here"
 		
 		Serial.println("Magnetometer calibration complete");
 	});
 
-	server.on("/cal_compass.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_compass.css");								});
+//	server.on("/cal_magnetometer.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/cal_magnetometer.css");								});
 	
 	server.on("/cal_complete.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.html");								});
-	server.on("/cal_complete.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.css");								});
+//	server.on("/cal_complete.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.css");								});
 
 	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/store_calibration.html");
 		
-		StoreCompassCalibration();
-		SetSensorBiasValues();
+		#warning "more work here"
 	});
 	
-	server.on("/store_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.css");							});
+//	server.on("/store_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.css");							});
 	
 	server.on("/reset_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/reset_calibration.html");
-		
-		ResetCompassCalibration();
-		SetSensorBiasValues();
+
+		#warning "more work here"		
 	});
 	
-	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");							});
-#endif
-	
+//	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");							});
+
 	server.on("/favicon.ico",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/favicon.ico");									});
 	
 #if 0

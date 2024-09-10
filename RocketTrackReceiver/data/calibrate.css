@@ -46,17 +46,15 @@ table
 	margin-right: auto;
 }
 
-#compasscalibrate
+#imucalibrate
 {
 	text-align: center;
-//	width: 80%
 }
 
 .menubutton
 {
 	margin-left: auto;
 	margin-right: auto;
-//	width: 50%;
 	font-size: 30px;
 	border-radius: 15px;
 }

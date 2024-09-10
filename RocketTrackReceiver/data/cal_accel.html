@@ -1,13 +1,33 @@
 <html>
 	<header>
-		<meta http-equiv="refresh" content="5; URL=cal_complete.html" />
+		<link rel="stylesheet" href="calibrate.css">
 	</header>
 	<body>
-		<center>
+		<div id="imucalibrate">
 			<h1>Accelerometer Calibration</h1>
-			<h2>The process will start in 2 seconds</h2>
-			<h2>Place the receiver flat, display upwards, on a level surface and wait until complete before moving it</h2>
-			<h2>Calibration takes approximately 3 seconds to complete</h2>
-		</center>
+			<table>
+				<tr>
+					<td><form action="cal_accel_xplus.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>X+ Axis</button></form></td>
+				</tr>
+				<tr>
+					<td><form action="cal_accel_xminus.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>X- Axis</button></form></td>
+				</tr>
+				<tr>
+					<td><form action="cal_accel_yplus.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Y+ Axis</button></form></td>
+				</tr>
+				<tr>
+					<td><form action="cal_accel_yminus.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Y- Axis</button></form></td>
+				</tr>
+				<tr>
+					<td><form action="cal_accel_zplus.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Z+ Axis</button></form></td>
+				</tr>
+				<tr>
+					<td><form action="cal_accel_zminus.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Z- Axis</button></form></td>
+				</tr>
+				<tr>
+					<td><form action="calibrate.html"><button type="submit" class="menubutton" formmethod="get">Calibration<br>Done</button></form></td>
+				</tr>
+			</table>
+		</div>
 	</body>
 </html>

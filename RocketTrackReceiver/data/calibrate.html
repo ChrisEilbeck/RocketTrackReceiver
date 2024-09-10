@@ -1,7 +1,9 @@
 <html>
 	<head>
-		<link rel="stylesheet" href="config.css">
-		<script src="config.js"></script>
+		<link rel="stylesheet" href="calibrate.css">
+		<!--
+		<script src="calibrate.js"></script>
+		-->
 	</head>
 	<body>
 		<!--
@@ -50,14 +52,17 @@
 			</table>
 		</div>
 		-->
-		<div id="compasscalibrate">
-			<h1>Compass Configuration</h1>
+		<div id="imucalibrate">
+			<h1>IMU Calibration</h1>
 			<table>
 				<tr>
 					<td><form action="cal_accel.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Accelerometer</button></form></td>
 				</tr>
 				<tr>
-					<td><form action="cal_compass.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Compass</button></form></td>
+					<td><form action="cal_gyro.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Gyro</button></form></td>
+				</tr>
+				<tr>
+					<td><form action="cal_magnetometer.html"><button type="submit" class="menubutton" formmethod="get">Calibrate<br>Magnetometer</button></form></td>
 				</tr>
 				<tr>
 					<td><form action="store_calibration.html"><button type="submit" class="menubutton" formmethod="get">Store<br>Calibration<br>Values</button></form></td>
