@@ -223,61 +223,97 @@ int SetupWebServer(void)
 	
 	server.on("/cal_accel_xplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		#warning "more work here"
 		request->send(SPIFFS,"/cal_accel_xplus.html");
+		
+		xyzFloat vals;	
+		CalibrateMPU6500Accelerometer("Nose up",&vals);
+		accelmax.x=vals.x;
+		
+		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_xminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		#warning "more work here"
 		request->send(SPIFFS,"/cal_accel_xminus.html");
+		
+		xyzFloat vals;
+		CalibrateMPU6500Accelerometer("Nose down",&vals);
+		accelmin.x=vals.x;
+		
+		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_yplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		#warning "more work here"
 		request->send(SPIFFS,"/cal_accel_yplus.html");
+
+		xyzFloat vals;
+		CalibrateMPU6500Accelerometer("Right down",&vals);		
+		accelmax.y=vals.y;
+		
+		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_yminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		#warning "more work here"
 		request->send(SPIFFS,"/cal_accel_yminus.html");
+		
+		xyzFloat vals;
+		CalibrateMPU6500Accelerometer("Left down",&vals);
+		accelmin.y=vals.y;
+		
+		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_zplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		#warning "more work here"
 		request->send(SPIFFS,"/cal_accel_zplus.html");
+
+		xyzFloat vals;
+		CalibrateMPU6500Accelerometer("Flat and level",&vals);
+		accelmax.z=vals.z;
+		
+		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_zminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		#warning "more work here"
 		request->send(SPIFFS,"/cal_accel_zminus.html");
+
+		xyzFloat vals;
+		CalibrateMPU6500Accelerometer("Upside-down",&vals);
+		accelmin.z=vals.z;
+		
+		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+	});
+
+	server.on("/cal_gyro.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		request->send(SPIFFS,"/cal_gyro.html");
+		CalibrateQMC5883LMagnetometer();
 	});
 		
 	server.on("/cal_magnetometer.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_magnetometer.html");
-		
-		Serial.println("Starting magnetometer calibration");
-		
-		#warning "more work here"
-		
-		Serial.println("Magnetometer calibration complete");
+		CalibrateQMC5883LMagnetometer();
 	});
 
-//	server.on("/cal_magnetometer.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/cal_magnetometer.css");								});
+//	server.on("/cal_magnetometer.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/cal_magnetometer.css");							});
 	
 	server.on("/cal_complete.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.html");								});
 //	server.on("/cal_complete.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.css");								});
 
 	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
-		request->send(SPIFFS,"/store_calibration.html");
-		
-		#warning "more work here"
+		request->send(SPIFFS,"/store_calibration.html");		
+		StoreCalibrationData();
+	});
+	
+	server.on("/retrieve_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
+	{
+		request->send(SPIFFS,"/retrieve_calibration.html");		
+		RetrieveCalibrationData();
 	});
 	
 //	server.on("/store_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.css");							});

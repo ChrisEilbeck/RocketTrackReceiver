@@ -123,7 +123,7 @@ int RetrieveCompassCalibration_MPU9250(void)
 }
 
 void StoreCalibrationData(void)
-{
+{	
 	int64_t CompassCalAddress=COMPASS_CAL_ADDRESS;
 	
 	EEPROM.writeFloat(CompassCalAddress,accelmin.x);		CompassCalAddress+=sizeof(float);
@@ -187,11 +187,19 @@ int RetrieveCalibrationData(void)
 	accelmin.x=accminx;		accelmin.y=accminy;		accelmin.z=accminz;
 	accelmax.x=accmaxx;		accelmax.y=accmaxy;		accelmax.z=accmaxz;
 	gyrooffset.x=gyrox;		gyrooffset.y=gyroy;		gyrooffset.z=gyroz;	
-	magoffset.x=magoffsetx;	magoffset.y=magoffsety;	magoffset.z=magoffset.z;
-	magscale.x=magscalex;	magscale.y=magscaley;	magscale.z=magscale.z;
+	magoffset.x=magoffsetx;	magoffset.y=magoffsety;	magoffset.z=magoffsetz;
+	magscale.x=magscalex;	magscale.y=magscaley;	magscale.z=magscalez;
 	
 	Serial.print("Calibration values retrieved from NvMemory\r\n");
 
+	mpu6500.setGyrOffsets(gyrooffset);	
+	mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+
+	qmc5883l.setCalibrationOffsets(magoffset.x,magoffset.y,magoffset.z);
+	qmc5883l.setCalibrationScales(magscale.x,magscale.y,magscale.z);
+	
+	Serial.print("Set sensor calibration values\r\n");
+	
 	return(0);
 }
 

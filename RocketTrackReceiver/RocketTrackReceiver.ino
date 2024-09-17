@@ -80,7 +80,7 @@ void setup()
 	UnpackPacket(packet,packetlength);
 #endif
 
-	Serial.printf("flight data size = %d\r\n",sizeof(fix)*MAX_FIXES);
+	RetrieveCalibrationData();
 }
 
 void packhack(void)
