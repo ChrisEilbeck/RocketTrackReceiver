@@ -195,8 +195,8 @@ int RetrieveCalibrationData(void)
 	mpu6500.setGyrOffsets(gyrooffset);	
 	mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 
-	qmc5883l.setCalibrationOffsets(magoffset.x,magoffset.y,magoffset.z);
-	qmc5883l.setCalibrationScales(magscale.x,magscale.y,magscale.z);
+//	qmc5883l.setCalibrationOffsets(magoffset.x,magoffset.y,magoffset.z);
+//	qmc5883l.setCalibrationScales(magscale.x,magscale.y,magscale.z);
 	
 	Serial.print("Set sensor calibration values\r\n");
 	

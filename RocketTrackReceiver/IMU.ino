@@ -15,7 +15,10 @@
 //#include "BME180.h"
 
 #include "MPU9250_WE.h"
-#include <QMC5883LCompass.h>
+//#include <QMC5883LCompass.h>
+#include <MechaQMC5883.h>
+
+MechaQMC5883 qmc5883l;
 
 float Declination=-1-1/60;
 
@@ -30,7 +33,7 @@ xyzFloat magscale;
 //MPU9250 mpu9250;
 
 MPU6500_WE mpu6500;
-QMC5883LCompass qmc5883l;
+//QMC5883LCompass qmc5883l;
 
 //ICM20948 icm20948;
 
@@ -121,11 +124,14 @@ int DetectSeparateBoards(void)
 	else
 		Serial.println("\tMPU6500 gyro/mag initialised ...");
 
-//	qmc5883l.init();
-//	qmc5883l.setMode(0x01,0x00,0x00,0xc0);
+	qmc5883l.init();
+	qmc5883l.setMode(0x01,0x00,0x00,0xc0);
 //	qmc5883l.setCalibrationOffsets(-7.00, 7.00, 0.00);
 //	qmc5883l.setCalibrationScales(0.53, 2.21, 1.51);
 
+	qmc5883l.setMode(Mode_Continuous,ODR_50Hz,RNG_2G,OSR_64);
+	
+#if 0
 	Wire.beginTransmission(0x0d);
 	Wire.write(0x0a);
 	Wire.write(0x80);
@@ -147,6 +153,7 @@ int DetectSeparateBoards(void)
 	Wire.write(0x09);
 	Wire.write(0x0d);	// 50Hz, 64x oversampling, +/- 2 Gauss continuous
 	Wire.endTransmission();
+#endif
 	
 	Serial.println("\tQMC5883L magnetometer initialised ...");
 
@@ -175,15 +182,29 @@ void PollIMU(void)
 	{
 		update_filter_at=millis()+(int)(1000/imu_rate);
 	
-#if 0	
-		qmc5883l.read();
-
+#if 1
 	#if 1
-		// remap the axes to match the mpu6500 accel/gyro on the fake gy-91 board
-		mag.x=(float)qmc5883l.getY();
-		mag.y=(float)-qmc5883l.getX();
-		mag.z=(float)qmc5883l.getZ();		
+		#if 0
+			qmc5883l.read();
+			// remap the axes to match the mpu6500 accel/gyro on the fake gy-91 board
+			mag.x=(float)qmc5883l.getY();
+			mag.y=(float)-qmc5883l.getX();
+			mag.z=(float)qmc5883l.getZ();		
+		#else
+			uint16_t x;
+			uint16_t y;
+			uint16_t z;
+		
+			qmc5883l.read(&x,&y,&z);
+			
+			mag.x=(float)x;		mag.y=(float)y;		mag.z=(float)z;
+			
+			if(mag.x>32768.0)	mag.x-=65536.0;
+			if(mag.y>32768.0)	mag.y-=65536.0;
+			if(mag.z>32768.0)	mag.z-=65536.0;
+		#endif
 	#else
+		qmc5883l.read();
 		mag.x=(float)qmc5883l.getX();
  		mag.y=(float)qmc5883l.getY();
 		mag.z=(float)qmc5883l.getZ();
@@ -218,8 +239,8 @@ void PollIMU(void)
 			Serial.printf("AccX: % .2f, AccY: % .2f, AccZ: % .2f\t",accel.x,accel.y,accel.z);
 			Serial.printf("GyroX: % .2f, GyroY: % .2f, GyroZ: % .2f\t",gyro.x,gyro.y,gyro.z);
 #endif
-#if 0
-			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f\t",mag.x,mag.y,mag.z);
+#if 1
+			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f\r\n",mag.x,mag.y,mag.z);
 #endif
 #if 0
 			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f\t",qmc5883l.getX(),qmc5883l.getY(),qmc5883l.getZ());
@@ -242,7 +263,7 @@ void PollIMU(void)
 							rx_heading
 						);
 #endif
-			
+#if 0		
 			Wire.beginTransmission(0x0d);
 			Wire.write(0x00);
 			Wire.requestFrom(0x0d,6);
@@ -259,6 +280,7 @@ void PollIMU(void)
 			int zmag=(int)(z_msb<<8|z_lsb);	if(zmag>32768)	zmag-=65536;
 
 			Serial.printf("Xmag: % 05d, Ymag: % 05d, Zmag: % 05d\r\n",xmag,ymag,zmag);
+#endif
 		}
 	}
 }
@@ -423,7 +445,7 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	switch(cmd[1]|0x20)
 	{
 		case 'c':	// clear all calibration
-					qmc5883l.clearCalibration();
+//					qmc5883l.clearCalibration();
 					ResetCalibration();
 					StoreCalibrationData();					
 					break;
@@ -619,10 +641,10 @@ void CalibrateQMC5883LMagnetometer(void)
 
 	Serial.println("\tPlease rotate about all axes for 10 seconds");
 	
-	qmc5883l.calibrate();
+//	qmc5883l.calibrate();
 
-	magoffset.x=qmc5883l.getCalibrationOffset(0);	magoffset.y=qmc5883l.getCalibrationOffset(1);	magoffset.z=qmc5883l.getCalibrationOffset(2);
-	magscale.x=qmc5883l.getCalibrationOffset(0);	magscale.y=qmc5883l.getCalibrationOffset(1);	magscale.z=qmc5883l.getCalibrationOffset(2);
+//	magoffset.x=qmc5883l.getCalibrationOffset(0);	magoffset.y=qmc5883l.getCalibrationOffset(1);	magoffset.z=qmc5883l.getCalibrationOffset(2);
+//	magscale.x=qmc5883l.getCalibrationOffset(0);	magscale.y=qmc5883l.getCalibrationOffset(1);	magscale.z=qmc5883l.getCalibrationOffset(2);
 	
 	Serial.println("\tMagnetometer calibration done ...");
 	
