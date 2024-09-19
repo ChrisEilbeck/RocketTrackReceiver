@@ -16,6 +16,7 @@ AsyncWebServer server(80);
 
 int track_compass=1;
 
+#if 0
 String statusprocessor(const String& var)
 {
 //	Serial.println("webserver process entry");
@@ -118,6 +119,7 @@ String statusprocessor(const String& var)
 	else
 		return String();
 }
+#endif
 
 String trackingprocessor(const String& var)
 {
@@ -194,33 +196,29 @@ int SetupWebServer(void)
 	server.on("/logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/logo.jpg");											});
 	server.on("/small_logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/small_logo.jpg");									});
 	
-	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html");										});
+#if 0
+	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html"String(),false,statusprocessor););		});
 	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.css");										});
 	server.on("/status.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.js",String(),false,statusprocessor);			});
+#endif
 	
 	server.on("/beacon_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/beacon_up.html");	track_compass=1;				});
 	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/north_up.html");		track_compass=0;				});
 	
-	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.html");										});
+	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.html",String(),false,trackingprocessor);	});
 	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.css");										});
 	server.on("/tracking.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.js",String(),false,trackingprocessor);		});
 	
 	server.on("/telemetry.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);	});
 	server.on("/telemetry.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.css");										});
+	server.on("/telemetry.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.js",String(),false,trackingprocessor);		});
 
-	server.on("/calibrate.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.html");										});
+	server.on("/calibrate.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.html");									});
 	server.on("/calibrate.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.css");										});
-	server.on("/calibrate.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.js");											});
+	server.on("/calibrate.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.js");										});
 	
-	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)
-	{
-		#warning "more work here"
+	server.on("/cal_accel.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.html");									});
 
-		request->send(SPIFFS,"/cal_accel.html");		
-	});
-
-//	server.on("/cal_accel.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/cal_accel.css");									});
-	
 	server.on("/cal_accel_xplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_xplus.html");
@@ -299,10 +297,7 @@ int SetupWebServer(void)
 		CalibrateQMC5883LMagnetometer();
 	});
 
-//	server.on("/cal_magnetometer.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/cal_magnetometer.css");							});
-	
 	server.on("/cal_complete.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.html");								});
-//	server.on("/cal_complete.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.css");								});
 
 	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
@@ -316,8 +311,6 @@ int SetupWebServer(void)
 		RetrieveCalibrationData();
 	});
 	
-//	server.on("/store_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/store_calibration.css");							});
-	
 	server.on("/reset_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/reset_calibration.html");
@@ -325,8 +318,6 @@ int SetupWebServer(void)
 		#warning "more work here"		
 	});
 	
-//	server.on("/reset_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/reset_calibration.css");							});
-
 	server.on("/favicon.ico",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/favicon.ico");									});
 	
 #if 0

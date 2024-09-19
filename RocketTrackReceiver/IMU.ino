@@ -10,6 +10,11 @@
 
 #include <MadgwickAHRS.h>
 
+#include <Adafruit_Sensor.h>
+#include <Adafruit_HMC5883_U.h>
+
+Adafruit_HMC5883_Unified hmc5883l=Adafruit_HMC5883_Unified(12345);
+
 //#include "MPU9250.h"
 //#include "ICM20948.h"
 //#include "BME180.h"
@@ -110,6 +115,22 @@ int DetectMPU9250(void)
 	return(1);
 }
 
+void displaySensorDetails(void)
+{
+	sensor_t sensor;
+	hmc5883l.getSensor(&sensor);
+	Serial.println("------------------------------------");
+	Serial.print("Sensor:\t\t"); Serial.println(sensor.name);
+	Serial.print("Driver Ver:\t"); Serial.println(sensor.version);
+	Serial.print("Unique ID:\t"); Serial.println(sensor.sensor_id);
+	Serial.print("Max Value:\t"); Serial.print(sensor.max_value); Serial.println(" uT");
+	Serial.print("Min Value:\t"); Serial.print(sensor.min_value); Serial.println(" uT");
+	Serial.print("Resolution:\t"); Serial.print(sensor.resolution); Serial.println(" uT");
+	Serial.println("------------------------------------");
+	Serial.println("");
+	delay(500);
+} 
+
 int DetectSeparateBoards(void)
 {
 	int fail=0;
@@ -124,14 +145,28 @@ int DetectSeparateBoards(void)
 	else
 		Serial.println("\tMPU6500 gyro/mag initialised ...");
 
+#if 1
+	if(!hmc5883l.begin())
+	{
+		/* There was a problem detecting the HMC5883 ... check your connections */
+		Serial.println("Ooops, no HMC5883 detected ... Check your wiring!");
+		while(1);
+	} 
+	
+	/* Display some basic information on this sensor */
+	displaySensorDetails();
+#endif
+#if 0
 	qmc5883l.init();
 	qmc5883l.setMode(0x01,0x00,0x00,0xc0);
 //	qmc5883l.setCalibrationOffsets(-7.00, 7.00, 0.00);
 //	qmc5883l.setCalibrationScales(0.53, 2.21, 1.51);
 
 	qmc5883l.setMode(Mode_Continuous,ODR_50Hz,RNG_2G,OSR_64);
-	
+#endif
 #if 0
+	// setup the qmc without using a library
+
 	Wire.beginTransmission(0x0d);
 	Wire.write(0x0a);
 	Wire.write(0x80);
@@ -178,19 +213,42 @@ void PollIMU(void)
 	xyzFloat accel;
 	xyzFloat gyro;
 	
+	static xyzFloat magmin={1000.0,1000.0,1000.0};
+	static xyzFloat magmax={-1000.0,-1000.0,-1000.0};
+	
 	if(millis()>update_filter_at)
 	{
 		update_filter_at=millis()+(int)(1000/imu_rate);
 	
 #if 1
 	#if 1
+		#if 1
+			sensors_event_t event; 
+			hmc5883l.getEvent(&event);
+
+			mag.x=event.magnetic.x;
+			mag.y=event.magnetic.y;
+			mag.z=event.magnetic.z;
+			
+			if(mag.x<magmin.x)	magmin.x=mag.x;
+			if(mag.x>magmax.x)	magmax.x=mag.x;
+			if(mag.y<magmin.y)	magmin.y=mag.y;
+			if(mag.y>magmax.y)	magmax.y=mag.y;
+			if(mag.z<magmin.z)	magmin.z=mag.z;
+			if(mag.z>magmax.z)	magmax.z=mag.z;
+
+//			mag.x+=6.5;
+//			mag.y+=16.0;
+			
+		#endif
 		#if 0
 			qmc5883l.read();
 			// remap the axes to match the mpu6500 accel/gyro on the fake gy-91 board
 			mag.x=(float)qmc5883l.getY();
 			mag.y=(float)-qmc5883l.getX();
 			mag.z=(float)qmc5883l.getZ();		
-		#else
+		#endif
+		#if 0
 			uint16_t x;
 			uint16_t y;
 			uint16_t z;
@@ -220,8 +278,14 @@ void PollIMU(void)
 						accel.x,accel.y,accel.z,
 						mag.x,mag.y,mag.z
 					);
-					
+#if 0
 		rx_heading=180.0-filter.getYaw();
+#endif
+
+		rx_heading=atan2(mag.y,mag.x);
+		rx_heading*=180.0/PI;
+		
+//		rx_heading=90.0-rx_heading+120.0;
 		
 		if(rx_heading<0.0)		rx_heading+=360.0;
 		if(rx_heading>360.0)	rx_heading-=360.0;
@@ -240,7 +304,18 @@ void PollIMU(void)
 			Serial.printf("GyroX: % .2f, GyroY: % .2f, GyroZ: % .2f\t",gyro.x,gyro.y,gyro.z);
 #endif
 #if 1
-			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f\r\n",mag.x,mag.y,mag.z);
+			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, AccX: %.2f, AccY: %.2f, AccZ: %.2f, GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",
+								mag.x,mag.y,mag.z,
+								accel.x,accel.y,accel.z,
+								gyro.x,gyro.y,gyro.z
+						);
+#endif
+#if 0
+			Serial.printf("MagX: % .2f (%.2f to %.2f), MagY: % .2f (%.2f to %.2f), MagZ: % .2f (%.2f to %.2f), Heading: %.2f\r\n",
+				mag.x,magmin.x,magmax.x,
+				mag.y,magmin.y,magmax.y,
+				mag.z,magmin.z,magmax.z,
+				rx_heading);
 #endif
 #if 0
 			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f\t",qmc5883l.getX(),qmc5883l.getY(),qmc5883l.getZ());
@@ -550,7 +625,7 @@ void RetrieveCalibrationData(void)
 {
 	switch(sensor_setup)
 	{
-		case  NO_SENSORS:						
+		case NO_SENSORS:						
 												
 												break;
 		

@@ -2,15 +2,17 @@
 <html>
 	<header>
 		<link rel="stylesheet" href="telemetry.css">
+		<script src="telemetry.js"></script>
 		<meta http-equiv="refresh" content="1">
 	</header>
-	<body>
+	<body onload="UpdateRangeAndBearing()">
 		<h1>RocketTrackReceiver<br>Telemetry Mode</h1>
 		<table class="datasection">
 			<tr><td class="datatag">Beacon ID:</td><td class="datavalue">%BEACON_ID%</td></tr>
 			<tr><td class="datatag">Longitude:</td><td class="datavalue">%TX_LATITUDE%</td></tr>
 			<tr><td class="datatag">Latitude:</td><td class="datavalue">%TX_LONGITUDE%</td></tr>
-			<tr><td class="datatag">Range (m):</td><td class="datavalue">%RANGE%</td></tr>
+			<tr><td class="datatag">Range (m):</td><td class="datavalue" id="Range"></td></tr>
+			<tr><td class="datatag">Bearing:</td><td class="datavalue" id="Bearing"></td></tr>
 			<tr><td class="datatag">Altitude (m):</td><td class="datavalue">%ALTITUDE%</td></tr>
 			<tr><td class="datatag">Battery Voltage:</td><td class="datavalue">%BEACON_VOLTAGE%</td></tr>
 			<tr><td class="datatag">Signal Strength:</td><td class="datavalue">%LORA_RSSI%</td></tr>
