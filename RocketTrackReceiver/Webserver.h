@@ -4,4 +4,6 @@
 int SetupWebServer(void);
 void PollWebServer(void);
 
-//extern IPAddress LocalIP;
+extern char ssid[32];
+extern char password[32];
+
