@@ -9,7 +9,7 @@
 bool baro_enable=true;
 
 bool baro_trigger=false;
-int baro_gps_sync=0;
+bool baro_gps_sync=false;
 
 char baro_type[32]="Generic";
 
