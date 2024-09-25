@@ -2,7 +2,7 @@
 <html>
 	<header>
 		<link rel="stylesheet" href="telemetry.css">
-		<script src="telemetry.js"></script>
+		<script src="rockettrackreceiver.js"></script>
 		<meta http-equiv="refresh" content="1">
 	</header>
 	<body onload="UpdateRangeAndBearing()">
@@ -13,10 +13,11 @@
 			<tr><td class="datatag">Latitude:</td><td class="datavalue">%TX_LONGITUDE%</td></tr>
 			<tr><td class="datatag">Range (m):</td><td class="datavalue" id="Range"></td></tr>
 			<tr><td class="datatag">Bearing:</td><td class="datavalue" id="Bearing"></td></tr>
-			<tr><td class="datatag">Altitude (m):</td><td class="datavalue">%ALTITUDE%</td></tr>
+			<tr><td class="datatag">Altitude (m):</td><td class="dataimportant">%ALTITUDE%</td></tr>
 			<tr><td class="datatag">Battery Voltage:</td><td class="datavalue">%BEACON_VOLTAGE%</td></tr>
 			<tr><td class="datatag">Signal Strength:</td><td class="datavalue">%LORA_RSSI%</td></tr>
 			<tr><td class="datatag">LoRa Mode:</td><td class="datavalue">%LORA_MODE%</td></tr>
+			<tr><td class="datatag">Flight State:</td><td class="datavalue" id="FlightState">%FLIGHT_STATE%</td></tr>
 		</table>
 		<table class="buttonsection">
 			<tr>
