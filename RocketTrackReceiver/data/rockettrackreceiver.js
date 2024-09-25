@@ -1,14 +1,21 @@
 
-import from "great_circle.js"
+// used by telemetry.html
 
-function RotatePoint(x,y,angle)
+function UpdateRangeAndBearing()
 {
-	inx=x;
-	iny=y;
+	var rx_latitude="%RX_LATITUDE%";
+	var rx_longitude="%RX_LONGITUDE%";
+	var tx_latitude="%TX_LATITUDE%";
+	var tx_longitude="%TX_LONGITUDE%";
 	
-	x=inx*cos(angle)-iny*sin(angle);
-	y=inx*sin(angle)+iny*cos(angle);
+	var range=GreatCircleDistance(rx_latitude,rx_longitude,tx_latitude,tx_longitude);
+	var bearing=GreatCircleBearing(tx_latitude,tx_longitude,rx_latitude,rx_longitude);
+	
+	document.getElementById("Range").textContent=range.toFixed();
+	document.getElementById("Bearing").textContent=bearing.toFixed();
 }
+
+// used by tracking.html
 
 function DrawTrackingPlot()
 {
@@ -189,14 +196,10 @@ function DrawSpotAt(range,bearing,maxrange,rx_heading)
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
-//	bearing=0
-	
 	console.log("rx_heading = "+rx_heading);
 	console.log("bearing before = "+bearing);
 	
 	bearing-=90;
-	
-//	bearing+=180;
 	
 	// adjust for the bearing of the receiver
 	bearing-=rx_heading;
@@ -204,7 +207,7 @@ function DrawSpotAt(range,bearing,maxrange,rx_heading)
 	while(bearing>360.0)	{	bearing-=360.0;		}
 	while(bearing<0.0)		{	bearing+=360.0;		}
 	
-	console.log("bearing after = "+bearing);
+//	console.log("bearing after = "+bearing);
 	
 	bearing*=Math.PI/180;
 	
@@ -227,5 +230,44 @@ function DrawSpotAt(range,bearing,maxrange,rx_heading)
 	ctx.fillStyle=colour;
 	ctx.arc(Math.cos(bearing)*radius,Math.sin(bearing)*radius,5,0,2*Math.PI);
 	ctx.fill();
+}
+
+function GreatCircleDistance(lat1,long1,lat2,long2)
+{
+	const R= 6371e3;					// metres
+	
+	const phi1=lat1*Math.PI/180;		// φ, λ in radians
+	const phi2=lat2*Math.PI/180;
+	const delta_p=(lat2-lat1)*Math.PI/180;
+	const delta_l=(long2-long1)*Math.PI/180;
+	
+	const a=	Math.sin(delta_p/2)*Math.sin(delta_p/2)
+			+	Math.cos(phi1)*Math.cos(phi2)*Math.sin(delta_l/2)*Math.sin(delta_l/2);
+	
+	const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+	
+	// in metres	
+	const d=R*c;// in metres	
+	
+	return(d);
+}
+
+function GreatCircleBearing(lat2,lon2,lat1,lon1)
+{
+	lat1*=Math.PI/180;
+	lon1*=Math.PI/180;
+	lat2*=Math.PI/180;
+	lon2*=Math.PI/180;
+	
+	var lonDelta=lon2-lon1;
+	var y=Math.sin(lonDelta)*Math.cos(lat2);
+	var x=Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lonDelta);
+	
+	var brng=Math.atan2(y,x);
+	brng=brng*(180/Math.PI);
+	
+	if(brng<0)	{	brng+=360;	}
+	
+	return(brng);
 }
 
