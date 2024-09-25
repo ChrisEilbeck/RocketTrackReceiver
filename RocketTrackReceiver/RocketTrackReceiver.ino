@@ -19,6 +19,9 @@
 #include "LoRaReceiver.h"
 #include "NvMemory.h"
 #include "Packetisation.h"
+#include "SpiffsSupport.h"
+
+char *unit_mode="rx";
 
 unsigned long UpdateClientAt=0;
 
@@ -43,6 +46,15 @@ void setup()
 	// mandatory peripherals
 	
 	if(SetupPMIC())				{	Serial.print("PMIC Setup failed, halting ...\r\n");					while(1);				}
+
+	if(SetupSPIFFS())			{	Serial.println("SPIFFS Setup failed ...\r\n");												}
+
+	if(ReadConfigFile(unit_mode))
+	{
+		Serial.print("Reading the config file failed, substituting defaults ...\r\n");
+		SetDefaultConfigValues();
+	}
+		
 	if(SetupNvMemory())			{	Serial.print("EEPROM failed, you must calibrate the IMU\r\n");								}
 	if(SetupLoRaReceiver())		{	Serial.print("LoRa Setup failed, halting ...\r\n");					while(1);				}
 	if(SetupGPS())				{	Serial.print("GPS Setup failed, halting ...\r\n");					while(1);				}
@@ -142,40 +154,42 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[0]|0x20)
 	{
-		case 'i':	OK=IMUCommandHandler(cmd,cmdptr);					break;
-		case 'c':	OK=SensorCalibrationCommandHandler(cmd,cmdptr);		break;
 		case 'b':	OK=BarometerCommandHandler(cmd,cmdptr);				break;
-//		case 'g':	OK=GPSCommandHandler(cmd,cmdptr);					break;
-//		case 'l':	OK=LORACommandHandler(cmd,cmdptr);					break;
-		case 'p':	OK=PMICCommandHandler(cmd,cmdptr);					break;
+		case 'c':	OK=SensorCalibrationCommandHandler(cmd,cmdptr);		break;
 //		case 'e':	OK=LEDCommandHandler(cmd,cmdptr);					break;
-//		case 'o':	OK=LongRangeCommandHandler(cmd,cmdptr);				break;
+//		case 'g':	OK=GPSCommandHandler(cmd,cmdptr);					break;
 //		case 'h':	OK=HighRateCommandHandler(cmd,cmdptr);				break;
+		case 'i':	OK=IMUCommandHandler(cmd,cmdptr);					break;
+//		case 'l':	OK=LORACommandHandler(cmd,cmdptr);					break;
 //		case 'n':	OK=NeopixelCommandHandler(cmd,cmdptr);				break;
-//		case 'z':	OK=BeeperCommandHandler(cmd,cmdptr);				break;
 		case 'n':	OK=NvMemoryCommandHandler(cmd,cmdptr);				break;
+//		case 'o':	OK=LongRangeCommandHandler(cmd,cmdptr);				break;
+		case 'p':	OK=PMICCommandHandler(cmd,cmdptr);					break;
 		case 'r':	OK=ReceiverCommandHandler(cmd,cmdptr);				break;
+		case 's':	OK=ConfigCommandHandler(cmd,cmdptr);				break;
+//		case 'z':	OK=BeeperCommandHandler(cmd,cmdptr);				break;
 		
-		case 'x':	OK=1;
-					i2c_bus_scanner();
+		case 'x':	i2c_bus_scanner();
+					OK=1;
 					break;
 		
 		case '?':	Serial.print("RocketTrack Test Harness Menu\r\n========================\r\n\n");
 					Serial.print("b\t-\tBarometer\r\n");
-					Serial.print("i\t-\tIMU\r\n");
 					Serial.print("c\t-\tSensor Calibration\r\n");
-					Serial.print("n\t-\tNon-volatile Memory\r\n");
-					Serial.print("p\t-\tPower Management IC\r\n");
-//					Serial.print("g\t-\tGPS\r\n");
-//					Serial.print("l\t-\tLoRa\r\n");
-//					Serial.print("h\t-\tHigh Rate Mode\r\n");
-//					Serial.print("o\t-\tLong Range Mode\r\n");
 //					Serial.print("e\t-\tLed\r\n");
+//					Serial.print("g\t-\tGPS\r\n");
+//					Serial.print("h\t-\tHigh Rate Mode\r\n");
+					Serial.print("i\t-\tIMU\r\n");
+//					Serial.print("l\t-\tLoRa\r\n");
+					Serial.print("n\t-\tNon-volatile Memory\r\n");
+//					Serial.print("o\t-\tLong Range Mode\r\n");
+					Serial.print("p\t-\tPower Management IC\r\n");
 //					Serial.print("n\t-\tNeopixel\r\n");
-//					Serial.print("b\t-\tBeeper\r\n");
-//					Serial.print("t\t-\tTransmitter Commands\r\n");
 					Serial.print("r\t-\tReceiver Commands\r\n");
+					Serial.print("s\t-\tConfig/Settinsg Commands\r\n");
+//					Serial.print("t\t-\tTransmitter Commands\r\n");
 					Serial.print("x\t-\tScan I2c Bus for Devices\r\n");
+//					Serial.print("\\t-\tBeeper\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					OK=1;
 					break;
