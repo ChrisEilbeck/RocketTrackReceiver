@@ -49,7 +49,7 @@ MPU6500_WE mpu6500;
 Madgwick filter;
 
 bool use_compass=true;
-bool compass_live_mode=true;
+bool compass_live_mode=false;
 int sensor_setup=NO_SENSORS;
 
 float roll=0.0;
@@ -143,7 +143,7 @@ int DetectSeparateBoards(void)
 		fail=1;
 	}
 	else
-		Serial.println("\tMPU6500 gyro/mag initialised ...");
+		Serial.println("\tMPU6500 gyro/accelerometer initialised ...");
 
 #if 1
 	if(!hmc5883l.begin())
