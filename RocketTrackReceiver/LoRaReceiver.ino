@@ -167,15 +167,17 @@ void PollLoRaReceiver(int fakepacket)
 				else						lora_offset+=packetoffset;
 				
 				LoRa.setFrequency(lora_freq+lora_offset);
+
+				Serial.print(" with RSSI ");	Serial.print(packetrssi);
+				Serial.print(", with SNR ");	Serial.print(packetsnr);
+				Serial.print(" and offset ");	Serial.print(packetoffset);	Serial.println(" Hz");
+				
+				Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+					lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+				
+				UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);			
 			}
 
-			Serial.print(" with RSSI ");	Serial.print(packetrssi);
-			Serial.print(", with SNR ");	Serial.print(packetsnr);
-			Serial.print(" and offset ");	Serial.print(packetoffset);	Serial.println(" Hz");
-			
-			Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
-				lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
-						
 			free(packet);
 		}
 		
