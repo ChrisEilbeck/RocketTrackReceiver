@@ -149,22 +149,16 @@ String trackingprocessor(const String& var)
 	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);								}
 	else if(var=="RX_HEADING")		
 	{
-		if(track_compass)
-			sprintf(buffer,"%.1f",rx_heading);
-		else
-			sprintf(buffer,"0.0");
+		if(track_compass)	sprintf(buffer,"%.1f",rx_heading);
+		else				sprintf(buffer,"0.0");
 	}
 	
-	if(strlen(buffer)>0)
-		return(buffer);
-	else
-		return String();
+	if(strlen(buffer)>0)	return(buffer);
+	else					return String();
 }
 
 int SetupWebServer(void)
 {
-	// Initialize SPIFFS
-	
 	if(!SPIFFS.begin(true))
 	{
 		Serial.println("An error has occurred while mounting SPIFFS");
@@ -172,10 +166,8 @@ int SetupWebServer(void)
 	}
 	
 	// Act as an Access Point
-	
 	Serial.print("Setting up WiFi AP with ssid \"");		Serial.print(ssid);	Serial.print("\", password \"");	Serial.print(password);	Serial.println("\"");
 	
-	// Remove the password parameter, if you want the AP (Access Point) to be open
 	WiFi.softAP(ssid,password);
 
 	IPAddress IP=WiFi.softAPIP();
@@ -225,32 +217,21 @@ int SetupWebServer(void)
 	server.on("/cal_accel_xplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_xplus.html");
-		
-		xyzFloat vals;	
-		CalibrateMPU6500Accelerometer("Nose up",&vals);
-		accelmax.x=vals.x;
-		
+		xyzFloat vals;		CalibrateMPU6500Accelerometer("Nose up",&vals);			accelmax.x=vals.x;
 		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_xminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_xminus.html");
-		
-		xyzFloat vals;
-		CalibrateMPU6500Accelerometer("Nose down",&vals);
-		accelmin.x=vals.x;
-		
+		xyzFloat vals;		CalibrateMPU6500Accelerometer("Nose down",&vals);		accelmin.x=vals.x;
 		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_yplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_yplus.html");
-
-		xyzFloat vals;
-		CalibrateMPU6500Accelerometer("Right down",&vals);		
-		accelmax.y=vals.y;
+		xyzFloat vals;		CalibrateMPU6500Accelerometer("Right down",&vals);		accelmax.y=vals.y;
 		
 		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
@@ -258,33 +239,21 @@ int SetupWebServer(void)
 	server.on("/cal_accel_yminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_yminus.html");
-		
-		xyzFloat vals;
-		CalibrateMPU6500Accelerometer("Left down",&vals);
-		accelmin.y=vals.y;
-		
+		xyzFloat vals;		CalibrateMPU6500Accelerometer("Left down",&vals);		accelmin.y=vals.y;
 		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_zplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_zplus.html");
-
-		xyzFloat vals;
-		CalibrateMPU6500Accelerometer("Flat and level",&vals);
-		accelmax.z=vals.z;
-		
+		xyzFloat vals;		CalibrateMPU6500Accelerometer("Flat and level",&vals);	accelmax.z=vals.z;
 		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 	
 	server.on("/cal_accel_zminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_zminus.html");
-
-		xyzFloat vals;
-		CalibrateMPU6500Accelerometer("Upside-down",&vals);
-		accelmin.z=vals.z;
-		
+		xyzFloat vals;		CalibrateMPU6500Accelerometer("Upside-down",&vals);		accelmin.z=vals.z;
 		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
 	});
 
@@ -335,7 +304,3 @@ int SetupWebServer(void)
 	return(0);
 }
 
-void PollWebServer(void)
-{
-	
-}
