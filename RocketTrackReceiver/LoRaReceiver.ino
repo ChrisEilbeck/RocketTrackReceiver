@@ -7,9 +7,25 @@
 
 #define LORA_FREQ           434150000
 
-double lora_frequency=LORA_FREQ;
+double lora_freq=LORA_FREQ;
 double lora_offset=4000;
 int lora_mode=LORA_HIGH_RATE_MODE;
+bool lora_crc=true;
+
+// High Rate mode settings
+
+int hr_bw;
+int hr_sf;
+int hr_cr;
+int hr_period;		// not used in RocketTrackReceiver
+
+// Long Range mode settings
+
+int lr_bw;
+int lr_sf;
+int lr_cr;
+int lr_period;		// not used in RocketTrackReceiver
+
 int last_good_receive=0;
 int lora_rssi=-123;
 int lora_snr=9;
@@ -53,7 +69,7 @@ int SetupLoRaReceiver(void)
 	
 	LoRa.setPins(LORA_NSS,LORA_RESET,LORA_DIO0);
 	
-	if(!LoRa.begin(lora_frequency+lora_offset))
+	if(!LoRa.begin(lora_freq+lora_offset))
 	{
 		Serial.println("Starting LoRa failed!");
 		while(1)
@@ -150,7 +166,7 @@ void PollLoRaReceiver(int fakepacket)
 				else if(packetoffset<-100)	lora_offset+=200.0;
 				else						lora_offset+=packetoffset;
 				
-				LoRa.setFrequency(lora_frequency+lora_offset);
+				LoRa.setFrequency(lora_freq+lora_offset);
 			}
 
 			Serial.print(" with RSSI ");	Serial.print(packetrssi);
@@ -178,7 +194,7 @@ void PollLoRaScheduler(void)
 		SetLoRaMode(lora_mode);
 		last_good_receive=millis();
 		lora_offset=0;
-		LoRa.setFrequency(lora_frequency+lora_offset);
+		LoRa.setFrequency(lora_freq+lora_offset);
 	}
 }
   
