@@ -11,6 +11,8 @@ char flight_status[32]="Unknown";
 double launch_altitude=0;
 int FlightState=FlightState_PreLaunch;
 
+char flight_state_text[65]="Arming ...";
+
 void UpdateFlightEvents(double beaconlat,double beaconlong,double beaconalt)
 {
 	switch(FlightState)
@@ -25,6 +27,7 @@ void UpdateFlightEvents(double beaconlat,double beaconlong,double beaconalt)
 										{
 											launch_altitude/=(double)fixcounter;
 											FlightState=FlightState_Armed;
+											strcpy(flight_state_text,"Ready");
 											Serial.println("FlightEvent system armed");
 											Serial.print("Launch altitude: ");
 											Serial.print(launch_altitude);

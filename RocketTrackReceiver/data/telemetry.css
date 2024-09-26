@@ -1,6 +1,10 @@
 
 @import "overall.css";
 
+body {
+    background-color: LightGoldenRodYellow;
+}
+
 .datasection
 {
 	width: 80%;

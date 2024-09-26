@@ -152,6 +152,11 @@ String trackingprocessor(const String& var)
 		if(track_compass)	sprintf(buffer,"%.1f",rx_heading);
 		else				sprintf(buffer,"0.0");
 	}
+	else if(var=="FLIGHT_STATE")
+	{
+		if(strlen(flight_state_text)>0)		sprintf(buffer,"%s",flight_state_text);
+		else								strcpy(buffer,"Unknown");
+	}
 	
 	if(strlen(buffer)>0)	return(buffer);
 	else					return String();
