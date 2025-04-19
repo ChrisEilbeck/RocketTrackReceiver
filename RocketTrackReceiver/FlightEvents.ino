@@ -17,6 +17,8 @@ char flight_state_text[65]="Arming ...";
 
 void UpdateFlightEvents(double beaconlat,double beaconlong,double beaconalt)
 {
+	Serial.println("UpdateFlightEvents()");
+
 	switch(FlightState)
 	{
 		case FlightState_PreLaunch:	{
@@ -67,7 +69,7 @@ void UpdateFlightEvents(double beaconlat,double beaconlong,double beaconalt)
 									break;
 		
 		case FlightState_Apogee:	{
-										if(beaconalt>(apogee_altitude-100))
+										if(beaconalt<(apogee_altitude-50))
 										{
 											FlightState=FlightState_Descent;
 											strcpy(flight_state_text,"Descent");
@@ -78,7 +80,7 @@ void UpdateFlightEvents(double beaconlat,double beaconlong,double beaconalt)
 									break;
 		
 		case FlightState_Descent:	{
-										if(beaconalt<(apogee_altitude-launch_altitude+200))
+										if(beaconalt<(launch_altitude+200))
 										{
 											FlightState=FlightState_LowLevel;
 											strcpy(flight_state_text,"Main chute<br>deployment");
@@ -99,6 +101,8 @@ void UpdateFlightEvents(double beaconlat,double beaconlong,double beaconalt)
 											strcpy(flight_state_text,"Landed");
 											Serial.println("Landing detected");
 										}
+										
+										last_altitude=beaconalt;
 									}
 									
 									break;

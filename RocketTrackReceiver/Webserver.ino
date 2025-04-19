@@ -164,6 +164,8 @@ String trackingprocessor(const String& var)
 
 int SetupWebServer(void)
 {
+	Serial.println("SetupWebServer() entry");
+
 	if(!SPIFFS.begin(true))
 	{
 		Serial.println("An error has occurred while mounting SPIFFS");

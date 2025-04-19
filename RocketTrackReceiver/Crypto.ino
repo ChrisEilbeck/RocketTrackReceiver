@@ -49,19 +49,28 @@ int SetupCrypto(void)
 		return(1);
 	}
 	
-	HexToUint8(crypto_key_hex,crypto_key);
-	
-	cipher->setKey(crypto_key,cipher->keySize());
+	if(cipher!=NULL)
+	{
+		HexToUint8(crypto_key_hex,crypto_key);
+		cipher->setKey(crypto_key,cipher->keySize());
+	}
 	
 	return(0);
 }
 
 void EncryptPacket(uint8_t *packet)
 {
-	if(crypto_enable)
+	if(		!crypto_enable
+		||	(cipher==NULL)	)
+	{
+		Serial.println("Warning: crypto disabled");
+		return;
+	}
+	else
 	{
 		uint8_t pt[16];
 		memcpy(pt,packet,16);
+		memset(packet,0,16);
 		cipher->setKey(crypto_key,cipher->keySize());
 		cipher->encryptBlock(packet,pt);
 	}
@@ -69,10 +78,17 @@ void EncryptPacket(uint8_t *packet)
 
 void DecryptPacket(uint8_t *packet)
 {
-	if(crypto_enable)
+	if(		!crypto_enable
+		||	(cipher==NULL)	)
+	{
+		Serial.println("Warning: crypto disabled");
+		return;
+	}
+	else
 	{
 		uint8_t ct[16];
 		memcpy(ct,packet,16);
+		memset(packet,0,16);
 		cipher->setKey(crypto_key,cipher->keySize());
 		cipher->decryptBlock(packet,ct);
 	}

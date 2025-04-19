@@ -74,6 +74,17 @@ void CalculateChecksum(uint8_t *buffer,uint16_t bufferptr,uint8_t *CK_A,uint8_t 
 	}
 }
 
+bool CheckChecksum(uint8_t *buffer,uint16_t bufferptr)
+{
+	uint8_t CK_A;
+	uint8_t CK_B;
+	
+	CalculateChecksum(buffer,bufferptr,&CK_A,&CK_B);
+	
+	if((CK_A==buffer[bufferptr-2])&&(CK_B==buffer[bufferptr-1]))	return(1);
+	else															return(0);
+}
+
 void FixUBXChecksum(uint8_t *buffer,uint16_t bufferptr)
 { 
 	uint16_t cnt;
@@ -90,17 +101,6 @@ void FixUBXChecksum(uint8_t *buffer,uint16_t bufferptr)
 	buffer[bufferptr-1]=CK_B;
 }
 
-bool CheckChecksum(uint8_t *buffer,uint16_t bufferptr)
-{
-	uint8_t CK_A;
-	uint8_t CK_B;
-	
-	CalculateChecksum(buffer,bufferptr,&CK_A,&CK_B);
-	
-	if((CK_A==buffer[bufferptr-2])&&(CK_B==buffer[bufferptr-1]))	return(1);
-	else															return(0);
-}
-
 void SendUBX(uint8_t *Message,uint16_t bufferptr)
 {
 	uint16_t cnt;
@@ -110,6 +110,14 @@ void SendUBX(uint8_t *Message,uint16_t bufferptr)
 	
 	for(cnt=0;cnt<bufferptr;cnt++)
 		Serial1.write(Message[cnt]);
+}
+
+void SetMessageRate(uint8_t id1,uint8_t id2,uint8_t rate)
+{
+	unsigned char Disable[]={	0xB5,0x62,0x06,0x01,0x08,0x00,id1,id2,0x00,rate,rate,0x00,0x00,0x01,0x00,0x00	};
+	
+	FixUBXChecksum(Disable,sizeof(Disable));
+	SendUBX(Disable,sizeof(Disable));
 }
 
 void EnableRawMeasurements(void)
@@ -128,14 +136,6 @@ void EnableRawMeasurements(void)
 #if (DEBUG>0)
 	Serial.println("Enabling raw measurements ...");
 #endif
-}
-
-void SetMessageRate(uint8_t id1,uint8_t id2,uint8_t rate)
-{
-	unsigned char Disable[]={	0xB5,0x62,0x06,0x01,0x08,0x00,id1,id2,0x00,rate,rate,0x00,0x00,0x01,0x00,0x00	};
-	
-	FixUBXChecksum(Disable,sizeof(Disable));
-	SendUBX(Disable,sizeof(Disable));
 }
 
 void SetFlightMode(byte NewMode)

@@ -288,7 +288,13 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 						if(!ValidatePacket(packet,packetlength,-100,3))
 							Serial.println("Rejecting errored packet");
 						else
+						{
 							UnpackPacket(packet,packetlength);
+							Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+								lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+				
+							UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);			
+						}
 					}
 					else
 					{

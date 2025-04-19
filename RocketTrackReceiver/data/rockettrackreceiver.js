@@ -13,12 +13,17 @@ function UpdateRangeAndBearing()
 	
 	document.getElementById("Range").textContent=range.toFixed();
 	document.getElementById("Bearing").textContent=bearing.toFixed();
+
+	console.log("Range = "+range.toFixed(1));
+	console.log("Bearing = "+bearing.toFixed(1));
 }
 
 // used by tracking.html
 
 function DrawTrackingPlot()
 {
+	console.log("DrawTrackingPlot() entry");
+	
 	var rx_latitude="52.1";
 	var rx_longitude="-2.31";
 	var tx_latitude="50.213461";
@@ -44,10 +49,14 @@ function DrawTrackingPlot()
 	DrawTextData();
 	
 	DrawSpotAt(range,bearing,maxrange,rx_heading);
+	
+	console.log("DrawTrackingPlot() exit");
 }
 
 function DrawTrackingCrosshairs(range,rx_heading)
 {
+	console.log("DrawTrackingCrosshair() entry");
+
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
@@ -57,20 +66,21 @@ function DrawTrackingCrosshairs(range,rx_heading)
 	var numcircles;
 	var percircle;
 	
-	if(range>25000)			{	numcircles=5;	percircle=10000;	maxrange=50000;	}
-	else if(range>10000)	{	numcircles=4;	percircle=5000;		maxrange=20000;	}
-	else if(range>5000)		{	numcircles=5;	percircle=2000;		maxrange=10000;	}
-	else if(range>2000)		{	numcircles=5;	percircle=1000;		maxrange=5000;	}
-	else if(range>1000)		{	numcircles=4;	percircle=500;		maxrange=2000;	}
-	else if(range>500)		{	numcircles=4;	percircle=250;		maxrange=1000;	}
-	else if(range>200)		{	numcircles=5;	percircle=100;		maxrange=500;	}
-	else if(range>100)		{	numcircles=4;	percircle=50;		maxrange=200;	}
-	else if(range>50)		{	numcircles=4;	percircle=25;		maxrange=100;	}
-	else if(range>20)		{	numcircles=5;	percircle=10;		maxrange=50;	}
-	else					{	numcircles=4;	percircle=5;		maxrange=20;	}
+	if(range>50000)			{	numcircles=5;	percircle=20000;	maxrange=100000;	}
+	else if(range>25000)	{	numcircles=5;	percircle=10000;	maxrange=50000;		}
+	else if(range>10000)	{	numcircles=4;	percircle=5000;		maxrange=20000;		}
+	else if(range>5000)		{	numcircles=5;	percircle=2000;		maxrange=10000;		}
+	else if(range>2000)		{	numcircles=5;	percircle=1000;		maxrange=5000;		}
+	else if(range>1000)		{	numcircles=4;	percircle=500;		maxrange=2000;		}
+	else if(range>500)		{	numcircles=4;	percircle=250;		maxrange=1000;		}
+	else if(range>200)		{	numcircles=5;	percircle=100;		maxrange=500;		}
+	else if(range>100)		{	numcircles=4;	percircle=50;		maxrange=200;		}
+	else if(range>50)		{	numcircles=4;	percircle=25;		maxrange=100;		}
+	else if(range>20)		{	numcircles=5;	percircle=10;		maxrange=50;		}
+	else					{	numcircles=4;	percircle=5;		maxrange=20;		}
 	
-// 	console.log("Range = "+range);
-// 	console.log("Drawing "+numcircles+" of "+percircle+" m each");
+ 	console.log("Range = "+range);
+ 	console.log("Drawing "+numcircles+" of "+percircle+" m each");
 	
 	var cnt;
 	
@@ -105,11 +115,15 @@ function DrawTrackingCrosshairs(range,rx_heading)
 	
 	ctx.rotate(-rx_heading*Math.PI/180);
 	
+	console.log("DrawTrackingCrosshair() exit");
+	
 	return(maxrange);
 }
 
 function DrawTextData()
 {
+	console.log("DrawTextData() entry");
+
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
@@ -189,10 +203,14 @@ function DrawTextData()
 	ctx.fillText(lora_mode,0.45*canvas.width,0.40*canvas.height);
 	ctx.fillText("RSSI: "+lora_rssi,0.45*canvas.width,0.35*canvas.height);
 	ctx.fillText("SNR: "+lora_snr,0.45*canvas.width,0.30*canvas.height);
+
+	console.log("DrawTextData() exit");
 }
 
 function DrawSpotAt(range,bearing,maxrange,rx_heading)
 {
+	console.log("DrawSpotAt() entry");
+
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
@@ -230,6 +248,8 @@ function DrawSpotAt(range,bearing,maxrange,rx_heading)
 	ctx.fillStyle=colour;
 	ctx.arc(Math.cos(bearing)*radius,Math.sin(bearing)*radius,5,0,2*Math.PI);
 	ctx.fill();
+
+	console.log("DrawSpotAt() exit");
 }
 
 function GreatCircleDistance(lat1,long1,lat2,long2)

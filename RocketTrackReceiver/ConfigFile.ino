@@ -110,7 +110,9 @@ int ReadConfigFile(const char *mode)
 	if(strncmp(mode,"rx",2)==0)	strcpy(filename,"/receiver.ini");
 	else						strcpy(filename,"/tracker.ini");
 		
-	Serial.print("\tUsing ");
+//	strcpy(filename,"/clunge.ini");
+		
+	Serial.print("\tLoading config from ");
 	Serial.println(filename);
 
 	const size_t bufferLen=128;
@@ -126,11 +128,8 @@ int ReadConfigFile(const char *mode)
 		Serial.println("ReadConfigFile() abort");
 		return(1);
 	}
-	
-	Serial.println("\tIni file exists");
-	
-	// Check the file is valid. This can be used to warn if any lines
-	// are longer than the buffer.
+	else
+		Serial.println("\tIni file exists");
 	
 	if(!ini.validate(buffer,bufferLen))
 	{
@@ -140,8 +139,10 @@ int ReadConfigFile(const char *mode)
 		Serial.println("ReadConfigFile() abort");
 		return(1);
 	}
-
-	Serial.print("\tini file is valid, starting to read the parameters\r\n");
+	else
+		Serial.print("\tini file is valid, starting to read the parameters\r\n");
+	
+	ini.setCaseSensitive(false);
 	
 	int cnt=0;
 	int values_used=0;
@@ -154,7 +155,7 @@ int ReadConfigFile(const char *mode)
 		}
 		
 #if DEBUGCONFIG
-		Serial.print("\t\tLooking for Tag \"");		Serial.print(config[cnt].tag);	Serial.print("\" in Section \"");	Serial.print(config[cnt].section);	Serial.print("\"");
+		Serial.print("\t\tLooking in Section \"");	Serial.print(config[cnt].section);	Serial.print("\" for Tag \"");	Serial.print(config[cnt].tag);		Serial.print("\"");
 #endif
 		
 		if(ini.getValue(config[cnt].section,config[cnt].tag,buffer,sizeof(buffer)))
@@ -162,75 +163,71 @@ int ReadConfigFile(const char *mode)
 #if DEBUGCONFIG
 			Serial.print("\t-\tvalue = ");			Serial.println(buffer);
 #endif
+			if(config[cnt].variable!=NULL)
+			{
+				if(config[cnt].type==CFGSTRING)
+				{
+#if DEBUGCONFIG
+					Serial.println("Copying string ...");
+#endif
+					strcpy((char *)config[cnt].variable,buffer);
+				}
+				else if(config[cnt].type==CFGIPADDRESS)	
+				{
+#if DEBUGCONFIG
+					Serial.println("Copying IP address ...");
+#endif
+					IPAddress temp;
+					temp.fromString(buffer);
+					*((IPAddress *)config[cnt].variable)=temp;
+				}
+				else if(config[cnt].type==CFGBOOL)
+				{
+#if DEBUGCONFIG
+					Serial.println("Copying boolean");
+#endif														
+					if(atoi(buffer)==0)	*((bool *)config[cnt].variable)=false;
+					else				*((bool *)config[cnt].variable)=true;
+				}
+				else if(config[cnt].type==CFGINTEGER)	
+				{
+#if DEBUGCONFIG
+					Serial.println("Copying integer ...");
+#endif
+					*((int *)config[cnt].variable)=atoi(buffer);
+				}
+				else if(config[cnt].type==CFGFLOAT)
+				{
+#if DEBUGCONFIG
+					Serial.println("Copying double ...");
+#endif
+					*((double *)config[cnt].variable)=atof(buffer);
+				}
+				else
+				{
+					Serial.println("Unknown data type requested ...");
+				}
+			}
+			
+#if 0
+			Serial.println("Copied ...");
+#endif
 		}
 		else
 		{
-			Serial.print(" Tag \"");		Serial.print(config[cnt].tag);	Serial.print("\" in Section \"");	Serial.print(config[cnt].section);	Serial.print("\"\t-\tnot found, subsituting the default value");
-			strcpy(buffer,config[cnt].defaultvalue);
-		}
+			Serial.println("");
+			
+			error_t err=ini.getError();
+			printErrorMessage(err,true);
 		
-		if(config[cnt].variable!=NULL)
-		{
-			if(config[cnt].type==CFGSTRING)
-			{
-#if 0
-				Serial.println("Copying string ...");
-#endif
-				strcpy((char *)config[cnt].variable,buffer);
-			}
-			else if(config[cnt].type==CFGIPADDRESS)	
-			{
-#if 0
-				Serial.println("Copying IP address ...");
-#endif
-				IPAddress temp;
-				temp.fromString(buffer);
-				*((IPAddress *)config[cnt].variable)=temp;
-			}
-			else if(config[cnt].type==CFGBOOL)
-			{
-#if 0
-				Serial.print("Got boolean in section ");
-				Serial.print(config[cnt].section);
-				Serial.print(" with tag ");
-				Serial.print(config[cnt].tag);
-				Serial.print(" and value ");
-				Serial.println(buffer);
-#endif														
-#if 0
-				Serial.println("Copying boolean ...");		
-#endif
-				if(atoi(buffer)==0)	*((bool *)config[cnt].variable)=false;
-				else				*((bool *)config[cnt].variable)=true;
-			}
-			else if(config[cnt].type==CFGINTEGER)	
-			{
-#if 0
-				Serial.println("Copying integer ...");
-#endif
-				*((int *)config[cnt].variable)=atoi(buffer);
-			}
-			else if(config[cnt].type==CFGFLOAT)
-			{
-#if 0
-				Serial.println("Copying double ...");
-#endif
-				*((double *)config[cnt].variable)=atof(buffer);
-			}
-			else
-			{
-				Serial.println("Unknown data type requested ...");
-			}
+//			Serial.print(" Tag \"");		Serial.print(config[cnt].tag);	Serial.print("\" in Section \"");	Serial.print(config[cnt].section);	Serial.print("\"\t-\tnot found, substituting the default value");
+//			strcpy(buffer,config[cnt].defaultvalue);
 		}
 		
 		cnt++;
-		
-#if 0
-		Serial.println("Copied ...");
-#endif
 	}
-	
-	
+
+	ini.close();
 	
 	Serial.println("ReadConfigFile() exit");
 	return(0);
@@ -259,13 +256,42 @@ int ConfigCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
-		case '?':	Serial.print("Config/Settings Test Harness\r\n============================\r\n\n");
+		case '?':	Serial.print("Config File Test Harness\r\n============================\r\n\n");
 					Serial.print("d\t-\tDownload the config file\r\n");
 					Serial.print("p\t-\tDisplay the config settings\r\n");
 					Serial.print("r\t-\tRead the config file from SPIFFS\r\n");
 					Serial.print("u\t-\tUpload the config file\r\n");
 					Serial.print("w\t-\tWrite the config file to SPIFFS\r\n");
 					Serial.print("x\t-\tRevert to default values\r\n");
+					Serial.print("?\t-\tShow this menu\r\n");
+					break;
+		
+		default:	// ignore
+					break;
+	}
+	
+	return(retval);
+}
+
+int SettingsCommandHandler(uint8_t *cmd,uint16_t cmdptr)
+{
+	// ignore a single key stroke
+	if(cmdptr<=2)	return(0);
+
+#if (DEBUG>0)
+	Serial.println((char *)cmd);
+#endif
+	
+	int retval=1;
+	
+	switch(cmd[1]|0x20)
+	{
+		case 'f':	Serial.println(cmd[strlen((const char *)cmd)-1]);
+					break;
+		
+		case '?':	Serial.print("Settings Test Harness\r\n============================\r\n\n");
+					Serial.print("f\t-\tSet the frequency\r\n");
+					Serial.print("s\t-\tShow the current settings\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
 		

@@ -192,6 +192,7 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 		case 'p':	OK=PMICCommandHandler(cmd,cmdptr);					break;
 		case 'r':	OK=ReceiverCommandHandler(cmd,cmdptr);				break;
 		case 's':	OK=ConfigCommandHandler(cmd,cmdptr);				break;
+		case 't':	OK=SettingsCommandHandler(cmd,cmdptr);				break;
 //		case 'z':	OK=BeeperCommandHandler(cmd,cmdptr);				break;
 		
 		case 'x':	i2c_bus_scanner();
