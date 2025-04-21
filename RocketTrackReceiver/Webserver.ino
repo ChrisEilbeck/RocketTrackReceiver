@@ -14,10 +14,10 @@
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-char ssid[32]="rocketrx";
-char password[32]="eggsbenedict";
+char ssid[32]="RocketRx";
+char password[32]="marsflightcrew";
 
-int track_compass=1;
+bool track_compass=true;
 
 #if 0
 String statusprocessor(const String& var)
@@ -204,8 +204,8 @@ int SetupWebServer(void)
 	server.on("/status.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.js",String(),false,statusprocessor);					});
 #endif
 	
-	server.on("/beacon_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/beacon_up.html");	track_compass=1;						});
-	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/north_up.html");		track_compass=0;						});
+	server.on("/beacon_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/beacon_up.html");	track_compass=true;						});
+	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/north_up.html");		track_compass=false;						});
 		
 	server.on("/rockettrackreceiver.js",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/rockettrackreceiver.js",String(),false,trackingprocessor);	});
 	
