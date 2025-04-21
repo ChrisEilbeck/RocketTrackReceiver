@@ -8,7 +8,7 @@
 #define LORA_FREQ           434150000
 
 double lora_freq=LORA_FREQ;
-double lora_offset=4000;
+double lora_offset=0;
 int lora_mode=LORA_HIGH_RATE_MODE;
 bool lora_crc=true;
 
@@ -61,6 +61,8 @@ void SetLoRaMode(int mode)
 
 int SetupLoRaReceiver(void)
 {
+	Serial.println("LoRa Receiver Configuration ...");
+
 	// initialize the pins
 	pinMode(LORA_RESET,OUTPUT);
 	digitalWrite(LORA_RESET,HIGH);
@@ -69,7 +71,13 @@ int SetupLoRaReceiver(void)
 	
 	LoRa.setPins(LORA_NSS,LORA_RESET,LORA_DIO0);
 	
-	if(!LoRa.begin(lora_freq+lora_offset))
+//	lora_freq=LORA_FREQ;
+	lora_freq*=1e6;
+	lora_freq+=lora_offset;
+	
+	Serial.print("\tSetting receive frequency to ");	Serial.printf("%3.3f",lora_freq/1e6);	Serial.println(" MHz");
+	
+	if(!LoRa.begin(lora_freq))
 	{
 		Serial.println("Starting LoRa failed!");
 		while(1)
@@ -80,6 +88,8 @@ int SetupLoRaReceiver(void)
 	LoRa.receive();
 	
 	SetLoRaMode(lora_mode);
+
+	Serial.println("LoRa Receiver Initialised ...");
 
 	return(0);
 }
