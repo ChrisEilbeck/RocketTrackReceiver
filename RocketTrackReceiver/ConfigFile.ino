@@ -168,14 +168,14 @@ int ReadConfigFile(const char *mode)
 				if(config[cnt].type==CFGSTRING)
 				{
 #if DEBUGCONFIG
-					Serial.println("Copying string ...");
+					Serial.println("\t\tCopying string ...");
 #endif
 					strcpy((char *)config[cnt].variable,buffer);
 				}
 				else if(config[cnt].type==CFGIPADDRESS)	
 				{
 #if DEBUGCONFIG
-					Serial.println("Copying IP address ...");
+					Serial.println("\t\tCopying IP address ...");
 #endif
 					IPAddress temp;
 					temp.fromString(buffer);
@@ -184,7 +184,7 @@ int ReadConfigFile(const char *mode)
 				else if(config[cnt].type==CFGBOOL)
 				{
 #if DEBUGCONFIG
-					Serial.println("Copying boolean");
+					Serial.println("\t\tCopying boolean");
 #endif														
 					if(atoi(buffer)==0)	*((bool *)config[cnt].variable)=false;
 					else				*((bool *)config[cnt].variable)=true;
@@ -192,25 +192,25 @@ int ReadConfigFile(const char *mode)
 				else if(config[cnt].type==CFGINTEGER)	
 				{
 #if DEBUGCONFIG
-					Serial.println("Copying integer ...");
+					Serial.println("\t\tCopying integer ...");
 #endif
 					*((int *)config[cnt].variable)=atoi(buffer);
 				}
 				else if(config[cnt].type==CFGFLOAT)
 				{
 #if DEBUGCONFIG
-					Serial.println("Copying double ...");
+					Serial.println("\t\tCopying double ...");
 #endif
 					*((double *)config[cnt].variable)=atof(buffer);
 				}
 				else
 				{
-					Serial.println("Unknown data type requested ...");
+					Serial.println("\t\tUnknown data type requested ...");
 				}
 			}
 			
 #if 0
-			Serial.println("Copied ...");
+			Serial.println("\t\tCopied ...");
 #endif
 		}
 		else
