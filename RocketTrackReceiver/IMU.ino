@@ -7,6 +7,7 @@
 
 #include "IMU.h"
 #include "NvMemory.h"
+#include "Webserver.h"
 
 // for sensor fusion
 #include <MadgwickAHRS.h>
@@ -37,6 +38,9 @@ xyzFloat accelmax;
 xyzFloat gyrooffset;
 xyzFloat magoffset;
 xyzFloat magscale;
+
+float mag_A[3][3];	// soft iron correction matrix for magnetometer
+float mag_B[3];		// hard iron correction vector for magnetometer
 
 Madgwick filter;
 float imu_rate=10.0;	// Hz
@@ -73,10 +77,28 @@ int SetupIMU(void)
 	{
 		Serial.println("MPU connection failed");
 		use_compass=false;
+		track_compass=false;
 		return(1);
 	}
 	
 	filter.begin(imu_rate);
+	
+	// soft iron calibration
+#if 0
+	// identity matrix i.e. no correction
+	mag_A[0][0]=1.0;			mag_A[0][1]=0.0;			mag_A[0][2]=0.0;
+	mag_A[1][0]=0.0;			mag_A[1][1]=1.0;			mag_A[1][2]=0.0;
+	mag_A[2][0]=0.0;			mag_A[2][1]=0.0;			mag_A[2][2]=1.0;
+#else
+	// matrix for 4 element Yagi antenna
+	mag_A[0][0]=9.7436e-01;		mag_A[0][1]=-2.2516e-03;	mag_A[0][2]=-7.3596e-02;
+	mag_A[1][0]=-2.2516e-03;	mag_A[1][1]=1.1269e+00;		mag_A[1][2]-3.0113e-03;
+	mag_A[2][0]=-7.3596e-02;	mag_A[2][1]=-3.0113e-03;	mag_A[2][2]=9.9677e-01;
+#endif
+
+	// hard iron calibration
+	// vector for 4 element Yagi antenna
+	mag_B[0]=-10.6583;	mag_B[1]=8.0037;	mag_B[2]=34.7096;
 	
 	Serial.print("SetupIMU() complete ...\r\n");
 	
@@ -171,9 +193,11 @@ void PollIMU(void)
 
 	static int update_filter_at=0;
 	
-	xyzFloat mag;
 	xyzFloat accel;
 	xyzFloat gyro;
+	
+	xyzFloat uncalibrated_mag;
+	xyzFloat calibrated_mag;
 	
 	static xyzFloat magmin={	 1000.0,	 1000.0,	 1000.0		};
 	static xyzFloat magmax={	-1000.0,	-1000.0,	-1000.0		};
@@ -184,47 +208,58 @@ void PollIMU(void)
 	
 		sensors_event_t event; 
 		hmc5883l.getEvent(&event);
-
-		mag.x=event.magnetic.x;
-		mag.y=event.magnetic.y;
-		mag.z=event.magnetic.z;
+		
+		uncalibrated_mag.x=event.magnetic.x;
+		uncalibrated_mag.y=event.magnetic.y;
+		uncalibrated_mag.z=event.magnetic.z;
 		
 		// see https://teslabs.com/articles/magnetometer-calibration/ and 
 		// https://sailboatinstruments.blogspot.com/2011/08/improved-magnetometer-calibration.html
 		// for a better explanation than I have of all of this 
 		
+		xyzFloat mag_temp;
+		
 		// apply the mag offsets i.e. remove hard iron distortion
-		
-		
+		mag_temp.x=uncalibrated_mag.x-mag_B[0];
+		mag_temp.y=uncalibrated_mag.y-mag_B[1];
+		mag_temp.z=uncalibrated_mag.z-mag_B[2];
 		
 		// apply the soft iron distortion matrix
-		
-		
+		calibrated_mag.x=mag_temp.x*mag_A[0][0]+mag_temp.y*mag_A[0][1]+mag_temp.z*mag_A[0][2];
+		calibrated_mag.y=mag_temp.x*mag_A[1][0]+mag_temp.y*mag_A[1][1]+mag_temp.z*mag_A[1][2];
+		calibrated_mag.z=mag_temp.x*mag_A[2][0]+mag_temp.y*mag_A[2][1]+mag_temp.z*mag_A[2][2];
 		
 		// remap the axes to be the same as the gyro and accelerometer
-		
-		
+		mag_temp.x=calibrated_mag.x;	mag_temp.y=calibrated_mag.y;	mag_temp.z=calibrated_mag.z;		
+		calibrated_mag.x=mag_temp.y;	calibrated_mag.y=-mag_temp.x;	calibrated_mag.z=mag_temp.z;
 		
 		// these are values scaled to proper units with offsets applied from
 		// the calibration data
 		accel=mpu6500.getGValues();
 		gyro=mpu6500.getGyrValues();
-		
+
+#if 1
 		filter.update(
 						gyro.x,gyro.y,gyro.z,
 						accel.x,accel.y,accel.z,
-						mag.x,mag.y,mag.z
+						calibrated_mag.x,calibrated_mag.y,calibrated_mag.z
 					);
-
-#if 0
-		rx_heading=180.0-filter.getYaw();
+#else
+		filter.updateIMU(
+						gyro.x,gyro.y,gyro.z,
+						accel.x,accel.y,accel.z
+					);
 #endif
-
-		rx_heading=atan2(mag.y,mag.x);
+		
+#if 1
+		rx_heading=180.0-filter.getYaw();
+#else
+		
+		rx_heading=atan2(calibrated_mag.y,calibrated_mag.x);
 		rx_heading*=180.0/PI;
 		
 //		rx_heading=90.0-rx_heading+120.0;
-		
+#endif		
 		if(rx_heading<0.0)		rx_heading+=360.0;
 		if(rx_heading>360.0)	rx_heading-=360.0;
 	}
@@ -235,28 +270,28 @@ void PollIMU(void)
 		
 		if(millis()>update_ui_at)
 		{
-			update_ui_at=millis()+200;
+			update_ui_at=millis()+100;
 
 #if 0
 			Serial.printf("AccX: % .2f, AccY: % .2f, AccZ: % .2f\t",accel.x,accel.y,accel.z);
 			Serial.printf("GyroX: % .2f, GyroY: % .2f, GyroZ: % .2f\t",gyro.x,gyro.y,gyro.z);
-			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Heading: %.2f\r\n",mag.x,mag.y,mag.z,rx_heading);
+			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Heading: %.2f\r\n",uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,rx_heading);
 #endif
-#if 1
+#if 0
 			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, AccX: %.2f, AccY: %.2f, AccZ: %.2f, GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",
-								mag.x,mag.y,mag.z,
+								uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,
 								accel.x,accel.y,accel.z,
 								gyro.x,gyro.y,gyro.z
 						);
 #endif
 #if 0
-			Serial.printf("MagX: % .2f (%.2f to %.2f), MagY: % .2f (%.2f to %.2f), MagZ: % .2f (%.2f to %.2f), Heading: %.2f\r\n",
-				mag.x,magmin.x,magmax.x,
-				mag.y,magmin.y,magmax.y,
-				mag.z,magmin.z,magmax.z,
-				rx_heading);
+			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Cal_MagX: % .2f, Cal_MagY: % .2f, Cal_MagZ: % .2f\r\n",
+								uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,
+								calibrated_mag.x,calibrated_mag.y,calibrated_mag.z
+						);
 #endif
-#if 0			
+#if 1
+			Serial.printf("Cal_MagX: % .2f, Cal_MagY: % .2f, Cal_MagZ: % .2f, ",calibrated_mag.x,calibrated_mag.y,calibrated_mag.z);
 			Serial.printf("Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",filter.getRoll(),filter.getPitch(),filter.getYaw(),rx_heading);
 #endif
 		}
@@ -393,11 +428,11 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 		
 		case '?':	Serial.print("IMU Test Harness\r\n================\r\n\n");
-					Serial.print("\th\t-\tDisplay the compass heading\r\n");
-					Serial.print("\tl\t-\tEnable/disable live compass data display\r\n");
-					Serial.print("\tp\t-\tRead current pitch value\r\n");
-					Serial.print("\tr\t-\tRead current roll value\r\n");
-					Serial.print("\ty\t-\tRead current yaw value\r\n");
+					Serial.print("h\t-\tDisplay the compass heading\r\n");
+					Serial.print("l\t-\tEnable/disable live compass data display\r\n");
+					Serial.print("p\t-\tRead current pitch value\r\n");
+					Serial.print("r\t-\tRead current roll value\r\n");
+					Serial.print("y\t-\tRead current yaw value\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
 		
