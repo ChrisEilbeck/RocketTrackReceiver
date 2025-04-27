@@ -52,6 +52,7 @@ float imu_rate=10.0;	// Hz
 
 bool use_compass=true;
 bool compass_live_mode=false;
+bool mag_cal_mode=false;
 int sensor_setup=NO_SENSORS;
 
 // Magdwick filter outputs for global use
@@ -279,6 +280,19 @@ void PollIMU(void)
 		if(heading>360.0)	heading-=360.0;
 	}
 
+	if(mag_cal_mode)
+	{
+		static int update_ui_at=0;
+		
+		if(millis()>update_ui_at)
+		{
+			update_ui_at=millis()+100;
+			
+			if(	(uncalibrated_mag.x!=0.0)&&(uncalibrated_mag.y!=0.0)&&(uncalibrated_mag.z!=0.0)	)
+				Serial.printf("MagCal:%.3f,%.2f,%.2f,%.2f\r\n",(float)millis()/1000.0,uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z);
+		}
+	}
+
 	if(compass_live_mode)
 	{
 		static int update_ui_at=0;
@@ -352,9 +366,9 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 		
 		case 'c':	// calibration mode toggle
-					compass_live_mode=!compass_live_mode;
+					mag_cal_mode=!mag_cal_mode;
 					
-					if(compass_live_mode)	Serial.print("Enabling magnetometer calibration mode\r\n");
+					if(mag_cal_mode)		Serial.print("Enabling magnetometer calibration mode\r\n");
 					else					Serial.print("Disabling magnetometer calibration mode\r\n");
 					
 					break;
