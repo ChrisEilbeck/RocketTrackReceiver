@@ -14,3 +14,13 @@ typedef enum
     SENSOR_MPU9250_BME180
 
 } sensor_setup_types;
+
+extern float roll;
+extern float pitch;
+extern float yaw;
+extern float heading;
+
+extern float Mag_A11,Mag_A12,Mag_A13;
+extern float Mag_A21,Mag_A22,Mag_A23;
+extern float Mag_A31,Mag_A32,Mag_A33;
+extern float Mag_B1,Mag_B2,Mag_B3;

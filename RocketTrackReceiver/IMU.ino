@@ -36,23 +36,29 @@ float Declination=-1-1/60;
 xyzFloat accelmin;
 xyzFloat accelmax;
 xyzFloat gyrooffset;
-xyzFloat magoffset;
-xyzFloat magscale;
+//xyzFloat magoffset;
+//xyzFloat magscale;
 
-float mag_A[3][3];	// soft iron correction matrix for magnetometer
-float mag_B[3];		// hard iron correction vector for magnetometer
+// soft iron correction matrix for magnetometer
+float Mag_A11,Mag_A12,Mag_A13;
+float Mag_A21,Mag_A22,Mag_A23;
+float Mag_A31,Mag_A32,Mag_A33;
+
+// hard iron correction vector for magnetometer
+float Mag_B1,Mag_B2,Mag_B3;
 
 Madgwick filter;
 float imu_rate=10.0;	// Hz
 
 bool use_compass=true;
-bool compass_live_mode=true;
+bool compass_live_mode=false;
 int sensor_setup=NO_SENSORS;
 
 // Magdwick filter outputs for global use
 float roll=0.0;
 float pitch=0.0;
 float yaw=0.0;
+float heading=0.0;
 
 void CalibrateMPU6500Accelerometer(const char *orientation,xyzFloat *vals);
 void CalibrateMPU6500Gyro(void);
@@ -83,26 +89,43 @@ int SetupIMU(void)
 	
 	filter.begin(imu_rate);
 	
-	// soft iron calibration
 #if 0
 	// identity matrix i.e. no correction
-	mag_A[0][0]=1.0;			mag_A[0][1]=0.0;			mag_A[0][2]=0.0;
-	mag_A[1][0]=0.0;			mag_A[1][1]=1.0;			mag_A[1][2]=0.0;
-	mag_A[2][0]=0.0;			mag_A[2][1]=0.0;			mag_A[2][2]=1.0;
-#else
-	// matrix for 4 element Yagi antenna
-	mag_A[0][0]=9.7436e-01;		mag_A[0][1]=-2.2516e-03;	mag_A[0][2]=-7.3596e-02;
-	mag_A[1][0]=-2.2516e-03;	mag_A[1][1]=1.1269e+00;		mag_A[1][2]-3.0113e-03;
-	mag_A[2][0]=-7.3596e-02;	mag_A[2][1]=-3.0113e-03;	mag_A[2][2]=9.9677e-01;
+	Mag_A11=1.0;			Mag_A12=0.0;			Mag_A13=0.0;
+	Mag_A21=0.0;			Mag_A22=1.0;			Mag_A23=0.0;
+	Mag_A31=0.0;			Mag_A32=0.0;			Mag_A33=1.0;
+
+	mag_B1=0.0;				Mag_B2=0.0;				Mag_B3=0.0;
+#endif
+#if 0
+	Serial.println("\tApply magnetometer calibration for 4 element Yagi");
+
+	// soft iron calibration matrix for 4 element Yagi antenna
+	Mag_A11=9.7436e-01;		Mag_A12=-2.2516e-03;	Mag_A13=-7.3596e-02;
+	Mag_A21=-2.2516e-03;	Mag_A22=1.1269e+00;		Mag_A23-3.0113e-03;
+	Mag_A31=-7.3596e-02;	Mag_A32=-3.0113e-03;	Mag_A33=9.9677e-01;
+	
+	// hard iron calibration vector for 4 element Yagi antenna
+	Mag_B1=-10.6583;		Mag_B2=8.0037;			Mag_B3=34.7096;
+#endif
+#if 1
+	PrintMagCalibration();
 #endif
 
-	// hard iron calibration
-	// vector for 4 element Yagi antenna
-	mag_B[0]=-10.6583;	mag_B[1]=8.0037;	mag_B[2]=34.7096;
-	
 	Serial.print("SetupIMU() complete ...\r\n");
 	
 	return(0);
+}
+
+void PrintMagCalibration(void)
+{
+	Serial.println("\tSoft iron calibration matrix");
+	Serial.printf("\t\tA11=%.6f,\tA12=%.6f,\tA13=%.6f\r\n",Mag_A11,Mag_A12,Mag_A13);
+	Serial.printf("\t\tA21=%.6f,\tA22=%.6f,\tA23=%.6f\r\n",Mag_A21,Mag_A22,Mag_A23);
+	Serial.printf("\t\tA31=%.6f,\tA32=%.6f,\tA33=%.6f\r\n\n",Mag_A31,Mag_A32,Mag_A33);
+	Serial.println("\tHard iron calibration vector");
+	Serial.printf("\t\tB1=%.6f,\tB2=%.6f,\tB3=%.6f\r\n",Mag_B1,Mag_B2,Mag_B3);
+
 }
 
 #if 0
@@ -220,14 +243,14 @@ void PollIMU(void)
 		xyzFloat mag_temp;
 		
 		// apply the mag offsets i.e. remove hard iron distortion
-		mag_temp.x=uncalibrated_mag.x-mag_B[0];
-		mag_temp.y=uncalibrated_mag.y-mag_B[1];
-		mag_temp.z=uncalibrated_mag.z-mag_B[2];
+		mag_temp.x=uncalibrated_mag.x-Mag_B1;
+		mag_temp.y=uncalibrated_mag.y-Mag_B2;
+		mag_temp.z=uncalibrated_mag.z-Mag_B3;
 		
 		// apply the soft iron distortion matrix
-		calibrated_mag.x=mag_temp.x*mag_A[0][0]+mag_temp.y*mag_A[0][1]+mag_temp.z*mag_A[0][2];
-		calibrated_mag.y=mag_temp.x*mag_A[1][0]+mag_temp.y*mag_A[1][1]+mag_temp.z*mag_A[1][2];
-		calibrated_mag.z=mag_temp.x*mag_A[2][0]+mag_temp.y*mag_A[2][1]+mag_temp.z*mag_A[2][2];
+		calibrated_mag.x=mag_temp.x*Mag_A11+mag_temp.y*Mag_A12+mag_temp.z*Mag_A13;
+		calibrated_mag.y=mag_temp.x*Mag_A21+mag_temp.y*Mag_A22+mag_temp.z*Mag_A23;
+		calibrated_mag.z=mag_temp.x*Mag_A31+mag_temp.y*Mag_A32+mag_temp.z*Mag_A33;
 		
 		// remap the axes to be the same as the gyro and accelerometer
 		mag_temp.x=calibrated_mag.x;	mag_temp.y=calibrated_mag.y;	mag_temp.z=calibrated_mag.z;		
@@ -251,17 +274,9 @@ void PollIMU(void)
 					);
 #endif
 		
-#if 1
-		rx_heading=180.0-filter.getYaw();
-#else
-		
-		rx_heading=atan2(calibrated_mag.y,calibrated_mag.x);
-		rx_heading*=180.0/PI;
-		
-//		rx_heading=90.0-rx_heading+120.0;
-#endif		
-		if(rx_heading<0.0)		rx_heading+=360.0;
-		if(rx_heading>360.0)	rx_heading-=360.0;
+		heading=180.0-filter.getYaw();
+		if(heading<0.0)		heading+=360.0;
+		if(heading>360.0)	heading-=360.0;
 	}
 
 	if(compass_live_mode)
@@ -275,7 +290,7 @@ void PollIMU(void)
 #if 0
 			Serial.printf("AccX: % .2f, AccY: % .2f, AccZ: % .2f\t",accel.x,accel.y,accel.z);
 			Serial.printf("GyroX: % .2f, GyroY: % .2f, GyroZ: % .2f\t",gyro.x,gyro.y,gyro.z);
-			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Heading: %.2f\r\n",uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,rx_heading);
+			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Heading: %.2f\r\n",uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,heading);
 #endif
 #if 0
 			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, AccX: %.2f, AccY: %.2f, AccZ: %.2f, GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",
@@ -292,101 +307,10 @@ void PollIMU(void)
 #endif
 #if 1
 			Serial.printf("Cal_MagX: % .2f, Cal_MagY: % .2f, Cal_MagZ: % .2f, ",calibrated_mag.x,calibrated_mag.y,calibrated_mag.z);
-			Serial.printf("Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",filter.getRoll(),filter.getPitch(),filter.getYaw(),rx_heading);
+			Serial.printf("Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",filter.getRoll(),filter.getPitch(),filter.getYaw(),heading);
 #endif
 		}
 	}
-}
-
-float get_compass_bearing(void)
-{
-	float heading=0.0f;
-
-#if 0
-	static float mag_x_dampened=0.0f;
-	static float mag_y_dampened=0.0f;
-
-	// might need to remap these because it only seems to really work
-	// properly when the LoRa antenna is pointing down or up
-
-	float mag_pitch=mpu9250.getPitch();
-	float mag_roll=mpu9250.getRoll();
-	
-	float mag_x=0.0;
-	float mag_y=0.0;
-	float mag_z=0.0;
-
-#if 0
-	if(			(mag_roll<-135.0)||(mag_roll>=135.0)	)
-	{
-	
-	}
-	else if(	(mag_roll>=-135.0)&&(mag_roll<-45.0)	)
-	{
-		mag_pitch=-mpu9250.getRoll()*DEG_TO_RAD;
-		mag_roll=mpu9250.getPitch()*DEG_TO_RAD;
-		mag_x=mpu9250.getMagX();
-		mag_y=mpu9250.getMagY();
-		mag_z=mpu9250.getMagZ();	
-	}
-	else if(	(mag_roll>=-45.0)&&(mag_roll<45.0)		)
-	{
-	
-	}
-	else if(	(mag_roll>=45.0)&&(mag_roll<135.0)		)
-	{
-		mag_pitch=mpu9250.getRoll()*DEG_TO_RAD;
-		mag_roll=mpu9250.getPitch()*DEG_TO_RAD;
-		mag_x=mpu9250.getMagX();
-		mag_y=mpu9250.getMagY();
-		mag_z=mpu9250.getMagZ();
-	}
-	else
-	{
-		// should never happen
-		
-		Serial.printf("Bad mag_roll reading in get_compass_bearing() - %f\r\n",mag_roll);
-	}
-
-
-
-	mag_roll*=DEG_TO_RAD;
-	mag_pitch*=DEG_TO_RAD;
-
-
-
-#else
-	mag_pitch=-mpu9250.getRoll()*DEG_TO_RAD;
-	mag_roll=mpu9250.getPitch()*DEG_TO_RAD;
-	
-	mag_x=mpu9250.getMagX();
-	mag_y=mpu9250.getMagY();
-	mag_z=mpu9250.getMagZ();
-#endif
-	
-	// ----- Apply the standard tilt formulas
-	float mag_x_hor=mag_x*cos(mag_pitch)+mag_y*sin(mag_roll)*sin(mag_pitch)-mag_z*cos(mag_roll)*sin(mag_pitch);
-	float mag_y_hor=mag_y*cos(mag_roll)+mag_z*sin(mag_roll);
-	
-	// ----- Dampen any data fluctuations
-	mag_x_dampened=mag_x_dampened*0.9+mag_x_hor*0.1;
-	mag_y_dampened=mag_y_dampened*0.9+mag_y_hor*0.1;
-	
-	// ----- Calculate the heading
-	heading=atan2(mag_x_dampened,mag_y_dampened)*RAD_TO_DEG;	// Magnetic North
-	
-	heading+=Declination;
-
-#if 0
-	heading=mpu9250.getYaw();
-#endif
-	
-	// constrain to 0 to <360 degrees
-	while(heading<0)    heading+=360;
-	while(heading>360)  heading-=360;
-#endif
-		
-	return(heading);
 }
 
 int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
@@ -404,19 +328,19 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	switch(cmd[1]|0x20)
 	{
 		case 'h':	// compass heading
-					Serial.printf("Heading: %.1f\r\n",get_compass_bearing());
+					Serial.printf("Heading: %.1f\r\n",heading);
 					break;
 		
 		case 'p':	// pitch
-//					Serial.printf("Pitch: %.1f\r\n",mpu9250.getPitch());
+					Serial.printf("Pitch: %.1f\r\n",pitch);
 					break;
 		
 		case 'r':	// roll
-//					Serial.printf("Roll: %.1f\r\n",mpu9250.getRoll());
+					Serial.printf("Roll: %.1f\r\n",roll);
 					break;
 		
 		case 'y':	// yaw
-//					Serial.printf("Yaw: %.1f\r\n",mpu9250.getYaw());
+					Serial.printf("Yaw: %.1f\r\n",yaw);
 					break;
 		
 		case 'l':	// live mode toggle
@@ -427,7 +351,16 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					
 					break;
 		
+		case 'c':	// calibration mode toggle
+					compass_live_mode=!compass_live_mode;
+					
+					if(compass_live_mode)	Serial.print("Enabling magnetometer calibration mode\r\n");
+					else					Serial.print("Disabling magnetometer calibration mode\r\n");
+					
+					break;
+		
 		case '?':	Serial.print("IMU Test Harness\r\n================\r\n\n");
+					Serial.print("c\t-\tEnable/disable magnetometer calibration mode\r\n");
 					Serial.print("h\t-\tDisplay the compass heading\r\n");
 					Serial.print("l\t-\tEnable/disable live compass data display\r\n");
 					Serial.print("p\t-\tRead current pitch value\r\n");
@@ -457,34 +390,35 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
+#if 0
 		case 'c':	// clear all calibration
 //					qmc5883l.clearCalibration();
 					ResetCalibration();
 					StoreCalibrationData();					
 					break;
-		
+#endif		
 		case 'g':	// calibrate the gyro
 					CalibrateMPU6500Gyro();
 					mpu6500.setGyrOffsets(gyrooffset);
 					
 					break;
-		
+#if 0
 		case 'm':	// calibrate the magnetometer
 					CalibrateQMC5883LMagnetometer();
 					break;
-		
+#endif	
 		case 'p':	// print valibration values
 					PrintCalibrationValues();
 					break;
-		
+#if 0		
 		case 's':	// store the calibration values
 					StoreCalibrationData();
 					break;
 		
 		case 't':	// retrieve the calibration values
 					RetrieveCalibrationData();
-					break;					
-
+					break;
+#endif
 		case 'x':	if(cmd[2]=='-')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Nose down",&vals);		accelmin.x=vals.x;	}
 					if(cmd[2]=='+')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Nose up",&vals);			accelmax.x=vals.x;	}
 							
@@ -675,17 +609,21 @@ void PrintCalibrationValues(void)
 	Serial.printf("\tX: %.1f\r\n",gyrooffset.x);
 	Serial.printf("\tY: %.1f\r\n",gyrooffset.y);
 	Serial.printf("\tZ: %.1f\r\n\n",gyrooffset.z);
-	
+
+#if 0
 	Serial.print("Magnetometer:\r\n");
 	Serial.printf("\tX offset: %.1f\tX scale: %.1f\r\n",magoffset.x,magscale.x);
 	Serial.printf("\tY offset: %.1f\tY scale: %.1f\r\n",magoffset.y,magscale.y);
 	Serial.printf("\tZ offset: %.1f\tZ scale: %.1f\r\n\n",magoffset.z,magscale.z);
+#endif
 }
 
 void ResetCalibration(void)
 {
+#if 0
 	magscale.x=1.0;		magscale.y=1.0;		magscale.z=1.0;
 	magoffset.x=0.0;	magoffset.y=0.0;	magoffset.z=0.0;
+#endif
 
 	accelmin.x=-16384.0;	accelmax.x=16384.0;
 	accelmin.y=-16384.0;	accelmax.y=16384.0;

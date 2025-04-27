@@ -149,7 +149,7 @@ String trackingprocessor(const String& var)
 	else if(var=="NUMSATS")			{	sprintf(buffer,"%d",numCh);								}
 	else if(var=="RX_HEADING")		
 	{
-		if(track_compass)	sprintf(buffer,"%.1f",rx_heading);
+		if(track_compass)	sprintf(buffer,"%.1f",heading);
 		else				sprintf(buffer,"0.0");
 	}
 	else if(var=="FLIGHT_STATE")
@@ -278,6 +278,7 @@ int SetupWebServer(void)
 
 	server.on("/cal_complete.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.html");								});
 
+#if 0
 	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/store_calibration.html");		
@@ -296,6 +297,7 @@ int SetupWebServer(void)
 
 		#warning "more work here"		
 	});
+#endif
 	
 	server.on("/favicon.ico",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/favicon.ico");									});
 	

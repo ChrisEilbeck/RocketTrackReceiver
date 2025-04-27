@@ -7,5 +7,7 @@
 
 int SetupNvMemory(void);
 
-void StoreCalibrationData(void);
-int RetrieveCalibrationData(void);
+#if 0
+	void StoreCalibrationData(void);
+	int RetrieveCalibrationData(void);
+#endif

@@ -50,8 +50,6 @@ char *unit_mode="rx";
 
 unsigned long UpdateClientAt=0;
 
-float rx_heading=-45;
-
 void setup()
 {
 	Serial.begin(115200);
@@ -116,8 +114,9 @@ void setup()
 
 	UnpackPacket(packet,packetlength);
 #endif
-
+#if 0
 	RetrieveCalibrationData();
+#endif
 }
 
 void packhack(void)

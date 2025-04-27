@@ -2,6 +2,7 @@
 #include "Display.h"
 #include "GPS.h"
 #include "GreatCircle.h"
+#include "IMU.h"
 #include "Logging.h"
 #include "LoRaReceiver.h"
 #include "Packetisation.h"
@@ -130,7 +131,7 @@ void PollDisplay(void)
 			case 50 ... 59:	display.setTextSize(1);
 							display.printf("\nReceiver\r\n\nHeading:\r\n\n");
 							display.setTextSize(2);
-							display.printf("%.1f\r\n  deg",get_compass_bearing());
+							display.printf("%.1f\r\n  deg",heading);
 							break;
 			
 			default:		

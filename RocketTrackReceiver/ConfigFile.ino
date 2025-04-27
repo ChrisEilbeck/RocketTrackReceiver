@@ -7,6 +7,7 @@
 #include "FlightEvents.h"
 #include "GPS.h"
 //#include "Gyro.h"
+#include "IMU.h"
 #include "Logging.h"
 #include "LoRaReceiver.h"
 //#include "Magnetometer.h"
@@ -23,6 +24,7 @@ enum
 	CFGSTRING=0,
 	CFGINTEGER,
 	CFGFLOAT,
+	CFGDOUBLE,
 	CFGIPADDRESS,
 	CFGBOOL
 };
@@ -45,7 +47,7 @@ configvalue_t config[]={
 //	{	"WiFi",				"Enable",			(void *)&wifi_enable,				CFGBOOL,		"1"					},
 	{	"WiFi",				"SSID",				(void *)ssid,						CFGSTRING,		"RocketRx"			},
 	{	"WiFi",				"Password",			(void *)password,					CFGSTRING,		"marsflightcrew"	},
-	{	"LoRa",				"Frequency",		(void *)&lora_freq,					CFGFLOAT,		"434.150"			},
+	{	"LoRa",				"Frequency",		(void *)&lora_freq,					CFGDOUBLE,		"434.150"			},
 	{	"LoRa",				"Mode",				(void *)&lora_mode,					CFGINTEGER,		"1"					},
 	{	"LoRa",				"EnableCRC",		(void *)&lora_crc,					CFGBOOL,		"1"					},
 	{	"High Rate",		"Bandwidth",		(void *)&hr_bw,						CFGINTEGER,		"125000"			},
@@ -73,10 +75,29 @@ configvalue_t config[]={
 //	{	"Gyro",				"Enable",			(void *)&gyro_enable,				CFGBOOL,		"1"					},
 //	{	"Gyro",				"Type",				(void *)gyro_type,					CFGSTRING,		"MPU6050"			},
 //	{	"Gyro",				"MeasurementRate",	(void *)&gyro_rate,					CFGINTEGER,		"10"				},
+
 //	{	"Magnetometer",		"Enable",			(void *)&mag_enable,				CFGBOOL,		"1"					},
 //	{	"Magnetometer",		"Type",				(void *)mag_type,					CFGSTRING,		"None"				},
 //	{	"Magnetometer",		"MeasurementRate",	(void *)&mag_rate,					CFGINTEGER,		"10"				},
+
+	// soft iron calibration matrix
+	{	"Magnetometer",		"Mag_A11",			(void *)&Mag_A11,					CFGFLOAT,		"1.00"				},
+	{	"Magnetometer",		"Mag_A12",			(void *)&Mag_A12,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_A13",			(void *)&Mag_A13,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_A21",			(void *)&Mag_A21,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_A22",			(void *)&Mag_A22,					CFGFLOAT,		"1.00"				},
+	{	"Magnetometer",		"Mag_A23",			(void *)&Mag_A23,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_A31",			(void *)&Mag_A31,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_A32",			(void *)&Mag_A32,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_A33",			(void *)&Mag_A33,					CFGFLOAT,		"1.00"				},
+	
+	// hard iron calibration vector
+	{	"Magnetometer",		"Mag_B1",			(void *)&Mag_B1,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_B2",			(void *)&Mag_B2,					CFGFLOAT,		"0.00"				},
+	{	"Magnetometer",		"Mag_B3",			(void *)&Mag_B3,					CFGFLOAT,		"0.00"				},
+
 //	{	"Logging",			"Level",			(void *)&log_level,					CFGINTEGER,		"1"					},
+
 	{	"",					"",					0,									0,				""					}
 };
 
@@ -197,6 +218,13 @@ int ReadConfigFile(const char *mode)
 					*((int *)config[cnt].variable)=atoi(buffer);
 				}
 				else if(config[cnt].type==CFGFLOAT)
+				{
+#if DEBUGCONFIG
+					Serial.println("\t\tCopying float ...");
+#endif
+					*((float *)config[cnt].variable)=atof(buffer);
+				}
+				else if(config[cnt].type==CFGDOUBLE)
 				{
 #if DEBUGCONFIG
 					Serial.println("\t\tCopying double ...");

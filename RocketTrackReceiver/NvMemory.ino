@@ -57,6 +57,7 @@ int NvMemoryCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	return(retval);
 }
 
+#if 0
 void StoreCompassCalibration_MPU9250(void)
 {
 #if 0
@@ -202,4 +203,6 @@ int RetrieveCalibrationData(void)
 	
 	return(0);
 }
+
+#endif
 
