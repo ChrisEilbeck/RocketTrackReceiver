@@ -5,44 +5,48 @@
     <body>
         <center>
             <h1>Magnetometer Calibration</h1>
-            <table class="A_matrix">
-                <tr>
-                    <td></td>
-                    <td class="entry_label">A11</td>
-                    <td><input type="number" name="A11"></td>
-                    <td class="entry_label">A12</td>
-                    <td><input type="number" name="A12"></td>
-                    <td class="entry_label">A13</td>
-                    <td><input type="number" name="A13"></td>
-                </tr>
-                <tr>
-                    <td class="section_label">Soft<br>Iron<br>Matrix</td>
-                    <td class="entry_label">A21</td>
-                    <td><input type="number" name="A21"></td>
-                    <td class="entry_label">A22</td>
-                    <td><input type="number" name="A22"></td>
-                    <td class="entry_label">A23</td>
-                    <td><input type="number" name="A23"></td>
-                </tr>            
-                <tr>
-                    <td></td>
-                    <td class="entry_label">A31</td>
-                    <td><input type="number" name="A31"></td>
-                    <td class="entry_label">A32</td>
-                    <td><input type="number" name="A32"></td>
-                    <td class="entry_label">A33</td>
-                    <td><input type="number" name="A33"></td>                    
-                </tr>            
-            </table>
-            <table class="B_vector">
-                <td class="section_label">Hard<br>Iron<br>Vector</td>
-                <td class="entry_label">B1</td>
-                <td><input type="number" name="B1"></td>
-                <td class="entry_label">B2</td>
-                <td><input type="number" name="B2"></td>
-                <td class="entry_label">B3</td>
-                <td><input type="number" name="B3"></td>
-            </table>
+            <div>
+                <table class="A_matrix">
+                    <tr>
+                        <td></td>
+                        <td class="entry_label">A11</td>
+                        <td><input type="number" name="A11" value="9.7436e-01"></td>
+                        <td class="entry_label">A12</td>
+                        <td><input type="number" name="A12" value="-2.2516e-03"></td>
+                        <td class="entry_label">A13</td>
+                        <td><input type="number" name="A13" value="-7.3596e-02"></td>
+                    </tr>
+                    <tr>
+                        <td class="section_label">Soft<br>Iron<br>Matrix</td>
+                        <td class="entry_label">A21</td>
+                        <td><input type="number" name="A21" value="-2.2516e-03"></td>
+                        <td class="entry_label">A22</td>
+                        <td><input type="number" name="A22" value="1.1269e+00"></td>
+                        <td class="entry_label">A23</td>
+                        <td><input type="number" name="A23" value="-3.0113e-03"></td>
+                    </tr>            
+                    <tr>
+                        <td></td>
+                        <td class="entry_label">A31</td>
+                        <td><input type="number" name="A31" value="-7.3596e-02"></td>
+                        <td class="entry_label">A32</td>
+                        <td><input type="number" name="A32" value="-3.0113e-03"></td>
+                        <td class="entry_label">A33</td>
+                        <td><input type="number" name="A33" value="9.9677e-01"></td>                    
+                    </tr>            
+                </table>
+            </div>
+            <div>
+                <table class="B_vector">
+                    <td class="section_label">Hard<br>Iron<br>Vector</td>
+                    <td class="entry_label">B1</td>
+                    <td><input type="number" name="B1" value="-10.6583"</td>
+                    <td class="entry_label">B2</td>
+                    <td><input type="number" name="B2" value="8.0037"></td>
+                    <td class="entry_label">B3</td>
+                    <td><input type="number" name="B3" value="34.7096"></td>
+                </table>
+            </div>
         </center>
     </body>
 </html>
