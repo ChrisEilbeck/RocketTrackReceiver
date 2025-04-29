@@ -1,0 +1,35 @@
+
+@import "overall.css";
+
+.section_label
+{
+    text-align: center;
+    font-size: 32px;
+}
+
+.entry_label
+{
+    text-align: center;
+    font-size: 24px;
+}
+
+.A_matrix
+{
+    padding-top: 25px;
+    border-radius: 15px;
+    padding-bottom: 25px;
+}
+
+.B_vector
+{
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+input
+{
+    width: 6;
+    size: 6;
+    max_length: 6;
+    min_length: 6;
+}
