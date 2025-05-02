@@ -186,6 +186,11 @@ void PollLoRaReceiver(int fakepacket)
 				Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
 					lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
 				
+				if(lora_mode==LORA_LONG_RANGE_MODE)
+					BeeperSetPattern(0b10100000000000000000000000000000,0);
+				else
+					BeeperSetPattern(0b10000000000000000000000000000000,0);
+				
 				UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);			
 			}
 
@@ -306,7 +311,7 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 				
 							UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
 							
-							BeeperSetPattern(0b10111010001110101011100000000000,0);
+							BeeperSetPattern(0b10000000000000000000000000000000,0);
 						}
 					}
 					else
