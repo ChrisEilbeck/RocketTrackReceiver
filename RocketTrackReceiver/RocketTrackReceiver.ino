@@ -39,6 +39,8 @@
 #include <ctype.h>
 #include <SPI.h>
 
+#include "Beeper.h"
+#include "Button.h"
 #include "HardwareAbstraction.h"
 #include "Logging.h"
 #include "LoRaReceiver.h"
@@ -92,10 +94,12 @@ void setup()
 	DumpHexPacket(crypto_key,32);
 #endif
 
+	if(SetupButton())			{	Serial.print("Button Setup failed, disabling ...\r\n");				button_enable=false;	}
+	if(SetupBeeper())			{	Serial.print("Beeper Setup failed, disabling ...\r\n");				beeper_enable=false;	}
+
 #if 0
 	// optional peripherals
 	if(SetupLEDs())				{	Serial.print("LED Setup failed, halting ...\r\n");					while(1);				}
-	if(SetupBeeper())			{	Serial.print("Beeper Setup failed, disabling ...\r\n");				beeper_enable=false;	}
 	if(SetupNeopixels())		{	Serial.print("Neopixels Setup failed, disabling ...\r\n");			neopixels_enable=false;	}
 #endif
 
@@ -145,6 +149,8 @@ void loop()
 	PollSerial();
 	PollPMIC();
 	PollIMU();
+	PollButton();
+	PollBeeper();
 }
 
 void PollSerial(void)
@@ -192,6 +198,8 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 		case 'r':	OK=ReceiverCommandHandler(cmd,cmdptr);				break;
 		case 's':	OK=ConfigCommandHandler(cmd,cmdptr);				break;
 		case 't':	OK=SettingsCommandHandler(cmd,cmdptr);				break;
+		case 'u':	OK=ButtonCommandHandler(cmd,cmdptr);				break;
+		case 'v':	OK=BeeperCommandHandler(cmd,cmdptr);				break;
 //		case 'z':	OK=BeeperCommandHandler(cmd,cmdptr);				break;
 		
 		case 'x':	i2c_bus_scanner();
@@ -214,7 +222,8 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 					Serial.print("s\t-\tConfig/Settinsg Commands\r\n");
 //					Serial.print("t\t-\tTransmitter Commands\r\n");
 					Serial.print("x\t-\tScan I2c Bus for Devices\r\n");
-//					Serial.print("\\t-\tBeeper\r\n");
+					Serial.print("u\t-\tButton\r\n");
+					Serial.print("v\t-\tBeeper\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					OK=1;
 					break;
@@ -253,6 +262,7 @@ void i2c_bus_scanner(void)
 			
 			if(address==0x0c)	Serial.print("\tAK8963 Magnetometer");
 			if(address==0x0d)	Serial.print("\tQMC5883L Magnetometer");
+			if(address==0x1e)	Serial.print("\tHMC5883L Magnetometer");
 			if(address==0x34)	Serial.print("\tAXP192 PMIC");
 			if(address==0x3C)	Serial.print("\tSSD1306 OLED Display");
 			if(address==0x3D)	Serial.print("\tSSD1306 OLED Display");

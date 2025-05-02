@@ -23,21 +23,16 @@
 //#include "ICM20948.h"
 
 // IMU devices
-
 MPU6500_WE mpu6500;
-Adafruit_HMC5883_Unified hmc5883l=Adafruit_HMC5883_Unified(12345);
+Adafruit_HMC5883_Unified hmc5883l=Adafruit_HMC5883_Unified(5883);
 
 // typical declination value for the south of the UK
-
 float Declination=-1-1/60;
 
 // for calibration of the sensors
-
 xyzFloat accelmin;
 xyzFloat accelmax;
 xyzFloat gyrooffset;
-//xyzFloat magoffset;
-//xyzFloat magscale;
 
 // soft iron correction matrix for magnetometer
 float Mag_A11,Mag_A12,Mag_A13;

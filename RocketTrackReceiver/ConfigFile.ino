@@ -42,36 +42,46 @@ configvalue_t config[]={
 //	{	"RocketTrack",		"Autostart",		(void *)&lora_constant_transmit,	CFGINTEGER,		"0"					},
 //	{	"RocketTrack",		"Mode",				(void *)unit_mode,					CFGSTRING,		"RX"				},
 //	{	"RocketTrack",		"SyncSensorsToGPS",	(void *)&sync_sampling,				CFGBOOL,		"1"					},
+
 	{	"Crypto",			"Enable",			(void *)&crypto_enable,				CFGBOOL,		"1"					},
 	{	"Crypto",			"Key",				(void *)crypto_key_hex,				CFGSTRING,		""					},
+
 //	{	"WiFi",				"Enable",			(void *)&wifi_enable,				CFGBOOL,		"1"					},
 	{	"WiFi",				"SSID",				(void *)ssid,						CFGSTRING,		"RocketRx"			},
 	{	"WiFi",				"Password",			(void *)password,					CFGSTRING,		"marsflightcrew"	},
+
 	{	"LoRa",				"Frequency",		(void *)&lora_freq,					CFGDOUBLE,		"434.150"			},
 	{	"LoRa",				"Mode",				(void *)&lora_mode,					CFGINTEGER,		"1"					},
 	{	"LoRa",				"EnableCRC",		(void *)&lora_crc,					CFGBOOL,		"1"					},
+
 	{	"High Rate",		"Bandwidth",		(void *)&hr_bw,						CFGINTEGER,		"125000"			},
 	{	"High Rate",		"SpreadingFactor",	(void *)&hr_sf,						CFGINTEGER,		"7"					},
 	{	"High Rate",		"CodingRate",		(void *)&hr_cr,						CFGINTEGER,		"8"					},
 	{	"High Rate",		"TransmitPeriodMS",	(void *)&hr_period,					CFGINTEGER,		"1000"				},
+
 	{	"Long Range",		"Bandwidth",		(void *)&lr_bw,						CFGINTEGER,		"31250"				},
 	{	"Long Range",		"SpreadingFactor",	(void *)&lr_sf,						CFGINTEGER,		"12"				},
 	{	"Long Range",		"CodingRate",		(void *)&lr_cr,						CFGINTEGER,		"8"					},
 	{	"Long Range",		"TransmitPeriodMS",	(void *)&lr_period,					CFGINTEGER,		"10000"				},
+
 	{	"Flight Events",	"DetectLaunch",		(void *)&detect_launch,				CFGBOOL,		"1"					},
 	{	"Flight Events",	"DetectApogee",		(void *)&detect_apogee,				CFGBOOL,		"1"					},
 	{	"Flight Events",	"DetectLowLevel",	(void *)&detect_lowlevel,			CFGBOOL,		"1"					},
 	{	"Flight Events",	"DetectLanding",	(void *)&detect_landing,			CFGBOOL,		"1"					},
+
 //	{	"GPS",				"Type",				(void *)gps_type,					CFGSTRING,		"NMEA"				},
 //	{	"GPS",				"InitialBaudRate",	(void *)&initial_baud,				CFGINTEGER,		"9600"				},
 //	{	"GPS",				"FinalBaudRate",	(void *)&final_baud,				CFGINTEGER,		"9600"				},
 //	{	"GPS",				"FixRate",			(void *)&fix_rate,					CFGINTEGER,		"1"					},
+
 	{	"Barometer",		"Enable",			(void *)&baro_enable,				CFGBOOL,		"1"					},
 	{	"Barometer",		"Type",				(void *)baro_type,					CFGSTRING,		"BME280"			},
 	{	"Barometer",		"MeasurementRate",	(void *)&baro_rate,					CFGINTEGER,		"10"				},
+
 //	{	"Accelerometer",	"Enable",			(void *)&acc_enable,				CFGBOOL,		"1"					},
 //	{	"Accelerometer",	"Type",				(void *)acc_type,					CFGSTRING,		"MPU6050"			},
 //	{	"Accelerometer",	"MeasurementRate",	(void *)&accel_rate,				CFGINTEGER,		"10"				},
+
 //	{	"Gyro",				"Enable",			(void *)&gyro_enable,				CFGBOOL,		"1"					},
 //	{	"Gyro",				"Type",				(void *)gyro_type,					CFGSTRING,		"MPU6050"			},
 //	{	"Gyro",				"MeasurementRate",	(void *)&gyro_rate,					CFGINTEGER,		"10"				},
@@ -130,8 +140,6 @@ int ReadConfigFile(const char *mode)
 
 	if(strncmp(mode,"rx",2)==0)	strcpy(filename,"/receiver.ini");
 	else						strcpy(filename,"/tracker.ini");
-		
-//	strcpy(filename,"/clunge.ini");
 		
 	Serial.print("\tLoading config from ");
 	Serial.println(filename);

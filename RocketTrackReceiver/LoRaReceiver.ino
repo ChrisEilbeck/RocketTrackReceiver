@@ -1,4 +1,5 @@
 
+#include "Beeper.h"
 #include "Logging.h"
 #include "LoRaReceiver.h"
 #include "Packetisation.h"
@@ -303,7 +304,9 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 							Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
 								lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
 				
-							UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);			
+							UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
+							
+							BeeperSetPattern(0b10111010001110101011100000000000,0);
 						}
 					}
 					else
