@@ -19,16 +19,12 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_HMC5883_U.h>
 
-// for the QMC magnetometer
-#include <QMC5883LCompass.h>
-
 // for future use of a combined sensor board
 //#include "ICM20948.h"
 
 // IMU devices
 MPU6500_WE mpu6500;
 Adafruit_HMC5883_Unified hmc5883l=Adafruit_HMC5883_Unified(5883);
-QMC5883LCompass qmc5883l;
 
 // typical declination value for the south of the UK
 float Declination=-1-1/60;
@@ -196,11 +192,6 @@ bool DetectSeparateBoards(void)
 	if(!hmc5883l.begin())
 	{
 		Serial.println("\t\tHMC5883 setup failed");
-
-		qmc5883l.init();
-		magnetometer_setup=QMC5883L;
-		
-		Serial.println("\t\tQMC5883L Magnetometer initialised, hopefully ...");
 	} 
 	else
 	{
@@ -208,16 +199,10 @@ bool DetectSeparateBoards(void)
 		magnetometer_setup=HMC5883L;
 	}
 	
-	if(		(accel_setup!=NO_SENSOR)
-		&&	(gyro_setup!=NO_SENSOR)
-		&&	(magnetometer_setup!=NO_SENSOR)	)
-	{
+	if((accel_setup!=NO_SENSOR)&&(gyro_setup!=NO_SENSOR)&&(magnetometer_setup!=NO_SENSOR))
 		return(false);
-	}
 	else
-	{
 		return(true);
-	}
 }
 
 bool DetectCombinedBoard(void)
@@ -246,10 +231,6 @@ void ReadMagnetometer(float *x,float *y,float *z)
 		
 						break;
 		
-		case QMC5883L:
-		
-						break;
-	
 		default:		Serial.println("Magnetometer not configured!");
 	}
 }
