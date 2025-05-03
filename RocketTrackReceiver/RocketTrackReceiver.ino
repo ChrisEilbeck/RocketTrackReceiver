@@ -149,8 +149,17 @@ void loop()
 	PollSerial();
 	PollPMIC();
 	PollIMU();
-	PollButton();
 	PollBeeper();
+	
+	int ButtonEvent=PollButton();
+	
+	if(ButtonEvent==BUTTON_LONG_PRESS)
+	{
+		beeper_enable=!beeper_enable;
+		
+		if(beeper_enable)	Serial.println("Beeper enabled");
+		else				Serial.println("Beeper disabled");
+	}
 }
 
 void PollSerial(void)
