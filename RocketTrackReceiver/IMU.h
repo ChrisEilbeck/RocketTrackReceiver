@@ -8,12 +8,17 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr);
 
 typedef enum
 {
-    NO_SENSORS=0,
-    SENSOR_MPU6500_QMC5883L_BME180,
-    SENSOR_ICM_20948_BME180,
-    SENSOR_MPU9250_BME180
-
-} sensor_setup_types;
+    NO_SENSOR=0,
+    QMC5883L,
+    HMC5883L,
+    MPU_6500,
+    MPU_9250,
+    ICM_20948,
+    BMP_180,
+    BME_180,
+    BME_280,
+    BME_680
+} sensors;
 
 extern float roll;
 extern float pitch;

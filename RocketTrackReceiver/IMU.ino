@@ -19,12 +19,16 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_HMC5883_U.h>
 
+// for the QMC magnetometer
+#include <QMC5883LCompass.h>
+
 // for future use of a combined sensor board
 //#include "ICM20948.h"
 
 // IMU devices
 MPU6500_WE mpu6500;
 Adafruit_HMC5883_Unified hmc5883l=Adafruit_HMC5883_Unified(5883);
+QMC5883LCompass qmc5883l;
 
 // typical declination value for the south of the UK
 float Declination=-1-1/60;
@@ -48,7 +52,10 @@ float imu_rate=10.0;	// Hz
 bool use_compass=true;
 bool compass_live_mode=false;
 bool mag_cal_mode=false;
-int sensor_setup=NO_SENSORS;
+
+int accel_setup=NO_SENSOR;
+int gyro_setup=NO_SENSOR;
+int magnetometer_setup=NO_SENSOR;
 
 // Magdwick filter outputs for global use
 float roll=0.0;
@@ -115,12 +122,12 @@ int SetupIMU(void)
 
 void PrintMagCalibration(void)
 {
-	Serial.println("\tSoft iron calibration matrix");
+	Serial.println("\n\tSoft iron calibration matrix");
 	Serial.printf("\t\tA11=%.6f,\tA12=%.6f,\tA13=%.6f\r\n",Mag_A11,Mag_A12,Mag_A13);
 	Serial.printf("\t\tA21=%.6f,\tA22=%.6f,\tA23=%.6f\r\n",Mag_A21,Mag_A22,Mag_A23);
 	Serial.printf("\t\tA31=%.6f,\tA32=%.6f,\tA33=%.6f\r\n\n",Mag_A31,Mag_A32,Mag_A33);
 	Serial.println("\tHard iron calibration vector");
-	Serial.printf("\t\tB1=%.6f,\tB2=%.6f,\tB3=%.6f\r\n",Mag_B1,Mag_B2,Mag_B3);
+	Serial.printf("\t\tB1=%.6f,\tB2=%.6f,\tB3=%.6f\r\n\n",Mag_B1,Mag_B2,Mag_B3);
 
 }
 
@@ -173,36 +180,73 @@ bool DetectSeparateBoards(void)
 {
 	bool fail=false;
 	
-	Serial.println("Setting up individual motion sensor boards ...");
-
+	Serial.println("\tSetting up individual motion sensor boards ...");
+	
 	if(!mpu6500.init())
 	{
-		Serial.println("MPU6500 setup failed");
-		fail=true;
+		Serial.println("\t\tMPU6500 setup failed");
 	}
 	else
 	{
-		Serial.println("\tMPU6500 gyro/accelerometer initialised ...");
+		Serial.println("\t\tMPU6500 gyro/accelerometer initialised ...");
+		accel_setup=MPU_6500;
+		gyro_setup=MPU_6500;
 	}
-
+	
 	if(!hmc5883l.begin())
 	{
-		Serial.println("HMC5883 setup failed");
-		fail=true;
+		Serial.println("\t\tHMC5883 setup failed");
+
+		qmc5883l.init();
+		magnetometer_setup=QMC5883L;
+		
+		Serial.println("\t\tQMC5883L Magnetometer initialised, hopefully ...");
 	} 
 	else
 	{
-		Serial.println("\tHMC5883L Magnetometer initialised ...");
+		Serial.println("\t\tHMC5883L Magnetometer initialised ...");
+		magnetometer_setup=HMC5883L;
 	}
 	
-	return(fail);
+	if(		(accel_setup!=NO_SENSOR)
+		&&	(gyro_setup!=NO_SENSOR)
+		&&	(magnetometer_setup!=NO_SENSOR)	)
+	{
+		return(false);
+	}
+	else
+	{
+		return(true);
+	}
 }
 
 bool DetectCombinedBoard(void)
 {
+	bool fail=false;
+	
+	Serial.println("\tSetting up combined motion sensor board ...");
+	
+	
+	
+	return(fail);
+}
 
-
-	return(true);
+void ReadMagnetometer(float *x,float *y,float *z)
+{
+	switch(magnetometer_setup)
+	{
+		case HMC5883L:
+		
+		
+		
+						break;
+		
+		case QMC5883L:
+		
+						break;
+	
+		default:		Serial.println("Magnetometer not configured!");
+	}
 }
 
 void PollIMU(void)
@@ -218,8 +262,8 @@ void PollIMU(void)
 	xyzFloat uncalibrated_mag;
 	xyzFloat calibrated_mag;
 	
-	static xyzFloat magmin={	 1000.0,	 1000.0,	 1000.0		};
-	static xyzFloat magmax={	-1000.0,	-1000.0,	-1000.0		};
+//	static xyzFloat magmin={	 1000.0,	 1000.0,	 1000.0		};
+//	static xyzFloat magmax={	-1000.0,	-1000.0,	-1000.0		};
 	
 	if(millis()>update_filter_at)
 	{
