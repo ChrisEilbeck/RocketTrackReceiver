@@ -235,9 +235,14 @@ void ReadMagnetometer(float *x,float *y,float *z)
 {
 	switch(magnetometer_setup)
 	{
-		case HMC5883L:
-		
-		
+		case HMC5883L:	{
+							sensors_event_t event; 
+							hmc5883l.getEvent(&event);
+							
+							*x=event.magnetic.x;
+							*y=event.magnetic.y;
+							*z=event.magnetic.z;
+						}		
 		
 						break;
 		
@@ -262,20 +267,16 @@ void PollIMU(void)
 	xyzFloat uncalibrated_mag;
 	xyzFloat calibrated_mag;
 	
-//	static xyzFloat magmin={	 1000.0,	 1000.0,	 1000.0		};
-//	static xyzFloat magmax={	-1000.0,	-1000.0,	-1000.0		};
-	
 	if(millis()>update_filter_at)
 	{
 		update_filter_at=millis()+(int)(1000/imu_rate);
 	
-		sensors_event_t event; 
-		hmc5883l.getEvent(&event);
-		
-		uncalibrated_mag.x=event.magnetic.x;
-		uncalibrated_mag.y=event.magnetic.y;
-		uncalibrated_mag.z=event.magnetic.z;
-		
+		ReadMagnetometer(
+							&(uncalibrated_mag.x),
+							&(uncalibrated_mag.y),
+							&(uncalibrated_mag.z)
+						);
+	
 		// see https://teslabs.com/articles/magnetometer-calibration/ and 
 		// https://sailboatinstruments.blogspot.com/2011/08/improved-magnetometer-calibration.html
 		// for a better explanation than I have of all of this 
