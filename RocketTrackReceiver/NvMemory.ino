@@ -1,6 +1,5 @@
 
 #include <EEPROM.h>
-//#include "MPU9250.h"
 
 #include "NvMemory.h"
 
@@ -57,72 +56,6 @@ int NvMemoryCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	return(retval);
 }
 
-#if 0
-void StoreCompassCalibration_MPU9250(void)
-{
-#if 0
-	int64_t CompassCalAddress=COMPASS_CAL_ADDRESS;
-	
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getAccBiasX());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getAccBiasY());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getAccBiasZ());		CompassCalAddress+=sizeof(float);
-	
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getGyroBiasX());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getGyroBiasY());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getGyroBiasZ());	CompassCalAddress+=sizeof(float);
-	
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagBiasX());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagBiasY());		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagBiasZ());		CompassCalAddress+=sizeof(float);
-	
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagScaleX());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagScaleY());	CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,mpu9250.getMagScaleZ());	CompassCalAddress+=sizeof(float);
-#endif
-	
-	Serial.print("Compass calibration values stored to NvMemory\r\n");
-}
-
-int RetrieveCompassCalibration_MPU9250(void)
-{
-#if 0
-	int64_t CompassCalAddress=COMPASS_CAL_ADDRESS;
-	
-	float AccBiasX=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
-	float AccBiasY=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
-	float AccBiasZ=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
-	
-	float GyroBiasX=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float GyroBiasY=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float GyroBiasZ=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	
-	float MagBiasX=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
-	float MagBiasY=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
-	float MagBiasZ=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
-	
-	float MagScaleX=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float MagScaleY=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float MagScaleZ=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	
-	if(		isnan(AccBiasX)||isnan(AccBiasY)||isnan(AccBiasZ)
-		||	isnan(GyroBiasX)||isnan(GyroBiasY)||isnan(GyroBiasZ)
-		||	isnan(MagBiasX)||isnan(MagBiasY)||isnan(MagBiasZ)
-		||	isnan(MagScaleX)||isnan(MagScaleY)||isnan(MagScaleZ)		)
-	{
-		return(1);
-	}
-
-	mpu9250.setAccBias(AccBiasX,AccBiasY,AccBiasZ);
-	mpu9250.setGyroBias(GyroBiasX,GyroBiasY,GyroBiasZ);
-	mpu9250.setMagBias(MagBiasX,MagBiasY,MagBiasZ);
-	mpu9250.setMagScale(MagScaleX,MagScaleY,MagScaleZ);
-#endif
-	
-	Serial.print("Compass calibration values retrieved from NvMemory\r\n");
-
-	return(0);
-}
-
 void StoreCalibrationData(void)
 {	
 	int64_t CompassCalAddress=COMPASS_CAL_ADDRESS;
@@ -138,14 +71,6 @@ void StoreCalibrationData(void)
 	EEPROM.writeFloat(CompassCalAddress,gyrooffset.x);		CompassCalAddress+=sizeof(float);
 	EEPROM.writeFloat(CompassCalAddress,gyrooffset.y);		CompassCalAddress+=sizeof(float);
 	EEPROM.writeFloat(CompassCalAddress,gyrooffset.z);		CompassCalAddress+=sizeof(float);
-	
-	EEPROM.writeFloat(CompassCalAddress,magoffset.x);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,magoffset.y);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,magoffset.z);		CompassCalAddress+=sizeof(float);
-	
-	EEPROM.writeFloat(CompassCalAddress,magscale.x);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,magscale.y);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,magscale.z);		CompassCalAddress+=sizeof(float);
 	
 	EEPROM.commit();
 	
@@ -168,19 +93,9 @@ int RetrieveCalibrationData(void)
 	float gyroy=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 	float gyroz=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 
-	float magoffsetx=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
-	float magoffsety=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
-	float magoffsetz=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
-	
-	float magscalex=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
-	float magscaley=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
-	float magscalez=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
-	
 	if(		isnan(accminx)||isnan(accminy)||isnan(accminz)
 		||	isnan(accmaxx)||isnan(accmaxy)||isnan(accmaxz)
-		||	isnan(gyrox)||isnan(gyroy)||isnan(gyroz)
-		||	isnan(magoffsetx)||isnan(magoffsety)||isnan(magoffsetz)
-		||	isnan(magscalex)||isnan(magscaley)||isnan(magscalez)		)
+		||	isnan(gyrox)||isnan(gyroy)||isnan(gyroz)		)
 	{
 		return(1);
 	}
@@ -188,21 +103,10 @@ int RetrieveCalibrationData(void)
 	accelmin.x=accminx;		accelmin.y=accminy;		accelmin.z=accminz;
 	accelmax.x=accmaxx;		accelmax.y=accmaxy;		accelmax.z=accmaxz;
 	gyrooffset.x=gyrox;		gyrooffset.y=gyroy;		gyrooffset.z=gyroz;	
-	magoffset.x=magoffsetx;	magoffset.y=magoffsety;	magoffset.z=magoffsetz;
-	magscale.x=magscalex;	magscale.y=magscaley;	magscale.z=magscalez;
 	
 	Serial.print("Calibration values retrieved from NvMemory\r\n");
 
-	mpu6500.setGyrOffsets(gyrooffset);	
-	mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
-
-//	qmc5883l.setCalibrationOffsets(magoffset.x,magoffset.y,magoffset.z);
-//	qmc5883l.setCalibrationScales(magscale.x,magscale.y,magscale.z);
-	
-	Serial.print("Set sensor calibration values\r\n");
-	
 	return(0);
 }
 
-#endif
 

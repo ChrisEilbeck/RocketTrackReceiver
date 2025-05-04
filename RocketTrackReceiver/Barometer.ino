@@ -35,7 +35,7 @@ int SetupBarometer(void)
 {
 	if(!baro.begin(BARO_ADDRESS))
 	{
-		Serial.println("Barometer not found, disabling");
+		Serial.println("\tBarometer not found, disabling");
 		baro_enable=false;
 		
 		return(1);
@@ -44,9 +44,9 @@ int SetupBarometer(void)
 	if(baro_rate!=0)
 		baro_period=1000/baro_rate;
 	
-	Serial.printf("Baro period = %d\r\n",baro_period);
+	Serial.printf("\tBaro period = %d\r\n",baro_period);
 	
-	Serial.print("Barometer configured\r\n");
+	Serial.print("\tBarometer configured\r\n");
 
 	last_baro_time=millis();
 	
@@ -78,6 +78,9 @@ void PollBarometer(void)
 
 void SampleBarometer(void)
 {
+#if DEBUG>2
+	Serial.println("barometer ...");
+#endif
 #if DEBUG>2
 	Serial.println(millis());
 #endif

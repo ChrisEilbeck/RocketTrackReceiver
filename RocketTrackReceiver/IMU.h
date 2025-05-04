@@ -12,6 +12,7 @@ typedef enum
     QMC5883L,
     HMC5883L,
     MPU_6500,
+    MPU_6050,
     MPU_9250,
     ICM_20948,
     BMP_180,

@@ -267,13 +267,13 @@ int SetupWebServer(void)
 	server.on("/cal_gyro.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_gyro.html");
-		CalibrateQMC5883LMagnetometer();
+//		CalibrateQMC5883LMagnetometer();
 	});
 		
 	server.on("/cal_magnetometer.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_magnetometer.html");
-		CalibrateQMC5883LMagnetometer();
+//		CalibrateQMC5883LMagnetometer();
 	});
 
 	server.on("/cal_complete.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.html");								});
