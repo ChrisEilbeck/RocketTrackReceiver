@@ -118,7 +118,7 @@ void setup()
 
 	UnpackPacket(packet,packetlength);
 #endif
-#if 0
+#if 1
 	RetrieveCalibrationData();
 #endif
 }

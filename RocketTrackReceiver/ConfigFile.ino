@@ -91,20 +91,20 @@ configvalue_t config[]={
 //	{	"Magnetometer",		"MeasurementRate",	(void *)&mag_rate,					CFGINTEGER,		"10"				},
 
 	// soft iron calibration matrix
-	{	"Magnetometer",		"Mag_A11",			(void *)&Mag_A11,					CFGFLOAT,		"1.00"				},
-	{	"Magnetometer",		"Mag_A12",			(void *)&Mag_A12,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_A13",			(void *)&Mag_A13,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_A21",			(void *)&Mag_A21,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_A22",			(void *)&Mag_A22,					CFGFLOAT,		"1.00"				},
-	{	"Magnetometer",		"Mag_A23",			(void *)&Mag_A23,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_A31",			(void *)&Mag_A31,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_A32",			(void *)&Mag_A32,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_A33",			(void *)&Mag_A33,					CFGFLOAT,		"1.00"				},
+//	{	"Magnetometer",		"Mag_A11",			(void *)&Mag_A11,					CFGFLOAT,		"1.00"				},
+//	{	"Magnetometer",		"Mag_A12",			(void *)&Mag_A12,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_A13",			(void *)&Mag_A13,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_A21",			(void *)&Mag_A21,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_A22",			(void *)&Mag_A22,					CFGFLOAT,		"1.00"				},
+//	{	"Magnetometer",		"Mag_A23",			(void *)&Mag_A23,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_A31",			(void *)&Mag_A31,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_A32",			(void *)&Mag_A32,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_A33",			(void *)&Mag_A33,					CFGFLOAT,		"1.00"				},
 	
 	// hard iron calibration vector
-	{	"Magnetometer",		"Mag_B1",			(void *)&Mag_B1,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_B2",			(void *)&Mag_B2,					CFGFLOAT,		"0.00"				},
-	{	"Magnetometer",		"Mag_B3",			(void *)&Mag_B3,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_B1",			(void *)&Mag_B1,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_B2",			(void *)&Mag_B2,					CFGFLOAT,		"0.00"				},
+//	{	"Magnetometer",		"Mag_B3",			(void *)&Mag_B3,					CFGFLOAT,		"0.00"				},
 
 //	{	"Logging",			"Level",			(void *)&log_level,					CFGINTEGER,		"1"					},
 

@@ -5,48 +5,62 @@
     <body>
         <center>
             <h1>Magnetometer Calibration</h1>
+            <form action="mag_save.html" >
             <div>
                 <table class="A_matrix">
                     <tr>
                         <td></td>
                         <td class="entry_label">A11</td>
-                        <td><input type="number" name="A11" value="9.7436e-01"></td>
+                        <td><input type="number" name="A11" value="%MAG_A11%" step="0.00001"></td>
                         <td class="entry_label">A12</td>
-                        <td><input type="number" name="A12" value="-2.2516e-03"></td>
+                        <td><input type="number" name="A12" value="%MAG_A12%" step="0.000001"></td>
                         <td class="entry_label">A13</td>
-                        <td><input type="number" name="A13" value="-7.3596e-02"></td>
+                        <td><input type="number" name="A13" value="%MAG_A13%" step="0.000001"></td>
                     </tr>
                     <tr>
                         <td class="section_label">Soft<br>Iron<br>Matrix</td>
                         <td class="entry_label">A21</td>
-                        <td><input type="number" name="A21" value="-2.2516e-03"></td>
+                        <td><input type="number" name="A21" value="%MAG_A21%" step="0.000001"></td>
                         <td class="entry_label">A22</td>
-                        <td><input type="number" name="A22" value="1.1269e+00"></td>
+                        <td><input type="number" name="A22" value="%MAG_A22%" step="0.000001"></td>
                         <td class="entry_label">A23</td>
-                        <td><input type="number" name="A23" value="-3.0113e-03"></td>
+                        <td><input type="number" name="A23" value="%MAG_A23%" step="0.000001"></td>
                     </tr>            
                     <tr>
                         <td></td>
                         <td class="entry_label">A31</td>
-                        <td><input type="number" name="A31" value="-7.3596e-02"></td>
+                        <td><input type="number" name="A31" value="%MAG_A31%" step="0.000001"></td>
                         <td class="entry_label">A32</td>
-                        <td><input type="number" name="A32" value="-3.0113e-03"></td>
+                        <td><input type="number" name="A32" value="%MAG_A32%" step="0.000001"></td>
                         <td class="entry_label">A33</td>
-                        <td><input type="number" name="A33" value="9.9677e-01"></td>                    
+                        <td><input type="number" name="A33" value="%MAG_A33%" step="0.000001"></td>                    
                     </tr>            
                 </table>
             </div>
             <div>
                 <table class="B_vector">
-                    <td class="section_label">Hard<br>Iron<br>Vector</td>
-                    <td class="entry_label">B1</td>
-                    <td><input type="number" name="B1" value="-10.6583"</td>
-                    <td class="entry_label">B2</td>
-                    <td><input type="number" name="B2" value="8.0037"></td>
-                    <td class="entry_label">B3</td>
-                    <td><input type="number" name="B3" value="34.7096"></td>
+                    <tr>
+                        <td></td>
+                        <td class="entry_label">B1</td>
+                        <td><input type="number" name="B1" value="%MAG_B1%" step="0.000001"</td>
+                    </tr>
+                    <tr>
+                        <td class="section_label">Hard<br>Iron<br>Vector</td>
+                        <td class="entry_label">B2</td>
+                        <td><input type="number" name="B2" value="%MAG_B2%" step="0.000001"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="entry_label">B3</td>
+                        <td><input type="number" name="B3" value="%MAG_B3%" step="0.000001"></td>
+                    </tr>
                 </table>
             </div>
+            <td><button class="menubuttons" formmethod="post">Save<br>Values</button></td>
+            </form>
+            <form action="configure.html">
+                <td><button class="menubuttons">Back</button></td>
+            </form>
         </center>
     </body>
 </html>

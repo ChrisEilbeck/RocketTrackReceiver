@@ -20,7 +20,6 @@
 // for the HMC magnetometer
 #include <Adafruit_Sensor.h>
 #include <Adafruit_HMC5883_U.h>
-//#include <Adafruit_MPU6050.h>
 
 // for future use of a combined sensor board
 //#include "ICM20948.h"
@@ -40,7 +39,10 @@ float Declination=-1-1/60;
 // for calibration of the sensors
 xyzFloat accelmin;
 xyzFloat accelmax;
-xyzFloat gyrooffset;
+
+xyzFloat AccelOffset;
+xyzFloat AccelScale;
+xyzFloat GyroOffset;
 
 // soft iron correction matrix for magnetometer
 float Mag_A11,Mag_A12,Mag_A13;
@@ -67,8 +69,8 @@ float pitch=0.0;
 float yaw=0.0;
 float heading=0.0;
 
-void CalibrateMPU6500Accelerometer(const char *orientation,xyzFloat *vals);
-void CalibrateMPU6500Gyro(void);
+//void CalibrateMPU6500Accelerometer(const char *orientation,xyzFloat *vals);
+//void CalibrateMPU6500Gyro(void);
 
 void ResetCalibration(void);
 
@@ -273,9 +275,9 @@ void CorrectAccelerometer(float *x,float *y,float *z)
 
 void CorrectGyro(float *x,float *y,float *z)
 {
-	*x+=gyrooffset.x;
-	*y+=gyrooffset.y;
-	*z+=gyrooffset.z;
+	*x+=GyroOffset.x;
+	*y+=GyroOffset.y;
+	*z+=GyroOffset.z;
 }
 
 void PollIMU(void)
@@ -455,6 +457,39 @@ int IMUCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	return(retval);
 }
 
+void CalibrateAccelerometer(char *direction,float *output,char axis)
+{
+	xyzFloat accel;
+	xyzFloat gyro;
+	
+	Serial.print("\tPlace with ");
+	Serial.println(direction);
+	
+	Serial.print("3 ...");	delay(1000);
+	Serial.print("2 ...");	delay(1000);
+	Serial.print("1 ...\r\n");	delay(1000);
+	Serial.println("\tMeasuring ...");
+
+	ReadAccelerometerGyro(
+							&(accel.x),&(accel.y),&(accel.z),
+							&(gyro.x),&(gyro.y),&(gyro.z)
+						);
+	
+	switch(axis)
+	{
+		case 'x':	*output=accel.x;
+					break;
+		
+		case 'y':	*output=accel.y;
+					break;
+		
+		case 'z':	*output=accel.z;
+					break;
+	
+		default:	Serial.printf("Invalid axis selected in CalibrateAccelerometer() - \'%c\'\r\n",axis);
+	}
+}
+
 int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 {
 	// ignore a single key stroke
@@ -490,18 +525,18 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					RetrieveCalibrationData();
 					break;
 
-		case 'x':	if(cmd[2]=='-')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Nose down",&vals);		accelmin.x=vals.x;	}
-					if(cmd[2]=='+')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Nose up",&vals);			accelmax.x=vals.x;	}
+		case 'x':	if(cmd[2]=='-')	CalibrateAccelerometer("Nose down",&(accelmin.x),'x');
+					if(cmd[2]=='+')	CalibrateAccelerometer("Nose up",&(accelmax.x),'x');
 							
 					break;
 		
-		case 'y':	if(cmd[2]=='-')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Left down",&vals);		accelmin.y=vals.y;	}
-					if(cmd[2]=='+')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Right down",&vals);		accelmax.y=vals.y;	}
+		case 'y':	if(cmd[2]=='-')	CalibrateAccelerometer("Left down",&(accelmin.y),'y');
+					if(cmd[2]=='+')	CalibrateAccelerometer("Right down",&(accelmax.y),'y');
 					
 					break;
 		
-		case 'z':	if(cmd[2]=='+')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Flat and level",&vals);	accelmax.z=vals.z;	}
-					if(cmd[2]=='-')	{	xyzFloat vals;	CalibrateMPU6500Accelerometer("Upside-down",&vals);		accelmin.z=vals.z;	}
+		case 'z':	if(cmd[2]=='+')	CalibrateAccelerometer("Flat and level",&(accelmax.z),'z');
+					if(cmd[2]=='-')	CalibrateAccelerometer("Upside-down",&(accelmin.z),'z');
 					
 					break;
 		
@@ -528,39 +563,6 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 
 void ResetCompassCalibration(void)
 {
-}
-
-void CalibrateMPU6500Accelerometer(const char *orientation,xyzFloat *vals)
-{
-	Serial.println("CalibrateMPU6500Accelerometer() entry");
-	
-	Serial.print("\tPlace with ");
-	Serial.print(orientation);
-	Serial.print("\t");
-	
-	Serial.print("3 ...");	delay(1000);
-	Serial.print("2 ...");	delay(1000);
-	Serial.print("1 ...\r\n");	delay(1000);
-	Serial.println("\tMeasuring ...");
-	
-	int now=millis();
-	xyzFloat sum;
-	int cnt=0;
-		
-	while((millis()-now)<1000)
-	{
-		sum+=mpu6500.getAccRawValues();
-		cnt++;
-		delay(10);
-	}	
-	
-	sum/=(float)cnt;
-	
-	Serial.printf("\tMeasured X: %.1f, Y: %.1f, Z: %.1f\r\n",sum.x,sum.y,sum.z);	
-	
-	vals->x=sum.x;	vals->y=sum.y;	vals->z=sum.z;
-	
-	Serial.println("CalibrateMPU6500Accelerometer() exit");
 }
 
 void CalibrateGyro(void)
@@ -595,7 +597,7 @@ void CalibrateGyro(void)
 	
 	Serial.printf("\tMeasured X: %.1f, Y: %.1f, Z: %.1f\r\n",sum.x,sum.y,sum.z);	
 	
-	gyrooffset.x=-sum.x;	gyrooffset.y=-sum.y;	gyrooffset.z=-sum.z;
+	GyroOffset.x=-sum.x;	GyroOffset.y=-sum.y;	GyroOffset.z=-sum.z;
 		
 	Serial.println("CalibrateGyro() exit");
 }
@@ -608,9 +610,9 @@ void PrintCalibrationValues(void)
 	Serial.printf("\tZ: %.1f\tto\t%.1f\r\n\n",accelmin.z,accelmax.z);
 	
 	Serial.print("Gyroscope:\r\n");
-	Serial.printf("\tX: %.1f\r\n",gyrooffset.x);
-	Serial.printf("\tY: %.1f\r\n",gyrooffset.y);
-	Serial.printf("\tZ: %.1f\r\n\n",gyrooffset.z);
+	Serial.printf("\tX: %.1f\r\n",GyroOffset.x);
+	Serial.printf("\tY: %.1f\r\n",GyroOffset.y);
+	Serial.printf("\tZ: %.1f\r\n\n",GyroOffset.z);
 
 }
 
@@ -620,6 +622,6 @@ void ResetCalibration(void)
 	accelmin.y=-16384.0;	accelmax.y=16384.0;
 	accelmin.z=-16384.0;	accelmax.z=16384.0;
 	
-	gyrooffset.x=0.0;	gyrooffset.y=0.0;	gyrooffset.z=0.0;					
+	GyroOffset.x=0.0;	GyroOffset.y=0.0;	GyroOffset.z=0.0;					
 }
 

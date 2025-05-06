@@ -60,18 +60,32 @@ void StoreCalibrationData(void)
 {	
 	int64_t CompassCalAddress=COMPASS_CAL_ADDRESS;
 	
-	EEPROM.writeFloat(CompassCalAddress,accelmin.x);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,accelmin.y);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,accelmin.x);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,AccelOffset.x);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,AccelOffset.y);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,AccelOffset.x);		CompassCalAddress+=sizeof(float);
 	
-	EEPROM.writeFloat(CompassCalAddress,accelmax.x);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,accelmax.y);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,accelmax.z);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,AccelScale.x);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,AccelScale.y);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,AccelScale.z);		CompassCalAddress+=sizeof(float);
 	
-	EEPROM.writeFloat(CompassCalAddress,gyrooffset.x);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,gyrooffset.y);		CompassCalAddress+=sizeof(float);
-	EEPROM.writeFloat(CompassCalAddress,gyrooffset.z);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,GyroOffset.x);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,GyroOffset.y);		CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,GyroOffset.z);		CompassCalAddress+=sizeof(float);
 	
+	EEPROM.writeFloat(CompassCalAddress,Mag_A11);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A12);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A13);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A21);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A22);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A23);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A31);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A32);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_A33);			CompassCalAddress+=sizeof(float);
+
+	EEPROM.writeFloat(CompassCalAddress,Mag_B1);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_B2);			CompassCalAddress+=sizeof(float);
+	EEPROM.writeFloat(CompassCalAddress,Mag_B3);			CompassCalAddress+=sizeof(float);
+
 	EEPROM.commit();
 	
 	Serial.print("Calibration values stored to NvMemory\r\n");
@@ -81,28 +95,52 @@ int RetrieveCalibrationData(void)
 {
 	int64_t CompassCalAddress=COMPASS_CAL_ADDRESS;
 	
-	float accminx=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float accminy=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float accminz=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
+	float accoffx=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
+	float accoffy=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
+	float accoffz=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 	
-	float accmaxx=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float accmaxy=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
-	float accmaxz=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
+	float accscalex=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
+	float accscaley=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
+	float accscalez=EEPROM.readFloat(CompassCalAddress);	CompassCalAddress+=sizeof(float);
 	
 	float gyrox=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 	float gyroy=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 	float gyroz=EEPROM.readFloat(CompassCalAddress);		CompassCalAddress+=sizeof(float);
 
-	if(		isnan(accminx)||isnan(accminy)||isnan(accminz)
-		||	isnan(accmaxx)||isnan(accmaxy)||isnan(accmaxz)
-		||	isnan(gyrox)||isnan(gyroy)||isnan(gyroz)		)
+	float a11=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a12=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a13=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a21=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a22=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a23=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a31=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a32=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float a33=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+
+	float b1=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float b2=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+	float b3=EEPROM.readFloat(CompassCalAddress);			CompassCalAddress+=sizeof(float);
+
+	if(		isnan(accoffx)||isnan(accoffy)||isnan(accoffz)
+		||	isnan(accscalex)||isnan(accscaley)||isnan(accscalez)
+		||	isnan(gyrox)||isnan(gyroy)||isnan(gyroz)
+		||	isnan(a11)||isnan(a12)||isnan(a13)
+		||	isnan(a21)||isnan(a22)||isnan(a23)
+		||	isnan(a31)||isnan(a32)||isnan(a33)
+		||	isnan(b1)||isnan(b2)||isnan(b3)					)
 	{
 		return(1);
 	}
 	
-	accelmin.x=accminx;		accelmin.y=accminy;		accelmin.z=accminz;
-	accelmax.x=accmaxx;		accelmax.y=accmaxy;		accelmax.z=accmaxz;
-	gyrooffset.x=gyrox;		gyrooffset.y=gyroy;		gyrooffset.z=gyroz;	
+	AccelOffset.x=accoffx;		AccelOffset.y=accoffy;		AccelOffset.z=accoffz;
+	AccelScale.x=accscalex;		AccelScale.y=accscaley;		AccelScale.z=accscalez;
+	GyroOffset.x=gyrox;			GyroOffset.y=gyroy;			GyroOffset.z=gyroz;	
+	
+	Mag_A11=a11;				Mag_A12=a12;				Mag_A13=a13;
+	Mag_A21=a21;				Mag_A22=a22;				Mag_A23=a23;
+	Mag_A31=a31;				Mag_A32=a32;				Mag_A33=a33;
+	
+	Mag_B1=b1;					Mag_B2=b2;					Mag_B3=b3;
 	
 	Serial.print("Calibration values retrieved from NvMemory\r\n");
 

@@ -19,7 +19,37 @@ char password[32]="marsflightcrew";
 
 bool track_compass=true;
 
-#if 0
+String magprocessor(const String& var)
+{
+#if DEBUG>2
+	Serial.println("magprocessor() entry");
+#endif
+	
+	char buffer[256];
+	memset(buffer,0,sizeof(buffer));
+	
+	if(var=="MAG_A11")		sprintf(buffer,"%.6f",Mag_A11);
+	else if(var=="MAG_A12")	sprintf(buffer,"%.6f",Mag_A12);
+	else if(var=="MAG_A13")	sprintf(buffer,"%.6f",Mag_A13);
+	else if(var=="MAG_A21")	sprintf(buffer,"%.6f",Mag_A21);
+	else if(var=="MAG_A22")	sprintf(buffer,"%.6f",Mag_A22);
+	else if(var=="MAG_A23")	sprintf(buffer,"%.6f",Mag_A23);
+	else if(var=="MAG_A31")	sprintf(buffer,"%.6f",Mag_A31);
+	else if(var=="MAG_A32")	sprintf(buffer,"%.6f",Mag_A32);
+	else if(var=="MAG_A33")	sprintf(buffer,"%.6f",Mag_A33);
+	else if(var=="MAG_B1")	sprintf(buffer,"%.6f",Mag_B1);
+	else if(var=="MAG_B2")	sprintf(buffer,"%.6f",Mag_B2);
+	else if(var=="MAG_B3")	sprintf(buffer,"%.6f",Mag_B3);
+
+#if DBEUG>2
+	Serial.println("magprocessor() exit");
+#endif
+	
+	if(strlen(buffer)>0)	return(buffer);
+	else					return(String());
+}
+
+
 String statusprocessor(const String& var)
 {
 //	Serial.println("webserver process entry");
@@ -122,7 +152,6 @@ String statusprocessor(const String& var)
 	else
 		return String();
 }
-#endif
 
 String trackingprocessor(const String& var)
 {
@@ -198,14 +227,12 @@ int SetupWebServer(void)
 	server.on("/logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/logo.jpg");													});
 	server.on("/small_logo.jpg",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/small_logo.jpg");											});
 	
-#if 0
-	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html"String(),false,statusprocessor););				});
+	server.on("/status.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/status.html",String(),false,statusprocessor);				});
 	server.on("/status.css",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.css");												});
 	server.on("/status.js",HTTP_GET,[](AsyncWebServerRequest *request)				{	request->send(SPIFFS,"/status.js",String(),false,statusprocessor);					});
-#endif
 	
 	server.on("/beacon_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/beacon_up.html");	track_compass=true;						});
-	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/north_up.html");		track_compass=false;						});
+	server.on("/north_up.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/north_up.html");		track_compass=false;					});
 		
 	server.on("/rockettrackreceiver.js",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/rockettrackreceiver.js",String(),false,trackingprocessor);	});
 	
@@ -214,7 +241,76 @@ int SetupWebServer(void)
 	
 	server.on("/telemetry.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);			});
 	server.on("/telemetry.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.css");												});
+	
+	server.on("/configure.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/configure.html");											});
+	server.on("/configure.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/configure.css");												});
 
+	server.on("/mag_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/mag_calibration.html",String(),false,magprocessor);			});
+	server.on("/mag_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/mag_calibration.css",String(),false,magprocessor);			});
+
+	server.on("/mag_save.html",HTTP_POST,[](AsyncWebServerRequest *request)
+	{
+    	// display params
+    	size_t count=request->params();
+    	
+    	Serial.printf("Got %d params in request\r\n",count);
+    	
+    	for(size_t cnt=0;cnt<count;cnt++)
+    	{
+    		const AsyncWebParameter *param=request->getParam(cnt);
+    		Serial.printf("PARAM[%u]: \"%s\" = \"%s\"\r\n",cnt,param->name().c_str(),param->value().c_str());
+    		
+    		if(strncmp(param->name().c_str(),"A11",3)==0)	{	Mag_A11=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A12",3)==0)	{	Mag_A12=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A13",3)==0)	{	Mag_A13=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A21",3)==0)	{	Mag_A21=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A22",3)==0)	{	Mag_A22=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A23",3)==0)	{	Mag_A23=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A31",3)==0)	{	Mag_A31=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A32",3)==0)	{	Mag_A32=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"A33",3)==0)	{	Mag_A33=atof(param->value().c_str());		}
+    		
+    		if(strncmp(param->name().c_str(),"B1",2)==0)	{	Mag_B1=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"B2",2)==0)	{	Mag_B2=atof(param->value().c_str());		}
+    		if(strncmp(param->name().c_str(),"B3",2)==0)	{	Mag_B3=atof(param->value().c_str());		}
+		}
+		
+		StoreCalibrationData();
+		
+		request->redirect("/configure.html");
+	});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+#if 0	
 	server.on("/calibrate.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.html");											});
 	server.on("/calibrate.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.css");												});
 	server.on("/calibrate.js",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/calibrate.js");												});
@@ -224,61 +320,52 @@ int SetupWebServer(void)
 	server.on("/cal_accel_xplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_xplus.html");
-		xyzFloat vals;		CalibrateMPU6500Accelerometer("Nose up",&vals);			accelmax.x=vals.x;
-		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+		CalibrateAccelerometer("Nose up",&(accelmax.x),'x');
 	});
 	
 	server.on("/cal_accel_xminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_xminus.html");
-		xyzFloat vals;		CalibrateMPU6500Accelerometer("Nose down",&vals);		accelmin.x=vals.x;
-		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+		CalibrateAccelerometer("Nose down",&(accelmin.x),'x');
 	});
 	
 	server.on("/cal_accel_yplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_yplus.html");
-		xyzFloat vals;		CalibrateMPU6500Accelerometer("Right down",&vals);		accelmax.y=vals.y;
-		
-		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+		CalibrateAccelerometer("Right down",&(accelmax.y),'y');
 	});
 	
 	server.on("/cal_accel_yminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_yminus.html");
-		xyzFloat vals;		CalibrateMPU6500Accelerometer("Left down",&vals);		accelmin.y=vals.y;
-		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+		CalibrateAccelerometer("Left down",&(accelmin.y),'y');
 	});
 	
 	server.on("/cal_accel_zplus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_zplus.html");
-		xyzFloat vals;		CalibrateMPU6500Accelerometer("Flat and level",&vals);	accelmax.z=vals.z;
-		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+		CalibrateAccelerometer("Flat and level",&(accelmax.z),'z');
 	});
 	
 	server.on("/cal_accel_zminus.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_accel_zminus.html");
-		xyzFloat vals;		CalibrateMPU6500Accelerometer("Upside-down",&vals);		accelmin.z=vals.z;
-		mpu6500.setAccOffsets(accelmin.x,accelmax.x,accelmin.y,accelmax.y,accelmin.z,accelmax.z);
+		CalibrateAccelerometer("Upside-down",&(accelmin.z),'z');
 	});
 
 	server.on("/cal_gyro.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_gyro.html");
-//		CalibrateQMC5883LMagnetometer();
 	});
 		
 	server.on("/cal_magnetometer.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/cal_magnetometer.html");
-//		CalibrateQMC5883LMagnetometer();
 	});
+#endif
 
 	server.on("/cal_complete.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/cal_complete.html");								});
 
-#if 0
 	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/store_calibration.html");		
@@ -297,7 +384,6 @@ int SetupWebServer(void)
 
 		#warning "more work here"		
 	});
-#endif
 	
 	server.on("/favicon.ico",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/favicon.ico");									});
 	

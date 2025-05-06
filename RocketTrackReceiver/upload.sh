@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PORT=/dev/ttyACM0
-#PORT=/dev/ttyUSB0
+#PORT=/dev/ttyACM0
+PORT=/dev/ttyUSB0
 
 arduino-cli upload \
 	--port ${PORT} \
