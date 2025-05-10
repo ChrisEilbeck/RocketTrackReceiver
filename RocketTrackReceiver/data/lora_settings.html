@@ -1,0 +1,122 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="configure.css">
+    </head>
+    <body>
+        <center>
+            <h1>LoRa Telemetry Settings</h1>
+            <form action="lora_save.html">
+                <div class="optionsgroup">
+                    <h2>High Rate Mode</h2>
+                    <fieldset>
+                        <legend>Bandwidth</legend>
+                        <input type="radio" id="10.4K" name="hrbw" value="10.4K">
+                        <label class="bwlabel" for "10.4K">10.4K</label>
+                        <input type="radio" id="15.6K" name="hrbw" value="15.6K">
+                        <label class="bwlabel" for "15.6K">15.6K</label>
+                        <input type="radio" id="20.8K" name="hrbw" value="20.8K">
+                        <label class="bwlabel" for "20.8K">20.8K</label>
+                        <input type="radio" id="31.25K" name="hrbw" value="31.25K">
+                        <label class="bwlabel" for "31.25K">31.25K</label>
+                        <br>
+                        <input type="radio" id="41.7K" name="hrbw" value="41.7K">
+                        <label class="bwlabel" for "41.7K">41.7K</label>
+                        <input type="radio" id="62.5K" name="hrbw" value="62.5K">
+                        <label class="bwlabel" for "62.5K">62.5K</label>
+                        <input type="radio" id="125K" name="hrbw" value="125K">
+                        <label class="bwlabel" for "125K">125K</label>
+                        <input type="radio" id="250K" name="hrbw" value="250K">
+                        <label class="bwlabel" for "250K">250K</label>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Spreading Factor</legend>
+                        <input type="radio" id="hrsf6" name="hrsf" value="SF6">
+                        <label class="sflabel" for "hrsf6">SF=6</label>
+                        <input type="radio" id="hrsf7" name="hrsf" value="SF7">
+                        <label class="sflabel" for "hrsf7">SF=7</label>
+                        <input type="radio" id="hrsf8" name="hrsf" value="SF8">
+                        <label class="sflabel" for "hrsf8">SF=8</label>
+                        <input type="radio" id="hrsf9" name="hrsf" value="SF9">
+                        <label class="sflabel" for "hrsf9">SF=9</label>
+                        <input type="radio" id="hrsf10" name="hrsf" value="SF10">
+                        <label class="sflabel" for "hrsf10">SF=10</label>
+                        <input type="radio" id="hrsf11" name="hrsf" value="SF11">
+                        <label class="sflabel" for "hrsf11">SF=11</label>
+                        <input type="radio" id="hrsf12" name="hrsf" value="SF12">
+                        <label class="sflabel" for "hrsf12">SF=12</label>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Coding Rate</legend>
+                        <input type="radio" id="hrcr4" name="hrcr" value="CR4">
+                        <label class="crlabel" for "hrcr4">CR=4</label>
+                        <input type="radio" id="hrcr5" name="hrcr" value="CR5">
+                        <label class="crlabel" for "hrcr5">CR=5</label>
+                        <input type="radio" id="hrcr6" name="hrcr" value="CR6">
+                        <label class="crlabel" for "hrcr6">CR=4</label>
+                        <input type="radio" id="hrcr7" name="hrcr" value="CR7">
+                        <label class="crlabel" for "hrcr7">CR=7</label>
+                        <input type="radio" id="hrcr8" name="hrcr" value="CR8">
+                        <label class="crlabel" for "hrcr8">CR=8</label>
+                    </fieldset>
+                </div>
+                <div class="optionsgroup">
+                    <h2>Long Range Mode</h2>
+                    <fieldset>
+                        <legend>Bandwidth</legend>
+                        <input type="radio" id="10.4K" name="lrbw" value="10.4K">
+                        <label class="bwlabel" for "10.4K">10.4K</label>
+                        <input type="radio" id="15.6K" name="lrbw" value="15.6K">
+                        <label class="bwlabel" for "15.6K">15.6K</label>
+                        <input type="radio" id="20.8K" name="lrbw" value="20.8K">
+                        <label class="bwlabel" for "20.8K">20.8K</label>
+                        <input type="radio" id="31.25K" name="lrbw" value="31.25K">
+                        <label class="bwlabel" for "31.25K">31.25K</label>
+                        <br>
+                        <input type="radio" id="41.7K" name="lrbw" value="41.7K">
+                        <label class="bwlabel" for "41.7K">41.7K</label>
+                        <input type="radio" id="62.5K" name="lrbw" value="62.5K">
+                        <label class="bwlabel" for "62.5K">62.5K</label>
+                        <input type="radio" id="125K" name="lrbw" value="125K">
+                        <label class="bwlabel" for "125K">125K</label>
+                        <input type="radio" id="250K" name="lrbw" value="250K">
+                        <label class="bwlabel" for "250K">250K</label>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Spreading Factor</legend>
+                        <input type="radio" id="lrsf6" name="lrsf" value="SF6">
+                        <label class="sflabel" for "lrsf6">SF=6</label>
+                        <input type="radio" id="lrsf7" name="lrsf" value="SF7">
+                        <label class="sflabel" for "lrsf7">SF=7</label>
+                        <input type="radio" id="lrsf8" name="lrsf" value="SF8">
+                        <label class="sflabel" for "lrsf8">SF=8</label>
+                        <input type="radio" id="lrsf9" name="lrsf" value="SF9">
+                        <label class="sflabel" for "lrsf9">SF=9</label>
+                        <input type="radio" id="lrsf10" name="lrsf" value="SF10">
+                        <label class="sflabel" for "lrsf10">SF=10</label>
+                        <input type="radio" id="lrsf11" name="lrsf" value="SF11">
+                        <label class="sflabel" for "lrsf11">SF=11</label>
+                        <input type="radio" id="lrsf12" name="lrsf" value="SF12">
+                        <label class="sflabel" for "lrsf12">SF=12</label>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Coding Rate</legend>
+                        <input type="radio" id="lrcr4" name="lrcr" value="CR4">
+                        <label class="crlabel" for "lrcr4">CR=4</label>
+                        <input type="radio" id="lrcr5" name="lrcr" value="CR5">
+                        <label class="crlabel" for "lrcr5">CR=5</label>
+                        <input type="radio" id="lrcr6" name="lrcr" value="CR6">
+                        <label class="crlabel" for "lrcr6">CR=4</label>
+                        <input type="radio" id="lrcr7" name="lrcr" value="CR7">
+                        <label class="crlabel" for "lrcr7">CR=7</label>
+                        <input type="radio" id="lrcr8" name="lrcr" value="CR8">
+                        <label class="crlabel" for "lrcr8">CR=8</label>
+                    </fieldset>
+                </div>
+                <button class="menubuttons" formmethod="post">Apply</button>
+            </form>
+            <form action="configure.html">
+                <td><button class="menubuttons">Back</button></td>
+            </form>
+        </center>
+    </body>
+</html>
