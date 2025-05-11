@@ -1,19 +1,16 @@
 
 #define DEBUGCONFIG 0
   
-//#include "Accelerometer.h"
+#include <IniFile.h>
+
 #include "Barometer.h"
 #include "Crypto.h"
 #include "FlightEvents.h"
 #include "GPS.h"
-//#include "Gyro.h"
 #include "IMU.h"
 #include "Logging.h"
 #include "LoRaReceiver.h"
-//#include "Magnetometer.h"
 #include "Webserver.h"
-
-#include <IniFile.h>
 
 #ifndef ADAFRUIT_FEATHER_M0
 	#include <SPIFFSIniFile.h>
@@ -50,33 +47,33 @@ configvalue_t config[]={
 	{	"WiFi",				"SSID",				(void *)ssid,						CFGSTRING,		"RocketRx"			},
 	{	"WiFi",				"Password",			(void *)password,					CFGSTRING,		"marsflightcrew"	},
 
-	{	"LoRa",				"Frequency",		(void *)&lora_freq,					CFGDOUBLE,		"434.150"			},
-	{	"LoRa",				"Mode",				(void *)&lora_mode,					CFGINTEGER,		"1"					},
-	{	"LoRa",				"EnableCRC",		(void *)&lora_crc,					CFGBOOL,		"1"					},
+//	{	"LoRa",				"Frequency",		(void *)&lora_freq,					CFGFLOAT,		"434.150"			},
+//	{	"LoRa",				"Mode",				(void *)&lora_mode,					CFGINTEGER,		"1"					},
+//	{	"LoRa",				"EnableCRC",		(void *)&lora_crc,					CFGBOOL,		"1"					},
 
-	{	"High Rate",		"Bandwidth",		(void *)&hr_bw,						CFGINTEGER,		"125000"			},
-	{	"High Rate",		"SpreadingFactor",	(void *)&hr_sf,						CFGINTEGER,		"7"					},
-	{	"High Rate",		"CodingRate",		(void *)&hr_cr,						CFGINTEGER,		"8"					},
-	{	"High Rate",		"TransmitPeriodMS",	(void *)&hr_period,					CFGINTEGER,		"1000"				},
+//	{	"High Rate",		"Bandwidth",		(void *)&hr_bw,						CFGINTEGER,		"125000"			},
+//	{	"High Rate",		"SpreadingFactor",	(void *)&hr_sf,						CFGINTEGER,		"7"					},
+//	{	"High Rate",		"CodingRate",		(void *)&hr_cr,						CFGINTEGER,		"8"					},
+//	{	"High Rate",		"TransmitPeriodMS",	(void *)&hr_period,					CFGINTEGER,		"1000"				},
 
-	{	"Long Range",		"Bandwidth",		(void *)&lr_bw,						CFGINTEGER,		"31250"				},
-	{	"Long Range",		"SpreadingFactor",	(void *)&lr_sf,						CFGINTEGER,		"12"				},
-	{	"Long Range",		"CodingRate",		(void *)&lr_cr,						CFGINTEGER,		"8"					},
-	{	"Long Range",		"TransmitPeriodMS",	(void *)&lr_period,					CFGINTEGER,		"10000"				},
+//	{	"Long Range",		"Bandwidth",		(void *)&lr_bw,						CFGINTEGER,		"31250"				},
+//	{	"Long Range",		"SpreadingFactor",	(void *)&lr_sf,						CFGINTEGER,		"12"				},
+//	{	"Long Range",		"CodingRate",		(void *)&lr_cr,						CFGINTEGER,		"8"					},
+//	{	"Long Range",		"TransmitPeriodMS",	(void *)&lr_period,					CFGINTEGER,		"10000"				},
 
-	{	"Flight Events",	"DetectLaunch",		(void *)&detect_launch,				CFGBOOL,		"1"					},
-	{	"Flight Events",	"DetectApogee",		(void *)&detect_apogee,				CFGBOOL,		"1"					},
-	{	"Flight Events",	"DetectLowLevel",	(void *)&detect_lowlevel,			CFGBOOL,		"1"					},
-	{	"Flight Events",	"DetectLanding",	(void *)&detect_landing,			CFGBOOL,		"1"					},
+//	{	"Flight Events",	"DetectLaunch",		(void *)&detect_launch,				CFGBOOL,		"1"					},
+//	{	"Flight Events",	"DetectApogee",		(void *)&detect_apogee,				CFGBOOL,		"1"					},
+//	{	"Flight Events",	"DetectLowLevel",	(void *)&detect_lowlevel,			CFGBOOL,		"1"					},
+//	{	"Flight Events",	"DetectLanding",	(void *)&detect_landing,			CFGBOOL,		"1"					},
 
 //	{	"GPS",				"Type",				(void *)gps_type,					CFGSTRING,		"NMEA"				},
 //	{	"GPS",				"InitialBaudRate",	(void *)&initial_baud,				CFGINTEGER,		"9600"				},
 //	{	"GPS",				"FinalBaudRate",	(void *)&final_baud,				CFGINTEGER,		"9600"				},
 //	{	"GPS",				"FixRate",			(void *)&fix_rate,					CFGINTEGER,		"1"					},
 
-	{	"Barometer",		"Enable",			(void *)&baro_enable,				CFGBOOL,		"1"					},
-	{	"Barometer",		"Type",				(void *)baro_type,					CFGSTRING,		"BME280"			},
-	{	"Barometer",		"MeasurementRate",	(void *)&baro_rate,					CFGINTEGER,		"10"				},
+//	{	"Barometer",		"Enable",			(void *)&baro_enable,				CFGBOOL,		"1"					},
+//	{	"Barometer",		"Type",				(void *)baro_type,					CFGSTRING,		"BME280"			},
+//	{	"Barometer",		"MeasurementRate",	(void *)&baro_rate,					CFGINTEGER,		"10"				},
 
 //	{	"Accelerometer",	"Enable",			(void *)&acc_enable,				CFGBOOL,		"1"					},
 //	{	"Accelerometer",	"Type",				(void *)acc_type,					CFGSTRING,		"MPU6050"			},
@@ -322,11 +319,14 @@ int SettingsCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
-		case 'f':	Serial.println(cmd[strlen((const char *)cmd)-1]);
+		case 'd':	ResetAllSettings();
+					break;
+		
+		case 's':	DisplayAllSettings();
 					break;
 		
 		case '?':	Serial.print("Settings Test Harness\r\n============================\r\n\n");
-					Serial.print("f\t-\tSet the frequency\r\n");
+					Serial.print("d\t-\tReset all settings to defaults\r\n");
 					Serial.print("s\t-\tShow the current settings\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
@@ -336,5 +336,57 @@ int SettingsCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	}
 	
 	return(retval);
+}
+
+void ResetAllSettings(void)
+{
+	Serial.println("Resetting all Settings to defaults");
+
+	lora_freq=LORA_CH2;
+	if(lora_freq<1e6)	lora_freq*=1e6;
+	
+	lora_mode=LORA_HIGH_RATE_MODE;
+	
+	hr_bw=125000;
+	hr_sf=7;
+	hr_cr=8;
+	
+	lr_bw=31250;
+	lr_sf=12;
+	lr_cr=8;
+	
+	Mag_A11=1.0;	Mag_A12=0.0;	Mag_A13=0.0;
+	Mag_A21=0.0;	Mag_A22=1.0;	Mag_A23=0.0;
+	Mag_A31=0.0;	Mag_A32=0.0;	Mag_A33=1.0;
+	
+	Mag_B1=0.0;		Mag_B2=0.0;		Mag_B3=0.0;
+	
+	AccelOffset.x=0.0;	AccelOffset.y=0.0;	AccelOffset.z=0.0;
+	AccelScale.x=1.0;	AccelScale.y=1.0;	AccelScale.z=1.0;
+	
+	GyroOffset.x=0.0;	GyroOffset.y=0.0;	GyroOffset.z=0.0;
+
+	StoreCalibrationData();
+	
+	DisplayAllSettings();
+}
+
+void DisplayAllSettings(void)
+{
+#if LORA_BAND==434
+	Serial.println("RocketTrackReceiver in 434MHz Mode\n");
+#else
+	Serial.println("RocketTrackReceiver in 868MHz Mode\n");
+#endif
+
+	Serial.printf("LoRa Freq %.3f MHz\r\n",lora_freq/1e6);
+
+	if(lora_mode==LORA_HIGH_RATE_MODE)	Serial.println("High rate mode\n");
+	else								Serial.println("Long range mode\n");
+
+	Serial.printf("High Rate mode is BW=%d, SF=%d, CR=%d\r\n",hr_bw,hr_sf,hr_cr);
+	Serial.printf("Long Range mode is BW=%d, SF=%d, CR=%d\r\n",lr_bw,lr_sf,lr_cr);
+
+	PrintMagCalibration();
 }
 

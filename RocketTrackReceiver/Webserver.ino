@@ -3,6 +3,7 @@
 
 //#include "network_creds.h"
 #include "Logging.h"
+#include "LoRaReceiver.h"
 #include "Packetisation.h"
 #include "Webserver.h"
 
@@ -49,6 +50,99 @@ String magprocessor(const String& var)
 	else					return(String());
 }
 
+String chanprocessor(const String& var)
+{
+#if DEBUG>2
+	Serial.println("chanprocessor() entry");
+#endif
+	
+	char buffer[256];
+	memset(buffer,0,sizeof(buffer));
+
+	if(var=="CH1_FREQ")			sprintf(buffer,"%3.3f",LORA_CH1);
+	else if(var=="CH2_FREQ")	sprintf(buffer,"%3.3f",LORA_CH2);
+	else if(var=="CH3_FREQ")	sprintf(buffer,"%3.3f",LORA_CH3);
+	else if(var=="CH4_FREQ")	sprintf(buffer,"%3.3f",LORA_CH4);
+	else if(var=="CH5_FREQ")	sprintf(buffer,"%3.3f",LORA_CH5);
+	else if(var=="CH6_FREQ")	sprintf(buffer,"%3.3f",LORA_CH6);
+
+	else if((var=="CH1_CHECKED")&&(fabs(lora_freq-LORA_CH1*1e6)<10e3))	sprintf(buffer,"checked");
+	else if((var=="CH2_CHECKED")&&(fabs(lora_freq-LORA_CH2*1e6)<10e3))	sprintf(buffer,"checked");
+	else if((var=="CH3_CHECKED")&&(fabs(lora_freq-LORA_CH3*1e6)<10e3))	sprintf(buffer,"checked");
+	else if((var=="CH4_CHECKED")&&(fabs(lora_freq-LORA_CH4*1e6)<10e3))	sprintf(buffer,"checked");
+	else if((var=="CH5_CHECKED")&&(fabs(lora_freq-LORA_CH5*1e6)<10e3))	sprintf(buffer,"checked");
+	else if((var=="CH6_CHECKED")&&(fabs(lora_freq-LORA_CH6*1e6)<10e3))	sprintf(buffer,"checked");
+		
+#if DBEUG>2
+	Serial.println("chanprocessor() exit");
+#endif
+	
+	if(strlen(buffer)>0)	return(buffer);
+	else					return(String());
+}
+
+String loraprocessor(const String& var)
+{
+#if DEBUG>2
+	Serial.println("loraprocessor() entry");
+#endif
+	
+	char buffer[256];
+	memset(buffer,0,sizeof(buffer));
+	
+	if((var=="HR10.4K")&&(hr_bw==10400))			sprintf(buffer,"checked");
+	else if((var=="HR15.6K")&&(hr_bw==15600))		sprintf(buffer,"checked");
+	else if((var=="HR20.8K")&&(hr_bw==20800))		sprintf(buffer,"checked");
+	else if((var=="HR31.25K")&&(hr_bw==31250))		sprintf(buffer,"checked");
+	else if((var=="HR41.7K")&&(hr_bw==41700))		sprintf(buffer,"checked");
+	else if((var=="HR62.5K")&&(hr_bw==62500))		sprintf(buffer,"checked");
+	else if((var=="HR125K")&&(hr_bw==125000))		sprintf(buffer,"checked");
+	else if((var=="HR250K")&&(hr_bw==250000))		sprintf(buffer,"checked");
+	
+	else if((var=="HRSF6")&&(hr_sf==6))				sprintf(buffer,"checked");
+	else if((var=="HRSF7")&&(hr_sf==7))				sprintf(buffer,"checked");
+	else if((var=="HRSF8")&&(hr_sf==8))				sprintf(buffer,"checked");
+	else if((var=="HRSF9")&&(hr_sf==9))				sprintf(buffer,"checked");
+	else if((var=="HRSF10")&&(hr_sf==10))			sprintf(buffer,"checked");
+	else if((var=="HRSF11")&&(hr_sf==11))			sprintf(buffer,"checked");
+	else if((var=="HRSF12")&&(hr_sf==12))			sprintf(buffer,"checked");
+	
+	else if((var=="HRCR4")&&(hr_cr==4))				sprintf(buffer,"checked");
+	else if((var=="HRCR5")&&(hr_cr==5))				sprintf(buffer,"checked");
+	else if((var=="HRCR6")&&(hr_cr==6))				sprintf(buffer,"checked");
+	else if((var=="HRCR7")&&(hr_cr==7))				sprintf(buffer,"checked");
+	else if((var=="HRCR8")&&(hr_cr==8))				sprintf(buffer,"checked");
+	
+	else if((var=="LR10.4K")&&(lr_bw==10400))		sprintf(buffer,"checked");
+	else if((var=="LR15.6K")&&(lr_bw==15600))		sprintf(buffer,"checked");
+	else if((var=="LR20.8K")&&(lr_bw==20800))		sprintf(buffer,"checked");
+	else if((var=="LR31.25K")&&(lr_bw==31250))		sprintf(buffer,"checked");
+	else if((var=="LR41.7K")&&(lr_bw==41700))		sprintf(buffer,"checked");
+	else if((var=="LR62.5K")&&(lr_bw==62500))		sprintf(buffer,"checked");
+	else if((var=="LR125K")&&(lr_bw==125000))		sprintf(buffer,"checked");
+	else if((var=="LR250K")&&(lr_bw==250000))		sprintf(buffer,"checked");
+	
+	else if((var=="LRSF6")&&(lr_sf==6))				sprintf(buffer,"checked");
+	else if((var=="LRSF7")&&(lr_sf==7))				sprintf(buffer,"checked");
+	else if((var=="LRSF8")&&(lr_sf==8))				sprintf(buffer,"checked");
+	else if((var=="LRSF9")&&(lr_sf==9))				sprintf(buffer,"checked");
+	else if((var=="LRSF10")&&(lr_sf==10))			sprintf(buffer,"checked");
+	else if((var=="LRSF11")&&(lr_sf==11))			sprintf(buffer,"checked");
+	else if((var=="LRSF12")&&(lr_sf==12))			sprintf(buffer,"checked");
+	
+	else if((var=="LRCR4")&&(lr_cr==4))				sprintf(buffer,"checked");
+	else if((var=="LRCR5")&&(lr_cr==5))				sprintf(buffer,"checked");
+	else if((var=="LRCR6")&&(lr_cr==6))				sprintf(buffer,"checked");
+	else if((var=="LRCR7")&&(lr_cr==7))				sprintf(buffer,"checked");
+	else if((var=="LRCR8")&&(lr_cr==8))				sprintf(buffer,"checked");
+	
+#if DBEUG>2
+	Serial.println("loraprocessor() exit");
+#endif
+	
+	if(strlen(buffer)>0)	return(buffer);
+	else					return(String());
+}
 
 String statusprocessor(const String& var)
 {
@@ -245,6 +339,12 @@ int SetupWebServer(void)
 	server.on("/configure.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/configure.html");											});
 	server.on("/configure.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/configure.css");												});
 
+	server.on("/channels.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/channels.html",String(),false,chanprocessor);				});
+	server.on("/channels.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/channels.css",String(),false,chanprocessor);					});
+
+	server.on("/lora_settings.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/lora_settings.html",String(),false,loraprocessor);			});
+	server.on("/lora_setting.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/lora_settings.css",String(),false,loraprocessor);			});
+
 	server.on("/mag_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/mag_calibration.html",String(),false,magprocessor);			});
 	server.on("/mag_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/mag_calibration.css",String(),false,magprocessor);			});
 
@@ -279,7 +379,71 @@ int SetupWebServer(void)
 		
 		request->redirect("/configure.html");
 	});
-
+	
+	server.on("/chan_save.html",HTTP_POST,[](AsyncWebServerRequest *request)
+	{
+    	// display params
+    	size_t count=request->params();
+    	
+    	Serial.printf("Got %d params in request\r\n",count);
+    	
+    	for(size_t cnt=0;cnt<count;cnt++)
+    	{
+    		const AsyncWebParameter *param=request->getParam(cnt);
+    		Serial.printf("PARAM[%u]: \"%s\" = \"%s\"\r\n",cnt,param->name().c_str(),param->value().c_str());
+    		
+    		if(strncmp(param->name().c_str(),"channel",7)==0)
+    		{
+    			if(strncmp(param->value().c_str(),"ch1",3)==0)	lora_freq=LORA_CH1*1e6;
+    			if(strncmp(param->value().c_str(),"ch2",3)==0)	lora_freq=LORA_CH2*1e6;
+    			if(strncmp(param->value().c_str(),"ch3",3)==0)	lora_freq=LORA_CH3*1e6;
+    			if(strncmp(param->value().c_str(),"ch4",3)==0)	lora_freq=LORA_CH4*1e6;
+    			if(strncmp(param->value().c_str(),"ch5",3)==0)	lora_freq=LORA_CH5*1e6;
+    			if(strncmp(param->value().c_str(),"ch6",3)==0)	lora_freq=LORA_CH6*1e6;
+    		}    		
+		}
+		
+		StoreCalibrationData();
+		
+		request->redirect("/configure.html");
+	});
+	
+	server.on("/lora_save.html",HTTP_POST,[](AsyncWebServerRequest *request)
+	{
+    	// display params
+    	size_t count=request->params();
+    	
+    	Serial.printf("Got %d params in request\r\n",count);
+    	
+    	for(size_t cnt=0;cnt<count;cnt++)
+    	{
+    		const AsyncWebParameter *param=request->getParam(cnt);
+    		Serial.printf("PARAM[%u]: \"%s\" = \"%s\"\r\n",cnt,param->name().c_str(),param->value().c_str());
+    		
+    		
+    		
+    		
+    		
+    		
+		}
+		
+		StoreCalibrationData();
+		
+		request->redirect("/configure.html");
+	});
+	
+	server.on("/lora_defaults.html",HTTP_POST,[](AsyncWebServerRequest *request)
+	{
+		Serial.println("Should be resetting the LoRa settings to default here");
+		
+		
+		
+		
+		StoreCalibrationData();
+		
+		request->redirect("/configure.html");
+	});
+	
 
 
 

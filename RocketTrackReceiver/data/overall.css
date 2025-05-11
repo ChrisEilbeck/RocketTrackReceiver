@@ -23,6 +23,13 @@ h1
 	border-radius: 15px;
 }
 
+input[type='radio']
+{
+	height: 64px;
+	width: 64px;
+	vertical-align: middle;
+}
+
 .freqlabel
 {
 	padding-top: 25px;

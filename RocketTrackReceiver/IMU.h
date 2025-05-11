@@ -1,6 +1,12 @@
 
 #pragma once
 
+//#include <xyzFloat.h>
+
+#include "MPU6050_WE.h"
+#include "MPU6500_WE.h"
+#include "MPU9250_WE.h"
+
 int SetupIMU(void);
 void PollIMU(void);
 
@@ -30,3 +36,7 @@ extern float Mag_A11,Mag_A12,Mag_A13;
 extern float Mag_A21,Mag_A22,Mag_A23;
 extern float Mag_A31,Mag_A32,Mag_A33;
 extern float Mag_B1,Mag_B2,Mag_B3;
+
+extern xyzFloat AccelOffset;
+extern xyzFloat AccelScale;
+extern xyzFloat GyroOffset;

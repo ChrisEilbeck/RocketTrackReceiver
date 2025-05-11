@@ -39,6 +39,8 @@
 #include <ctype.h>
 #include <SPI.h>
 
+#include "Global.h"
+
 #include "Beeper.h"
 #include "Button.h"
 #include "HardwareAbstraction.h"
@@ -62,7 +64,17 @@ void setup()
 	// I2C
 	Wire.begin(21,22);
 	
-	Serial.print("\n--------\tRocketTrack Flight Telemetry Receiver\t--------\r\n\n");
+#if LORA_BAND==434
+	Serial.print("\n"
+				 "--------  RocketTrack Flight Telemetry Receiver  --------\r\n"
+				 "---------------------  434 MHz Mode  --------------------\r\n"
+				 "\n");
+#else
+	Serial.print("\n"
+				 "--------  RocketTrack Flight Telemetry Receiver  --------\r\n"
+				 "---------------------  868 MHz Mode  --------------------\r\n"
+				 "\n");
+#endif
 	
 #if 0
 	packhack();
@@ -70,37 +82,38 @@ void setup()
 	
 	// mandatory peripherals
 	
-	if(SetupPMIC())				{	Serial.print("PMIC Setup failed, halting ...\r\n");					while(1);				}
-
-	if(SetupSPIFFS())			{	Serial.println("SPIFFS Setup failed ...\r\n");												}
+	if(SetupPMIC())					{	Serial.print("PMIC Setup failed, halting ...\r\n");					while(1);				}
+	if(SetupSPIFFS())				{	Serial.println("SPIFFS Setup failed ...\r\n");												}
+	if(SetupNvMemory())				{	Serial.print("EEPROM failed, you must calibrate the IMU\r\n");								}
 
 	if(ReadConfigFile(unit_mode))
 	{
 		Serial.print("Reading the config file failed, substituting defaults ...\r\n");
 		SetDefaultConfigValues();
 	}
-		
-	if(SetupNvMemory())			{	Serial.print("EEPROM failed, you must calibrate the IMU\r\n");								}
-	if(SetupLoRaReceiver())		{	Serial.print("LoRa Setup failed, halting ...\r\n");					while(1);				}
-	if(SetupGPS())				{	Serial.print("GPS Setup failed, halting ...\r\n");					while(1);				}
-	if(SetupCrypto())			{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
+	
+	if(RetrieveCalibrationData())	{	Serial.println("Failed to retrieve settings from NvMemory");								}
+	
+	if(SetupLoRaReceiver())			{	Serial.print("LoRa Setup failed, halting ...\r\n");					while(1);				}
+	if(SetupGPS())					{	Serial.print("GPS Setup failed, halting ...\r\n");					while(1);				}
+	if(SetupCrypto())				{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
 
-	if(SetupWebServer())		{	Serial.print("Web Server Setup failed, disabling ...\r\n");									}
-	if(SetupDisplay())			{	Serial.print("OLED display setup failed, ignoring\r\n");									}
-	if(SetupIMU())				{	Serial.print("IMU setup failed, disabling ...\r\n");										}
-	if(SetupBarometer())		{	Serial.print("Pressure Sensor Setup failed, disabling ...\r\n");							}
+	if(SetupWebServer())			{	Serial.print("Web Server Setup failed, disabling ...\r\n");									}
+	if(SetupDisplay())				{	Serial.print("OLED display setup failed, ignoring\r\n");									}
+	if(SetupIMU())					{	Serial.print("IMU setup failed, disabling ...\r\n");										}
+	if(SetupBarometer())			{	Serial.print("Pressure Sensor Setup failed, disabling ...\r\n");							}
 	
 #if 0
 	DumpHexPacket(crypto_key,32);
 #endif
 
-	if(SetupButton())			{	Serial.print("Button Setup failed, disabling ...\r\n");				button_enable=false;	}
-	if(SetupBeeper())			{	Serial.print("Beeper Setup failed, disabling ...\r\n");				beeper_enable=false;	}
+	if(SetupButton())				{	Serial.print("Button Setup failed, disabling ...\r\n");				button_enable=false;	}
+	if(SetupBeeper())				{	Serial.print("Beeper Setup failed, disabling ...\r\n");				beeper_enable=false;	}
 
 #if 0
 	// optional peripherals
-	if(SetupLEDs())				{	Serial.print("LED Setup failed, halting ...\r\n");					while(1);				}
-	if(SetupNeopixels())		{	Serial.print("Neopixels Setup failed, disabling ...\r\n");			neopixels_enable=false;	}
+	if(SetupLEDs())					{	Serial.print("LED Setup failed, halting ...\r\n");					while(1);				}
+	if(SetupNeopixels())			{	Serial.print("Neopixels Setup failed, disabling ...\r\n");			neopixels_enable=false;	}
 #endif
 
 #if 1
@@ -118,7 +131,7 @@ void setup()
 
 	UnpackPacket(packet,packetlength);
 #endif
-#if 1
+#if 0
 	RetrieveCalibrationData();
 #endif
 }

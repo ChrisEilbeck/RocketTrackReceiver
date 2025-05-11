@@ -1,4 +1,6 @@
 
+#include "Global.h"
+
 #include "Beeper.h"
 #include "Logging.h"
 #include "LoRaReceiver.h"
@@ -6,25 +8,23 @@
 
 #include <LoRa.h>
 
-#define LORA_FREQ           434150000
-
-double lora_freq=LORA_FREQ;
-double lora_offset=0;
-int lora_mode=LORA_HIGH_RATE_MODE;
+float lora_freq;		//=LORA_CH2;
+float lora_offset=0;
+int lora_mode;			//=LORA_HIGH_RATE_MODE;
 bool lora_crc=true;
 
 // High Rate mode settings
 
-int hr_bw;
-int hr_sf;
-int hr_cr;
+int hr_bw=125000;
+int hr_sf=7;
+int hr_cr=8;
 int hr_period;		// not used in RocketTrackReceiver
 
 // Long Range mode settings
 
-int lr_bw;
-int lr_sf;
-int lr_cr;
+int lr_bw=31250;
+int lr_sf=12;
+int lr_cr=8;
 int lr_period;		// not used in RocketTrackReceiver
 
 int last_good_receive=0;
@@ -44,15 +44,15 @@ void SetLoRaMode(int mode)
 	switch(mode)
 	{
 		case LORA_LONG_RANGE_MODE:	Serial.println("Setting LoRa to long range mode");
-									LoRa.setSpreadingFactor(12);
-									LoRa.setSignalBandwidth(31.25E3);
-									LoRa.setCodingRate4(8);
+									LoRa.setSignalBandwidth(lr_bw);
+									LoRa.setSpreadingFactor(lr_sf);
+									LoRa.setCodingRate4(lr_cr);
 									break;
 		
 		case LORA_HIGH_RATE_MODE:	Serial.println("Setting LoRa to high rate mode");
-									LoRa.setSpreadingFactor(7);
-									LoRa.setSignalBandwidth(125E3);
-									LoRa.setCodingRate4(8);
+									LoRa.setSignalBandwidth(hr_bw);
+									LoRa.setSpreadingFactor(hr_sf);
+									LoRa.setCodingRate4(hr_cr);
 									break;
 		
 		default:					Serial.println("Duff LoRa mode selected!");
@@ -72,8 +72,9 @@ int SetupLoRaReceiver(void)
 	
 	LoRa.setPins(LORA_NSS,LORA_RESET,LORA_DIO0);
 	
-//	lora_freq=LORA_FREQ;
-	lora_freq*=1e6;
+//	lora_freq=LORA_CH2;
+	
+	if(lora_freq<1e6)	lora_freq*=1e6;
 	lora_freq+=lora_offset;
 	
 	Serial.print("\tSetting receive frequency to ");	Serial.printf("%3.3f",lora_freq/1e6);	Serial.println(" MHz");
