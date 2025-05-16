@@ -342,33 +342,48 @@ void ResetAllSettings(void)
 {
 	Serial.println("Resetting all Settings to defaults");
 
+	SetLoRaDefaults();
+	SetMagnetometerDefaults();
+	SetIMUDefaults();
+	
+	StoreCalibrationData();
+	
+	DisplayAllSettings();
+}
+
+void SetLoRaDefaults(void)
+{
+	Serial.println("Resetting LoRa to defaults");
+	
 	lora_freq=LORA_CH2;
 	if(lora_freq<1e6)	lora_freq*=1e6;
 	
 	lora_mode=LORA_HIGH_RATE_MODE;
 	
-	hr_bw=125000;
-	hr_sf=7;
-	hr_cr=8;
+	hr_bw=LORA_HIGH_RATE_BW;
+	hr_sf=LORA_HIGH_RATE_SF;
+	hr_cr=LORA_HIGH_RATE_CR;
 	
-	lr_bw=31250;
-	lr_sf=12;
-	lr_cr=8;
-	
+	lr_bw=LORA_LONG_RANGE_BW;
+	lr_sf=LORA_LONG_RANGE_SF;
+	lr_cr=LORA_LONG_RANGE_CR;
+}
+
+void SetMagnetometerDefaults(void)
+{
 	Mag_A11=1.0;	Mag_A12=0.0;	Mag_A13=0.0;
 	Mag_A21=0.0;	Mag_A22=1.0;	Mag_A23=0.0;
 	Mag_A31=0.0;	Mag_A32=0.0;	Mag_A33=1.0;
 	
 	Mag_B1=0.0;		Mag_B2=0.0;		Mag_B3=0.0;
-	
+}
+
+void SetIMUDefaults(void)
+{
 	AccelOffset.x=0.0;	AccelOffset.y=0.0;	AccelOffset.z=0.0;
 	AccelScale.x=1.0;	AccelScale.y=1.0;	AccelScale.z=1.0;
 	
 	GyroOffset.x=0.0;	GyroOffset.y=0.0;	GyroOffset.z=0.0;
-
-	StoreCalibrationData();
-	
-	DisplayAllSettings();
 }
 
 void DisplayAllSettings(void)

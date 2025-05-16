@@ -420,11 +420,69 @@ int SetupWebServer(void)
     		const AsyncWebParameter *param=request->getParam(cnt);
     		Serial.printf("PARAM[%u]: \"%s\" = \"%s\"\r\n",cnt,param->name().c_str(),param->value().c_str());
     		
+    		if(strncmp(param->name().c_str(),"hrbw",4)==0)
+    		{
+    			if(strncmp(param->value().c_str(),"10.4K",5)==0)	hr_bw=10400;
+    			if(strncmp(param->value().c_str(),"15.6K",5)==0)	hr_bw=15600;
+    			if(strncmp(param->value().c_str(),"20.8K",5)==0)	hr_bw=20800;
+    			if(strncmp(param->value().c_str(),"31.25K",6)==0)	hr_bw=31250;
+    			if(strncmp(param->value().c_str(),"41.7K",5)==0)	hr_bw=41700;
+    			if(strncmp(param->value().c_str(),"62.5K",5)==0)	hr_bw=62500;
+    			if(strncmp(param->value().c_str(),"125K",4)==0)		hr_bw=125000;
+    			if(strncmp(param->value().c_str(),"250K",4)==0)		hr_bw=125000;
+    		}
     		
+    		if(strncmp(param->name().c_str(),"hrsf",4)==0)
+    		{
+    			if(strncmp(param->value().c_str(),"SF6",3)==0)		hr_sf=6;
+    			if(strncmp(param->value().c_str(),"SF7",3)==0)		hr_sf=7;
+    			if(strncmp(param->value().c_str(),"SF8",3)==0)		hr_sf=8;
+    			if(strncmp(param->value().c_str(),"SF9",3)==0)		hr_sf=9;
+    			if(strncmp(param->value().c_str(),"SF10",4)==0)		hr_sf=10;
+    			if(strncmp(param->value().c_str(),"SF11",4)==0)		hr_sf=11;
+    			if(strncmp(param->value().c_str(),"SF12",4)==0)		hr_sf=12;
+			}
     		
+    		if(strncmp(param->name().c_str(),"hrcr",4)==0)
+    		{
+    			if(strncmp(param->value().c_str(),"CR4",3)==0)		hr_cr=4;
+    			if(strncmp(param->value().c_str(),"CR5",3)==0)		hr_cr=5;
+    			if(strncmp(param->value().c_str(),"CR6",3)==0)		hr_cr=6;
+    			if(strncmp(param->value().c_str(),"CR7",3)==0)		hr_cr=7;
+    			if(strncmp(param->value().c_str(),"CR8",3)==0)		hr_cr=8;
+			}
     		
+    		if(strncmp(param->name().c_str(),"lrbw",4)==0)
+    		{
+    			if(strncmp(param->value().c_str(),"10.4K",5)==0)	lr_bw=10400;
+    			if(strncmp(param->value().c_str(),"15.6K",5)==0)	lr_bw=15600;
+    			if(strncmp(param->value().c_str(),"20.8K",5)==0)	lr_bw=20800;
+    			if(strncmp(param->value().c_str(),"31.25K",6)==0)	lr_bw=31250;
+    			if(strncmp(param->value().c_str(),"41.7K",5)==0)	lr_bw=41700;
+    			if(strncmp(param->value().c_str(),"62.5K",5)==0)	lr_bw=62500;
+    			if(strncmp(param->value().c_str(),"125K",4)==0)		lr_bw=125000;
+    			if(strncmp(param->value().c_str(),"250K",4)==0)		lr_bw=125000;
+    		}
     		
+    		if(strncmp(param->name().c_str(),"lrsf",4)==0)
+    		{
+    			if(strncmp(param->value().c_str(),"SF6",3)==0)		lr_sf=6;
+    			if(strncmp(param->value().c_str(),"SF7",3)==0)		lr_sf=7;
+    			if(strncmp(param->value().c_str(),"SF8",3)==0)		lr_sf=8;
+    			if(strncmp(param->value().c_str(),"SF9",3)==0)		lr_sf=9;
+    			if(strncmp(param->value().c_str(),"SF10",4)==0)		lr_sf=10;
+    			if(strncmp(param->value().c_str(),"SF11",4)==0)		lr_sf=11;
+    			if(strncmp(param->value().c_str(),"SF12",4)==0)		lr_sf=12;
+			}
     		
+    		if(strncmp(param->name().c_str(),"lrcr",4)==0)
+    		{
+    			if(strncmp(param->value().c_str(),"CR4",3)==0)		lr_cr=4;
+    			if(strncmp(param->value().c_str(),"CR5",3)==0)		lr_cr=5;
+    			if(strncmp(param->value().c_str(),"CR6",3)==0)		lr_cr=6;
+    			if(strncmp(param->value().c_str(),"CR7",3)==0)		lr_cr=7;
+    			if(strncmp(param->value().c_str(),"CR8",3)==0)		lr_cr=8;
+			}
 		}
 		
 		StoreCalibrationData();
@@ -436,9 +494,7 @@ int SetupWebServer(void)
 	{
 		Serial.println("Should be resetting the LoRa settings to default here");
 		
-		
-		
-		
+		SetLoRaDefaults();
 		StoreCalibrationData();
 		
 		request->redirect("/configure.html");

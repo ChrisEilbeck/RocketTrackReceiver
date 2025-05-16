@@ -26,6 +26,14 @@
 	#define LORA_CH6			868.550
 #endif
 
+#define LORA_HIGH_RATE_BW	125000
+#define LORA_HIGH_RATE_SF	7
+#define LORA_HIGH_RATE_CR	8
+
+#define LORA_LONG_RANGE_BW	31250
+#define LORA_LONG_RANGE_SF	12
+#define LORA_LONG_RANGE_CR	8
+
 extern float lora_freq;
 extern int lora_mode;
 extern bool lora_crc;

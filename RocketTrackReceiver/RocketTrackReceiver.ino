@@ -2,8 +2,33 @@
 /*
 	To Do
 	
-	-	merge with RocketTrack
-
+	-	support tracking multiple beacons at the same time
+	
+	-	move away from configuring things in an ini file, just use the
+		nvmemory instead with ways to set back to defaults from the 
+		test harness
+	
+	-	changing the wifi setup and crypto keys from the web UI is probably
+		a bad thing to do and should be done via the test harness
+	
+	-	check it works when built in 868 MHz mode
+	
+	-	support different barometers
+	
+	-	add a button to the web UI do download a spot in KML format to use
+		with a mapping application instead of just using the radar plot and
+		following it in to the landing location
+	
+	-	add a search mechanism to get a beacon and a receiver to sync
+		together even if set on the wrong channel, maybe using a bluetooth
+		connection triggered by pressing and holding on a button to go into
+		a pairing mode
+	
+	-	maybe start using an sd card rather than an external logger so we
+		can log more data e.g.  the route taken to the landing site by the
+		receiver
+	
+	-	merge with RocketTrack so there's only one codebase to maintain
 
 
 
