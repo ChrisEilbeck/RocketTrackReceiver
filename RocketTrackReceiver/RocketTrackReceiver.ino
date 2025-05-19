@@ -60,6 +60,8 @@
 // Power management
 #include <axp20x.h>
 
+#include <ArduinoJson.h>
+
 #include <string.h>
 #include <ctype.h>
 #include <SPI.h>
@@ -100,6 +102,9 @@ void setup()
 				 "---------------------  868 MHz Mode  --------------------\r\n"
 				 "\n");
 #endif
+
+	// clear the beacon buffer to a known state
+	memset((void *)beacons,0xff,10*sizeof(fix));
 	
 #if 0
 	packhack();
@@ -141,7 +146,7 @@ void setup()
 	if(SetupNeopixels())			{	Serial.print("Neopixels Setup failed, disabling ...\r\n");			neopixels_enable=false;	}
 #endif
 
-#if 1
+#if 0
 	// insert a dummy unencrypted packet for testing without turning on a transmitter
 
 //	uint8_t *packet=(uint8_t *)"\x00\xC9\xC9\x96\x9E\xFE\x6C\x44\x0E\x1F\x4D\x00\x0B\xCA\x09\x00";
@@ -247,10 +252,34 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 		case 't':	OK=SettingsCommandHandler(cmd,cmdptr);				break;
 		case 'u':	OK=ButtonCommandHandler(cmd,cmdptr);				break;
 		case 'v':	OK=BeeperCommandHandler(cmd,cmdptr);				break;
-//		case 'z':	OK=BeeperCommandHandler(cmd,cmdptr);				break;
 		
 		case 'x':	i2c_bus_scanner();
 					OK=1;
+					break;
+		
+		case 'j':	JsonTest();
+					OK=1;
+					break;
+		
+		case 'd':	for(int cnt=0;cnt<MAX_BEACONS;cnt++)
+					{
+						Serial.println(cnt);
+						DumpDecodedPacket(beacons[cnt]);
+					}
+					
+					break;
+
+		case 'k':	// insert dummy packet
+					{
+						Serial.println("Insert Bredon Hill dummy packet");
+					
+						// Bredon Hill, 18.6km at 97.3 degrees
+						uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
+						uint16_t packetlength=16;
+						
+						UnpackPacket(packet,packetlength);
+					}
+					
 					break;
 		
 		case '?':	Serial.print("RocketTrack Test Harness Menu\r\n========================\r\n\n");

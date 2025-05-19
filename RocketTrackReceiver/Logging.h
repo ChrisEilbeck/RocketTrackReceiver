@@ -3,6 +3,11 @@
 
 #define MAX_FIXES 1000
 
+// number of buffers to allocate so we can track multiple beacons at the
+// same time one one frequency
+
+#define MAX_BEACONS 10
+
 typedef struct
 {
 	uint8_t id;

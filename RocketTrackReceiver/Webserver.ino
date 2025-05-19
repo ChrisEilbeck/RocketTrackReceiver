@@ -20,6 +20,8 @@ char password[32]="marsflightcrew";
 
 bool track_compass=true;
 
+char jsonstring[1024];
+
 String magprocessor(const String& var)
 {
 #if DEBUG>2
@@ -249,13 +251,15 @@ String statusprocessor(const String& var)
 
 String trackingprocessor(const String& var)
 {
-	char buffer[256];
+	char buffer[1024];
 	memset(buffer,0,sizeof(buffer));
 	
 	if(var=="LORA_MODE")
 	{
 		if(lora_mode==1)	sprintf(buffer,"High Rate");	else	sprintf(buffer,"Long Range");
 	}
+	else if(var=="BEACONS")			{	GenerateJson();
+										strcpy(buffer,jsonstring);								}
 	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.3f",lastfix.voltage);					}
 	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",lastfix.id);						}
 	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",lastfix.accuracy);				}
@@ -331,22 +335,19 @@ int SetupWebServer(void)
 	server.on("/rockettrackreceiver.js",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/rockettrackreceiver.js",String(),false,trackingprocessor);	});
 	
 	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.html",String(),false,trackingprocessor);			});
-	server.on("/tracking.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.css");												});
+	
+	server.on("/select.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);			});
 	
 	server.on("/telemetry.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);			});
 	server.on("/telemetry.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.css");												});
-	
+
 	server.on("/configure.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/configure.html");											});
-	server.on("/configure.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/configure.css");												});
 
 	server.on("/channels.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/channels.html",String(),false,chanprocessor);				});
-	server.on("/channels.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/channels.css",String(),false,chanprocessor);					});
 
 	server.on("/lora_settings.html",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/lora_settings.html",String(),false,loraprocessor);			});
-	server.on("/lora_setting.css",HTTP_GET,[](AsyncWebServerRequest *request)		{	request->send(SPIFFS,"/lora_settings.css",String(),false,loraprocessor);			});
 
 	server.on("/mag_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/mag_calibration.html",String(),false,magprocessor);			});
-	server.on("/mag_calibration.css",HTTP_GET,[](AsyncWebServerRequest *request)	{	request->send(SPIFFS,"/mag_calibration.css",String(),false,magprocessor);			});
 
 	server.on("/mag_save.html",HTTP_POST,[](AsyncWebServerRequest *request)
 	{
@@ -617,5 +618,81 @@ int SetupWebServer(void)
 	server.begin();
 	
 	return(0);
+}
+
+void JsonTest(void)
+{
+#if 0
+	JsonDocument beacons;
+	char string[]="[{\"id\":0,\"lat\":52.07968333,\"long\":-2.30775833,\"alt\":50.0,\"hdop\":1.5,\"numsats\":5,\"hacc\":5.1},\r\n{\"id\":1,\"lat\":52.10981389,\"long\":-2.25207222,\"alt\":100.0,\"hdop\":1.6,\"numsats\":6,\"hacc\":6.1}]";
+	
+	Serial.println(string);
+	
+	DeserializationError error=deserializeJson(beacons,string);
+
+	// Test if parsing succeeds.
+	if (error)
+	{
+    	Serial.print(F("deserializeJson() failed: "));
+    	Serial.println(error.f_str());
+    	return;
+	}
+	
+	JsonArray arr=beacons.as<JsonArray>();
+	
+	for(JsonVariant value:arr)
+	{
+		Serial.print("id   = ");	Serial.println(value["id"].as<const int>());
+		Serial.print("lat  = ");	Serial.println(value["lat"].as<const float>());
+		Serial.print("long = ");	Serial.println(value["long"].as<const float>());
+	}
+#endif
+
+	GenerateJson();
+}
+
+void GenerateJson(void)
+{
+	JsonDocument construction;
+	
+	JsonArray c_arr=construction.to<JsonArray>();
+
+	c_arr[0]["id"]=0;
+	c_arr[0]["numsats"]=5;
+	c_arr[0]["gpsfix"]=3;
+	c_arr[0]["long"]=-2.30775833;
+	c_arr[0]["lat"]=52.07968333;
+	c_arr[0]["height"]=50.0;
+	c_arr[0]["accuracy"]=2.5;
+	c_arr[0]["voltage"]=4.15;
+	c_arr[0]["counter"]=123;
+	c_arr[0]["snr"]=12;
+	c_arr[0]["rssi"]=-100;
+	c_arr[0]["millis"]=12345;
+
+	c_arr[1]["id"]=1;
+	c_arr[1]["numsats"]=6;
+	c_arr[1]["gpsfix"]=3;
+	c_arr[1]["long"]=-2.25207222;
+	c_arr[1]["lat"]=52.10981389;
+	c_arr[1]["height"]=100.0;
+	c_arr[1]["accuracy"]=3.5;
+	c_arr[1]["voltage"]=3.750;
+	c_arr[1]["counter"]=124;
+	c_arr[1]["snr"]=14;
+	c_arr[1]["rssi"]=-95;
+	c_arr[1]["millis"]=12345;
+
+	for(JsonVariant value:c_arr)
+	{
+		Serial.print("id   = ");	Serial.println(value["id"].as<const int>());
+		Serial.print("lat  = ");	Serial.println(value["lat"].as<const float>());
+		Serial.print("long = ");	Serial.println(value["long"].as<const float>());
+		Serial.print("alt  = ");	Serial.println(value["height"].as<const float>());
+	}
+	
+	serializeJson(construction,jsonstring);
+	Serial.println(jsonstring);
+
 }
 

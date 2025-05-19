@@ -23,6 +23,9 @@ function UpdateRangeAndBearing()
 var maxbeaconrange=0;
 var graticulerange=0;
 
+// this will be filled in by the webserver
+beacons=%BEACONS%;
+
 // these will be filled in by the webserver
 var rx_latitude="%RX_LATITUDE%";
 var rx_longitude="%RX_LONGITUDE%";
@@ -57,10 +60,7 @@ function DrawBeacons(beacon,index,array)
 function DrawTrackingPlot()
 {
 	console.log("DrawTrackingPlot() entry");
-	
-	// this will be filled in by the webserver
-	beacons=[%BEACONS%];
-	
+		
 	// work out the maximum range to any beacon
 	graticulerange=100000;
 	
@@ -325,5 +325,38 @@ function GreatCircleBearing(lat2,lon2,lat1,lon1)
 	if(brng<0)	{	brng+=360;	}
 	
 	return(brng);
+}
+
+// used by select.html
+
+// insert a button for each beacon we are tracking
+
+function InsertButton(beacon,index,array)
+{
+	const element_table=document.createElement("table");
+	const element_tr=document.createElement("tr");
+	const element_td=document.createElement("td");
+	const element_form=document.createElement("form");
+	const element_button=document.createElement("button");
+	
+	element_tr.append(element_td);
+	element_td.append(element_form);
+
+	element_form.append(element_button);
+	element_form.action="telemetry.html";
+
+	element_button.innerText="Beacon ID: "+beacon.id;
+	element_button.classList.add("selectmenubuttons");
+	element_button.type="submit";
+	element_button.formmethod="pos";
+
+	const element=document.getElementById("beacon_buttons");
+	element.appendChild(element_tr);
+}
+
+function InsertSelectButtons()
+{
+	console.log("Tracking "+beacons.length+" beacons ...");	
+	beacons.forEach(InsertButton);
 }
 

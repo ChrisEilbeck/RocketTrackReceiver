@@ -2,30 +2,20 @@
 	<head>
 		<link rel="stylesheet" href="overall.css">
 		<script src="rockettrackreceiver.js"></script>
+		<!--
 		<meta http-equiv="refresh" content="1">
+		-->
 	</head>
 	<body onload="DrawTrackingPlot()">
 		<h1>RocketTrackReceiver</h1>
 		<canvas id="trackingplot" width="1000" height="1000">Your browser does not support the canvas element.</canvas>
 		<table class="buttonsection">
-			<tr>
-				<td><form action="tracking.html"><button class="menubuttons" type="submit" formmethod="get">Tracking Mode</button></form></td>
-			</tr>
-			<tr>
-				<td><form action="telemetry.html"><button class="menubuttons" type="submit" formmethod="get">Telemetry Mode</button></form></td>
-			</tr>
-			<tr>
-				<td><form action="north_up.html"><button class="menubuttons" type="submit" formmethod="get">North Upwards</button></form></td>
-			</tr>
-			<tr>
-				<td><form action="beacon_up.html"><button class="menubuttons" type="submit" formmethod="get">Beacon Bearing Upwards</button></form></td>
-			</tr>
-			<tr>
-				<td><form action="altitude.html"><button class="menubuttons" type="submit" formmethod="get">Altitude Plot</button></form></td>
-			</tr>
-			<tr>
-				<td><form action="index.html"><button class="menubuttons" type="submit" formmethod="get">Back</button></form></td>
-			</tr>
+			<tr><td><form action="tracking.html"><button class="menubuttons" type="submit" formmethod="get">Tracking Mode</button></form></td></tr>
+			<tr><td><form action="telemetry.html"><button class="menubuttons" type="submit" formmethod="get">Telemetry Mode</button></form></td></tr>
+			<tr><td><form action="north_up.html"><button class="menubuttons" type="submit" formmethod="get">North Upwards</button></form></td></tr>
+			<tr><td><form action="beacon_up.html"><button class="menubuttons" type="submit" formmethod="get">Beacon Bearing Upwards</button></form></td></tr>
+			<tr><td><form action="altitude.html"><button class="menubuttons" type="submit" formmethod="get">Altitude Plot</button></form></td></tr>
+			<tr><td><form action="index.html"><button class="menubuttons" type="submit" formmethod="get">Back</button></form></td></tr>
 		</table>
 	</body>
 </html>
