@@ -657,6 +657,7 @@ void GenerateJson(void)
 	
 	JsonArray c_arr=construction.to<JsonArray>();
 
+#if 0
 	c_arr[0]["id"]=0;
 	c_arr[0]["numsats"]=5;
 	c_arr[0]["gpsfix"]=3;
@@ -668,7 +669,7 @@ void GenerateJson(void)
 	c_arr[0]["counter"]=123;
 	c_arr[0]["snr"]=12;
 	c_arr[0]["rssi"]=-100;
-	c_arr[0]["millis"]=12345;
+	c_arr[0]["age"]=10000;
 
 	c_arr[1]["id"]=1;
 	c_arr[1]["numsats"]=6;
@@ -681,7 +682,34 @@ void GenerateJson(void)
 	c_arr[1]["counter"]=124;
 	c_arr[1]["snr"]=14;
 	c_arr[1]["rssi"]=-95;
-	c_arr[1]["millis"]=12345;
+	c_arr[1]["age"]=20000;
+#else
+	int outcnt=0;
+	for(int cnt=0;cnt<MAX_BEACONS;cnt++)
+	{
+		if(		(beacons[cnt].spare1!=0xff)
+			&&	(beacons[cnt].spare2!=0xff)
+			&&	(beacons[cnt].spare3!=0xff)		)
+		{
+			c_arr[outcnt]["id"]=beacons[cnt].id;
+			c_arr[outcnt]["numsats"]=beacons[cnt].numsats;
+			c_arr[outcnt]["gpsfix"]=beacons[cnt].gpsfix;
+			c_arr[outcnt]["long"]=beacons[cnt].longitude;
+			c_arr[outcnt]["lat"]=beacons[cnt].latitude;
+			c_arr[outcnt]["height"]=beacons[cnt].height;
+			c_arr[outcnt]["accuracy"]=beacons[cnt].accuracy;
+			c_arr[outcnt]["voltage"]=beacons[cnt].voltage;
+			c_arr[outcnt]["counter"]=beacons[cnt].counter;
+			c_arr[outcnt]["snr"]=beacons[cnt].snr;
+			c_arr[outcnt]["rssi"]=beacons[cnt].rssi;
+			c_arr[outcnt]["age"]=millis()-beacons[cnt].millis;
+			
+			outcnt++;
+		}
+	}
+
+	Serial.printf("Generating the json for %d beacons\r\n",outcnt);
+#endif
 
 	for(JsonVariant value:c_arr)
 	{
