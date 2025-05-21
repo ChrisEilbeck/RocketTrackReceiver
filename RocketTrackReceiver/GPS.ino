@@ -329,8 +329,9 @@ void UnpackNAVPOSLLH(uint8_t *buffer)
 		Serial.printf("%02x ",buffer[cnt]);
 	
 	Serial.print("\r\n");
-	
-	Serial.printf("\t\tLat = %.6f, Lon = %.6f, ",rxfix.latitude,rxfix.longitude,rxfix.height);
+#endif
+#if 0
+	Serial.printf("\t\tLat = %.6f, Long = %.6f, Alt = %.3f\r\n",rxfix.latitude,rxfix.longitude,rxfix.height);
 #endif
 }
 

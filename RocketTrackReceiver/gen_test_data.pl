@@ -22,6 +22,8 @@ sub Main()
 
 ##	print(Dumper(\@packets));
 	
+	print("#!/bin/bash\n\nPORT=/dev/ttyACM0\n\nstty cs8 -ixon -crtscts 115200 -echo < \${PORT}\n\n");
+	
 	foreach my $str (@packets)
 	{
 ##		print(Dumper($str));
@@ -45,7 +47,10 @@ sub Main()
 		
 		my $hex=unpack("H*",$pkt);
 		
-		print((length($hex)/2)." bytes: ".$hex."\n");
+##		print((length($hex)/2)." bytes: ".$hex."\n");
+
+		print("echo \"rx ".$hex."\" > \${PORT}\n");
+		print("sleep 1\n\n");
 	
 ##		last;
 	}
@@ -65,28 +70,14 @@ Main() unless caller;
 
 __DATA__
 [
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064870,"lat": 52.059950,"height": 100.0,"accuracy": 5.0,"voltage": 4150,"counter": 100,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064880,"lat": 52.059960,"height": 101.0,"accuracy": 5.0,"voltage": 4150,"counter": 101,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064890,"lat": 52.059970,"height": 102.0,"accuracy": 5.0,"voltage": 4150,"counter": 102,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064900,"lat": 52.059980,"height": 103.0,"accuracy": 5.0,"voltage": 4150,"counter": 103,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064910,"lat": 52.059990,"height": 104.0,"accuracy": 5.0,"voltage": 4150,"counter": 104,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064920,"lat": 52.060000,"height": 105.0,"accuracy": 5.0,"voltage": 4150,"counter": 105,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064930,"lat": 52.060010,"height": 106.0,"accuracy": 5.0,"voltage": 4150,"counter": 106,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064940,"lat": 52.060020,"height": 107.0,"accuracy": 5.0,"voltage": 4150,"counter": 107,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064950,"lat": 52.060030,"height": 108.0,"accuracy": 5.0,"voltage": 4150,"counter": 108,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064960,"lat": 52.060040,"height": 109.0,"accuracy": 5.0,"voltage": 4100,"counter": 109,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064970,"lat": 52.060050,"height": 110.0,"accuracy": 5.0,"voltage": 4100,"counter": 110,"millis": 100},
-	{"id": 0,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060060,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 1,"gpsfix": 3,"numsats": 6,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060000,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 2,"gpsfix": 3,"numsats": 7,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060100,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 3,"gpsfix": 3,"numsats": 8,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060200,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 4,"gpsfix": 3,"numsats": 9,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060300,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 5,"gpsfix": 3,"numsats": 10,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060400,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 6,"gpsfix": 3,"numsats": 9,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060500,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 7,"gpsfix": 3,"numsats": 8,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060600,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 8,"gpsfix": 3,"numsats": 7,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060700,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 9,"gpsfix": 3,"numsats": 6,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060800,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 10,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.060900,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 11,"gpsfix": 3,"numsats": 6,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.061000,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100},
-	{"id": 12,"gpsfix": 3,"numsats": 7,"snr": 10,"rssi": -100,"long": -2.064980,"lat": 52.061100,"height": 111.0,"accuracy": 5.0,"voltage": 4100,"counter": 111,"millis": 100}
+	{"id": 0,"gpsfix": 3,"numsats": 1,"snr": 10,"rssi": -90,"long":-2.33387000,"lat":52.08047500,"height":50.0,"accuracy":1.0,"voltage": 4150,"counter": 100,"millis": 1000},
+	{"id": 1,"gpsfix": 3,"numsats": 2,"snr": 10,"rssi": -91,"long":-2.33387000,"lat":52.08147500,"height":51.0,"accuracy":1.1,"voltage": 4150,"counter": 100,"millis": 2000},
+	{"id": 2,"gpsfix": 3,"numsats": 3,"snr": 10,"rssi": -92,"long":-2.33387000,"lat":52.08247500,"height":52.0,"accuracy":1.2,"voltage": 4150,"counter": 100,"millis": 3000},
+	{"id": 3,"gpsfix": 3,"numsats": 4,"snr": 10,"rssi": -93,"long":-2.33287000,"lat":52.08047500,"height":53.0,"accuracy":1.3,"voltage": 4150,"counter": 100,"millis": 4000},
+	{"id": 4,"gpsfix": 3,"numsats": 5,"snr": 10,"rssi": -94,"long":-2.33287000,"lat":52.08247500,"height":54.0,"accuracy":1.4,"voltage": 4150,"counter": 100,"millis": 5000},
+	{"id": 5,"gpsfix": 3,"numsats": 6,"snr": 10,"rssi": -95,"long":-2.33187000,"lat":52.08047500,"height":55.0,"accuracy":1.5,"voltage": 4150,"counter": 100,"millis": 6000},
+	{"id": 6,"gpsfix": 3,"numsats": 7,"snr": 10,"rssi": -96,"long":-2.33187000,"lat":52.08147500,"height":56.0,"accuracy":1.6,"voltage": 4150,"counter": 100,"millis": 7000},
+	{"id": 7,"gpsfix": 3,"numsats": 8,"snr": 10,"rssi": -97,"long":-2.33187000,"lat":52.08247500,"height":57.0,"accuracy":1.7,"voltage": 4150,"counter": 100,"millis": 8000},
+	{"id": 8,"gpsfix": 3,"numsats": 9,"snr": 10,"rssi": -98,"long":-2.33287000,"lat":52.08197500,"height":58.0,"accuracy":1.8,"voltage": 4150,"counter": 100,"millis": 7000},
+	{"id": 9,"gpsfix": 3,"numsats": 10,"snr": 10,"rssi": -99,"long":-2.33287000,"lat":52.08097500,"height":59.0,"accuracy":1.9,"voltage": 4150,"counter": 100,"millis": 8000}
 ]

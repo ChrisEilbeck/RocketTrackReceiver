@@ -15,6 +15,7 @@ typedef struct
 	uint8_t numsats;
 	int8_t snr;
 	int8_t rssi;
+	uint8_t rxmode;
 	uint8_t spare1;
 	uint8_t spare2;
 	uint8_t spare3;
@@ -23,6 +24,7 @@ typedef struct
 	float height;
 	float accuracy;
 	float voltage;
+	float offset;
 	uint16_t counter;
 	uint32_t millis;
 } fix;

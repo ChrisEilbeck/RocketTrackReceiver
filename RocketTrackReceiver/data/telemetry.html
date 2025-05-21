@@ -3,25 +3,29 @@
 	<header>
 		<link rel="stylesheet" href="telemetry.css">
 		<script src="rockettrackreceiver.js"></script>
+		<!--
 		<meta http-equiv="refresh" content="1">
+		-->
 	</header>
-	<body onload="UpdateRangeAndBearing()">
+	<body onload="PopulateTelemetryPage()">
 		<h1>RocketTrackReceiver<br>Telemetry Mode</h1>
 		<table class="datasection">
-			<tr><td class="datatag">Beacon ID:</td><td class="datavalue">%BEACON_ID%</td></tr>
-			<tr><td class="datatag">Longitude:</td><td class="datavalue">%TX_LATITUDE%</td></tr>
-			<tr><td class="datatag">Latitude:</td><td class="datavalue">%TX_LONGITUDE%</td></tr>
+			<tr><td class="datatag">Beacon ID:</td><td class="datavalue" id="BeaconId"></td></tr>
+			<tr><td class="datatag">Longitude:</td><td class="datavalue" id="TxLat"></td></tr>
+			<tr><td class="datatag">Latitude:</td><td class="datavalue" id="TxLong"></td></tr>
 			<tr><td class="datatag">Range (m):</td><td class="datavalue" id="Range"></td></tr>
 			<tr><td class="datatag">Bearing:</td><td class="datavalue" id="Bearing"></td></tr>
-			<tr><td class="datatag">Altitude (m):</td><td class="dataimportant">%ALTITUDE%</td></tr>
-			<tr><td class="datatag">Battery Voltage:</td><td class="datavalue">%BEACON_VOLTAGE%</td></tr>
-			<tr><td class="datatag">Signal Strength:</td><td class="datavalue">%LORA_RSSI%</td></tr>
-			<tr><td class="datatag">LoRa Mode:</td><td class="datavalue">%LORA_MODE%</td></tr>
-			<tr><td class="datatag">Flight State:</td><td class="datavalue" id="FlightState">%FLIGHT_STATE%</td></tr>
+			<tr><td class="datatag">Altitude (m):</td><td class="dataimportant" id="Altitude"></td></tr>
+			<tr><td class="datatag">Battery Voltage:</td><td class="datavalue" id="Voltage"></td></tr>
+			<tr><td class="datatag">Signal Strength:</td><td class="datavalue" id="RSSI"></td></tr>
+			<tr><td class="datatag">LoRa Mode:</td><td class="datavalue" id="LoRaMode"></td></tr>
+			<!--
+			<tr><td class="datatag">Flight State:</td><td class="datavalue" id="FlightState"></td></tr>
+			-->
 		</table>
 		<table class="buttonsection">
 			<tr><td><form action="tracking.html"><button class="menubuttons" type="submit" formmethod="get">Tracking Mode</button></form></td></tr>
-			<tr><td><form action="telemetry.html"><button class="menubuttons" type="submit" formmethod="get">Telemetry Mode</button></form></td></tr>
+			<tr><td><form action="select.html"><button class="menubuttons" type="submit" formmethod="get">Select Beacon</button></form></td></tr>
 			<tr><td><form action="index.html"><button class="menubuttons" type="submit" formmethod="get">Back</button></form></td></tr>
 		</table>
 	</body>

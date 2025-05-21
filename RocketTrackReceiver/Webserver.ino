@@ -20,7 +20,9 @@ char password[32]="marsflightcrew";
 
 bool track_compass=true;
 
-char jsonstring[1024];
+char jsonstring[2048];
+
+int selected_beacon=-1;
 
 String magprocessor(const String& var)
 {
@@ -251,7 +253,7 @@ String statusprocessor(const String& var)
 
 String trackingprocessor(const String& var)
 {
-	char buffer[1024];
+	char buffer[2048];
 	memset(buffer,0,sizeof(buffer));
 	
 	if(var=="LORA_MODE")
@@ -260,6 +262,7 @@ String trackingprocessor(const String& var)
 	}
 	else if(var=="BEACONS")			{	GenerateJson();
 										strcpy(buffer,jsonstring);								}
+	else if(var=="SELECTED")		{	sprintf(buffer,"%d",selected_beacon);					}
 	else if(var=="BEACON_VOLTAGE")	{	sprintf(buffer,"%.3f",lastfix.voltage);					}
 	else if(var=="BEACON_ID")		{	sprintf(buffer,"%d",lastfix.id);						}
 	else if(var=="BEACON_HACC")		{	sprintf(buffer,"%.3f",lastfix.accuracy);				}
@@ -336,10 +339,27 @@ int SetupWebServer(void)
 	
 	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.html",String(),false,trackingprocessor);			});
 	
-	server.on("/select.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);			});
+	server.on("/select.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/select.html",String(),false,trackingprocessor);				});
 	
-	server.on("/telemetry.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);			});
 	server.on("/telemetry.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.css");												});
+	server.on("/telemetry.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.html");											});
+	server.on("/telemetry.html",HTTP_POST,[](AsyncWebServerRequest *request)
+	{
+		Serial.println("Got http_post on tracking.html");
+	
+    	// display params
+    	size_t count=request->params();
+    	
+    	const AsyncWebParameter *param=request->getParam(0);
+   		Serial.printf("PARAM: \"%s\" = \"%s\"\r\n",param->name().c_str(),param->value().c_str());
+	
+   		selected_beacon=atoi(param->value().c_str());
+
+
+
+	
+		request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);
+	});
 
 	server.on("/configure.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/configure.html");											});
 
@@ -657,33 +677,6 @@ void GenerateJson(void)
 	
 	JsonArray c_arr=construction.to<JsonArray>();
 
-#if 0
-	c_arr[0]["id"]=0;
-	c_arr[0]["numsats"]=5;
-	c_arr[0]["gpsfix"]=3;
-	c_arr[0]["long"]=-2.30775833;
-	c_arr[0]["lat"]=52.07968333;
-	c_arr[0]["height"]=50.0;
-	c_arr[0]["accuracy"]=2.5;
-	c_arr[0]["voltage"]=4.15;
-	c_arr[0]["counter"]=123;
-	c_arr[0]["snr"]=12;
-	c_arr[0]["rssi"]=-100;
-	c_arr[0]["age"]=10000;
-
-	c_arr[1]["id"]=1;
-	c_arr[1]["numsats"]=6;
-	c_arr[1]["gpsfix"]=3;
-	c_arr[1]["long"]=-2.25207222;
-	c_arr[1]["lat"]=52.10981389;
-	c_arr[1]["height"]=100.0;
-	c_arr[1]["accuracy"]=3.5;
-	c_arr[1]["voltage"]=3.750;
-	c_arr[1]["counter"]=124;
-	c_arr[1]["snr"]=14;
-	c_arr[1]["rssi"]=-95;
-	c_arr[1]["age"]=20000;
-#else
 	int outcnt=0;
 	for(int cnt=0;cnt<MAX_BEACONS;cnt++)
 	{
@@ -708,19 +701,15 @@ void GenerateJson(void)
 		}
 	}
 
+#if DEBUG>1
 	Serial.printf("Generating the json for %d beacons\r\n",outcnt);
 #endif
-
-	for(JsonVariant value:c_arr)
-	{
-		Serial.print("id   = ");	Serial.println(value["id"].as<const int>());
-		Serial.print("lat  = ");	Serial.println(value["lat"].as<const float>());
-		Serial.print("long = ");	Serial.println(value["long"].as<const float>());
-		Serial.print("alt  = ");	Serial.println(value["height"].as<const float>());
-	}
 	
 	serializeJson(construction,jsonstring);
+	
+#if DEBUG>2
+	Serial.printf("json is %d bytes\r\n",strlen(jsonstring));
 	Serial.println(jsonstring);
-
+#endif
 }
 

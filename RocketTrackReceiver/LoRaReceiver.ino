@@ -169,10 +169,13 @@ void PollLoRaReceiver(int fakepacket)
 			}
 			else
 			{
-				UnpackPacket(packet,cnt);
-				
-				lastfix.rssi=(int8_t)packetrssi;
-				lastfix.snr=(int8_t)packetsnr;
+				UnpackPacket(
+								packet,
+								cnt,
+								(int8_t)packetrssi,
+								(int8_t)packetsnr,
+								lora_mode
+							);
 				
 				if(packetoffset>100)		lora_offset-=200.0;
 				else if(packetoffset<-100)	lora_offset+=200.0;
@@ -180,12 +183,12 @@ void PollLoRaReceiver(int fakepacket)
 				
 				LoRa.setFrequency(lora_freq+lora_offset);
 
-				Serial.print(" with RSSI ");	Serial.print(packetrssi);
-				Serial.print(", with SNR ");	Serial.print(packetsnr);
-				Serial.print(" and offset ");	Serial.print(packetoffset);	Serial.println(" Hz");
+				Serial.print(" with RSSI ");	Serial.print(lastfix.rssi);
+				Serial.print(", with SNR ");	Serial.print(lastfix.snr);
+				Serial.print(" and offset ");	Serial.print(lastfix.offset);	Serial.println(" Hz");
 				
 				Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
-					lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+					lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lastfix.rxmode?"High Rate":"Long Range");
 				
 				if(lora_mode==LORA_LONG_RANGE_MODE)
 					BeeperSetPattern(0b10100000000000000000000000000000,0);
@@ -306,7 +309,7 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 							Serial.println("Rejecting errored packet");
 						else
 						{
-							UnpackPacket(packet,packetlength);
+							UnpackPacket(packet,packetlength,-100,10,0.0);
 							Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
 								lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
 				

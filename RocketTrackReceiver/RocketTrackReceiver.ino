@@ -159,7 +159,7 @@ void setup()
 	uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
 	uint16_t packetlength=16;
 
-	UnpackPacket(packet,packetlength);
+	UnpackPacket(packet,packetlength,-100,10,0.0);
 #endif
 #if 0
 	RetrieveCalibrationData();
@@ -174,7 +174,7 @@ void packhack(void)
 	PackPacket(packet,&packetlength);
 	DumpHexPacket(packet,packetlength);
 	
-	UnpackPacket(packet,packetlength);
+	UnpackPacket(packet,packetlength,-100,10,0.0);
 
 #if 0
 	Serial.print("Hanging ...\r\n");
@@ -277,30 +277,51 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 						uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
 						uint16_t packetlength=16;
 						
-						UnpackPacket(packet,packetlength);
+						UnpackPacket(packet,packetlength,-100,10,0.0);
 					}
 					
 					break;
 		
+		case 'z':	// insert dummy packet
+					{
+						Serial.println("Insert Smeaton's Pier dummy packet");
+					
+						// Smeaton's Pier Lighthouse, St Ives
+						uint8_t *packet=(uint8_t *)"\x00\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
+						uint16_t packetlength=16;
+						
+						UnpackPacket(packet,packetlength,-100,10,0.0);
+					}
+					
+					break;
+		
+		
 		case '?':	Serial.print("RocketTrack Test Harness Menu\r\n========================\r\n\n");
 					Serial.print("b\t-\tBarometer\r\n");
 					Serial.print("c\t-\tSensor Calibration\r\n");
-//					Serial.print("e\t-\tLed\r\n");
-//					Serial.print("g\t-\tGPS\r\n");
-//					Serial.print("h\t-\tHigh Rate Mode\r\n");
 					Serial.print("i\t-\tIMU\r\n");
-//					Serial.print("l\t-\tLoRa\r\n");
 					Serial.print("n\t-\tNon-volatile Memory\r\n");
-//					Serial.print("o\t-\tLong Range Mode\r\n");
 					Serial.print("p\t-\tPower Management IC\r\n");
-//					Serial.print("n\t-\tNeopixel\r\n");
 					Serial.print("r\t-\tReceiver Commands\r\n");
 					Serial.print("s\t-\tConfig/Settinsg Commands\r\n");
-//					Serial.print("t\t-\tTransmitter Commands\r\n");
 					Serial.print("x\t-\tScan I2c Bus for Devices\r\n");
 					Serial.print("u\t-\tButton\r\n");
 					Serial.print("v\t-\tBeeper\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
+					Serial.print("------------------------------\r\n");
+					Serial.print("j\t-\tJson test\r\n");
+					Serial.print("k\t-\tInsert dummy packet from Bredon Hill\r\n");
+					Serial.print("z\t-\tInsert dummy packer from Smeaton's Pier, St Ives\r\n");
+					Serial.print("d\t-\tDisplay beacon packet buffers\r\n");
+
+//					Serial.print("e\t-\tLed\r\n");
+//					Serial.print("g\t-\tGPS\r\n");
+//					Serial.print("h\t-\tHigh Rate Mode\r\n");
+//					Serial.print("l\t-\tLoRa\r\n");
+//					Serial.print("o\t-\tLong Range Mode\r\n");
+//					Serial.print("n\t-\tNeopixel\r\n");
+//					Serial.print("t\t-\tTransmitter Commands\r\n");
+
 					OK=1;
 					break;
 					

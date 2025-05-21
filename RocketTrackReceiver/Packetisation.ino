@@ -6,7 +6,7 @@
 fix beacons[MAX_BEACONS];
 
 // use the same structure to hold the receiver location
-fix rxfix={0,0,0,0,0,0,0,0,0.0,0.0,0.0,0,0,0,0};
+fix rxfix={0,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0,0,0,0};
 
 // this is a scratch structure which'll be populated as a packet is decoded
 // then copied into the right beacon slot once we have the id of the beacon
@@ -14,7 +14,7 @@ fix rxfix={0,0,0,0,0,0,0,0,0.0,0.0,0.0,0,0,0,0};
 //
 // insert the location of Bredon Hill so that's the default reported
 // location until we receive packets from any beacon
-fix lastfix={1,3,6,13,-63,0,0,0,52.059956,-2.064869,500.0,1.23,3.99,1234,0};
+fix lastfix={1,3,6,13,-63,0,0,0,0,52.059956,-2.064869,500.0,1.23,3.99,0.0,1234,0};
 
 #define LORA_ID 1
 
@@ -77,9 +77,9 @@ void PackPacket(uint8_t *TxPacket,uint16_t *TxPacketLength)
 	packetcounter++;
 }
 
-void UnpackPacket(uint8_t *RxPacket,uint16_t RxPacketLength)
+void UnpackPacket(uint8_t *RxPacket,uint16_t RxPacketLength,int8_t rssi,int8_t snr,uint8_t rxmode)
 {
-#if 0
+#if DEBUG>2
 	Serial.print("UnpackPacket()\r\n");
 #endif
 		
@@ -105,11 +105,16 @@ void UnpackPacket(uint8_t *RxPacket,uint16_t RxPacketLength)
 	
 	lastfix.spare1=0x00;	lastfix.spare2=0x00;	lastfix.spare3=0x00;
 	
+	lastfix.rssi=rssi;
+	lastfix.snr=snr;
+	lastfix.rxmode=rxmode;
+	
+	// used for packet age calculate in web gui
 	lastfix.millis=millis();
 	
 	StorePacketInBeaconBuffer(lastfix.id);
-	
-#if 0
+
+#if DEBUG>2
 	DumpDecodedPacket(lastfix);
 #endif
 }

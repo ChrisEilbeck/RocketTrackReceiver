@@ -1,4 +1,7 @@
 
+// TODO: this is inherently for a single beacon so I'm going to disable it
+// for now.  it's a nice to have, not vital for use
+
 #include "FlightEvents.h"
 
 bool detect_launch=false;
@@ -17,6 +20,11 @@ char flight_state_text[65]="Arming ...";
 
 void UpdateFlightEvents(double beaconlat,double beaconlong,double beaconalt)
 {
+#if 1
+	Serial.println("UpdateFlightEvents() disabled in this build ...");
+	return;
+#endif
+
 	Serial.println("UpdateFlightEvents()");
 
 	switch(FlightState)

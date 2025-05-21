@@ -36,7 +36,7 @@ function GetMaxBeaconRange(beacon,index,array)
 	var rx_latitude="%RX_LATITUDE%";
 	var rx_longitude="%RX_LONGITUDE%";
 
-	console.log(beacon);
+//	console.log(beacon);
 
 	var range=GreatCircleDistance(rx_latitude,rx_longitude,beacon.lat,beacon.long);
 
@@ -45,8 +45,8 @@ function GetMaxBeaconRange(beacon,index,array)
 	else
 		maxbeaconrange=Math.max(self.maxbeaconrange,range);
 
-	console.log(range);
-	console.log(maxbeaconrange);	
+//	console.log(range);
+//	console.log(maxbeaconrange);	
 }
 
 function DrawBeacons(beacon,index,array)
@@ -54,7 +54,7 @@ function DrawBeacons(beacon,index,array)
 	var range=GreatCircleDistance(rx_latitude,rx_longitude,beacon.lat,beacon.long);
 	var bearing=GreatCircleBearing(beacon.lat,beacon.long,rx_latitude,rx_longitude);
 
-	DrawSpotAt(range,bearing,graticulerange,rx_heading);
+	DrawSpotAt(range,bearing,graticulerange,rx_heading,beacon.id,beacon.age);
 }
 
 function DrawTrackingPlot()
@@ -66,7 +66,7 @@ function DrawTrackingPlot()
 	
 	console.log("input RX_HEADING = "+rx_heading);
 
-	console.log(beacons);
+//	console.log(beacons);
 	console.log("Tracking "+beacons.length+" beacons ...");
 	
 	beacons.forEach(GetMaxBeaconRange);
@@ -78,8 +78,6 @@ function DrawTrackingPlot()
 //	DrawTextData();
 	
 	beacons.forEach(DrawBeacons);
-	
-//	DrawSpotAt(range,bearing,maxrange,rx_heading);
 	
 	console.log("DrawTrackingPlot() exit");
 }
@@ -110,8 +108,8 @@ function DrawTrackingCrosshairs(range,rx_heading)
 	else if(range>20)		{	numcircles=5;	percircle=10;		graticulerange=50;		}
 	else					{	numcircles=4;	percircle=5;		graticulerange=20;		}
 	
- 	console.log("Range = "+range);
- 	console.log("Drawing "+numcircles+" of "+percircle+" m each");
+// 	console.log("Range = "+range);
+// 	console.log("Drawing "+numcircles+" of "+percircle+" m each");
 	
 	var cnt;
 	
@@ -241,15 +239,15 @@ function DrawTextData()
 	console.log("DrawTextData() exit");
 }
 
-function DrawSpotAt(range,bearing,graticulerange,rx_heading)
+function DrawSpotAt(range,bearing,graticulerange,rx_heading,id,age)
 {
-	console.log("DrawSpotAt() entry");
+//	console.log("DrawSpotAt() entry");
 
 	var canvas=document.getElementById("trackingplot");
 	var ctx=canvas.getContext("2d");
 	
-	console.log("rx_heading = "+rx_heading);
-	console.log("bearing before = "+bearing);
+//	console.log("rx_heading = "+rx_heading);
+//	console.log("bearing before = "+bearing);
 	
 	bearing-=90;
 	
@@ -258,8 +256,6 @@ function DrawSpotAt(range,bearing,graticulerange,rx_heading)
 	
 	while(bearing>360.0)	{	bearing-=360.0;		}
 	while(bearing<0.0)		{	bearing+=360.0;		}
-	
-//	console.log("bearing after = "+bearing);
 	
 	bearing*=Math.PI/180;
 	
@@ -283,7 +279,16 @@ function DrawSpotAt(range,bearing,graticulerange,rx_heading)
 	ctx.arc(Math.cos(bearing)*radius,Math.sin(bearing)*radius,5,0,2*Math.PI);
 	ctx.fill();
 
-	console.log("DrawSpotAt() exit");
+	ctx.font="30px Comic Sans MS";
+	ctx.fillStyle="red";
+	
+	age=age/1000;
+	age=age.toFixed();
+	
+	ctx.fillText("ID: "+id,Math.cos(bearing)*radius+40,Math.sin(bearing)*radius-20);
+	ctx.fillText("Age: "+age+"s",Math.cos(bearing)*radius+70,Math.sin(bearing)*radius+20);
+
+//	console.log("DrawSpotAt() exit");
 }
 
 function GreatCircleDistance(lat1,long1,lat2,long2)
@@ -331,10 +336,36 @@ function GreatCircleBearing(lat2,lon2,lat1,lon1)
 
 // insert a button for each beacon we are tracking
 
+var columns=1;
+
 function InsertButton(beacon,index,array)
 {
 	const element_table=document.createElement("table");
-	const element_tr=document.createElement("tr");
+	var element_tr;
+	
+	if(columns==2)
+	{
+		console.log(index);
+		row="row"+Math.floor(index/2);
+	
+		if(		(index==0)
+			||	(index==2)
+			||	(index==4)
+			||	(index==6)
+			||	(index==8)
+			||	(index==10)		)
+		{
+			console.log("Creating element "+row);
+			element_tr=document.createElement("tr");
+			element_tr.id=row;
+		}
+		else
+		{
+			console.log("Looking for element "+row);
+			element_tr=document.getElementById(row);
+		}
+	}
+	
 	const element_td=document.createElement("td");
 	const element_form=document.createElement("form");
 	const element_button=document.createElement("button");
@@ -348,7 +379,9 @@ function InsertButton(beacon,index,array)
 	element_button.innerText="Beacon ID: "+beacon.id;
 	element_button.classList.add("selectmenubuttons");
 	element_button.type="submit";
-	element_button.formmethod="pos";
+	element_button.formMethod="post";
+	element_button.value=beacon.id;
+	element_button.name="beacon_id";
 
 	const element=document.getElementById("beacon_buttons");
 	element.appendChild(element_tr);
@@ -357,6 +390,35 @@ function InsertButton(beacon,index,array)
 function InsertSelectButtons()
 {
 	console.log("Tracking "+beacons.length+" beacons ...");	
+	
+	if(beacons.length<=6)	columns=1;
+	else					columns=2;
+	
 	beacons.forEach(InsertButton);
+}
+
+function PopulateTelemetryPage()
+{
+	var selected=%SELECTED%;
+	var rx_latitude="%RX_LATITUDE%";
+	var rx_longitude="%RX_LONGITUDE%";
+	
+	var range=GreatCircleDistance(rx_latitude,rx_longitude,beacons[selected]["lat"],beacons[selected]["long"]);
+	var bearing=GreatCircleBearing(beacons[selected]["lat"],beacons[selected]["long"],rx_latitude,rx_longitude);
+	
+	console.log("Range = "+range.toFixed(1));
+	console.log("Bearing = "+bearing.toFixed(1));
+	
+	document.getElementById("BeaconId").textContent=beacons[selected]["id"];
+	document.getElementById("TxLat").textContent=beacons[selected]["lat"].toFixed(6);
+	document.getElementById("TxLong").textContent=beacons[selected]["long"].toFixed(6);
+	document.getElementById("Range").textContent=range.toFixed(1);
+	document.getElementById("Bearing").textContent=bearing.toFixed(1);
+	document.getElementById("Altitude").textContent=beacons[selected]["height"].toFixed(1);
+	document.getElementById("Voltage").textContent=(beacons[selected]["voltage"].toFixed(0))+"mV";
+	document.getElementById("RSSI").textContent=beacons[selected]["rssi"].toFixed(0);
+
+	if(beacons[selected]["rxmode"])		document.getElementById("LoRaMode").textContent="High Rate mode";
+	else								document.getElementById("LoRaMode").textContent="Long Range mode";
 }
 

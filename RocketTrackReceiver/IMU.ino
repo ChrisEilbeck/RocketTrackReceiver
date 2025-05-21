@@ -270,7 +270,11 @@ void ReadAccelerometerGyro(float *ax,float *ay,float *az,float *gx,float *gy,flo
 
 void CorrectAccelerometer(float *x,float *y,float *z)
 {
-
+	
+	
+	
+	
+	
 }
 
 void CorrectGyro(float *x,float *y,float *z)
@@ -465,9 +469,9 @@ void CalibrateAccelerometer(char *direction,float *output,char axis)
 	Serial.print("\tPlace with ");
 	Serial.println(direction);
 	
-	Serial.print("3 ...");	delay(1000);
-	Serial.print("2 ...");	delay(1000);
-	Serial.print("1 ...\r\n");	delay(1000);
+	Serial.print("3 ...");				delay(1000);
+	Serial.print("2 ...");				delay(1000);
+	Serial.print("1 ...\r\n");			delay(1000);
 	Serial.println("\tMeasuring ...");
 
 	ReadAccelerometerGyro(
@@ -488,6 +492,27 @@ void CalibrateAccelerometer(char *direction,float *output,char axis)
 	
 		default:	Serial.printf("Invalid axis selected in CalibrateAccelerometer() - \'%c\'\r\n",axis);
 	}
+	
+	ComputeAccelOffsetAndScale();
+}
+
+void ComputeAccelOffsetAndScale(void)
+{
+	Serial.print("X:\tmax = ");	Serial.print(accelmax.x);	Serial.print("\tmin = ");	Serial.println(accelmin.x);
+	Serial.print("Y:\tmax = ");	Serial.print(accelmax.y);	Serial.print("\min = t");	Serial.println(accelmin.y);
+	Serial.print("Z:\tmax = ");	Serial.print(accelmax.z);	Serial.print("\tmin = ");	Serial.println(accelmin.z);
+
+	AccelOffset.x=accelmax.x+accelmin.x;
+	AccelOffset.y=accelmax.y+accelmin.y;
+	AccelOffset.z=accelmax.z+accelmin.z;
+
+	AccelScale.x=32768.0/(accelmax.x-accelmin.x);
+	AccelScale.y=32768.0/(accelmax.y-accelmin.y);
+	AccelScale.z=32768.0/(accelmax.z-accelmin.z);
+	
+	Serial.print("\tXoff = ");	Serial.print(AccelOffset.x);	Serial.print("\tXscale = ");	Serial.println(AccelScale.x);
+	Serial.print("\tYoff = ");	Serial.print(AccelOffset.y);	Serial.print("\tYscale = ");	Serial.println(AccelScale.y);
+	Serial.print("\tZoff = ");	Serial.print(AccelOffset.z);	Serial.print("\tZscale = ");	Serial.println(AccelScale.z);
 }
 
 int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
