@@ -309,7 +309,7 @@ void PollIMU(void)
 							&(uncalibrated_mag.y),
 							&(uncalibrated_mag.z)
 						);
-	
+		
 		// see https://teslabs.com/articles/magnetometer-calibration/ and 
 		// https://sailboatinstruments.blogspot.com/2011/08/improved-magnetometer-calibration.html
 		// for a better explanation than I have of all of this 
@@ -349,51 +349,51 @@ void PollIMU(void)
 		heading=180.0-filter.getYaw();
 		if(heading<0.0)		heading+=360.0;
 		if(heading>360.0)	heading-=360.0;
-	}
-
-	if(mag_cal_mode)
-	{
-		static int update_ui_at=0;
 		
-		if(millis()>update_ui_at)
+		if(mag_cal_mode)
 		{
-			update_ui_at=millis()+100;
+			static int update_ui_at=0;
 			
-			if(	(uncalibrated_mag.x!=0.0)&&(uncalibrated_mag.y!=0.0)&&(uncalibrated_mag.z!=0.0)	)
-				Serial.printf("MagCal:%.3f,%.2f,%.2f,%.2f\r\n",(float)millis()/1000.0,uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z);
+			if(millis()>update_ui_at)
+			{
+				update_ui_at=millis()+100;
+				
+				if(	(uncalibrated_mag.x!=0.0)&&(uncalibrated_mag.y!=0.0)&&(uncalibrated_mag.z!=0.0)	)
+					Serial.printf("MagCal:%.3f,%.2f,%.2f,%.2f\r\n",(float)millis()/1000.0,uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z);
+			}
 		}
-	}
-
-	if(compass_live_mode)
-	{
-		static int update_ui_at=0;
 		
-		if(millis()>update_ui_at)
+		if(compass_live_mode)
 		{
-			update_ui_at=millis()+100;
-
+			static int update_ui_at=0;
+			
+			if(millis()>update_ui_at)
+			{
+				update_ui_at=millis()+100;
+		
 #if 0
-			Serial.printf("AccX: % .2f, AccY: % .2f, AccZ: % .2f\t",accel.x,accel.y,accel.z);
-			Serial.printf("GyroX: % .2f, GyroY: % .2f, GyroZ: % .2f\t",gyro.x,gyro.y,gyro.z);
-			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Heading: %.2f\r\n",uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,heading);
+				Serial.printf("AccX: % .2f, AccY: % .2f, AccZ: % .2f\t",accel.x,accel.y,accel.z);
+				Serial.printf("GyroX: % .2f, GyroY: % .2f, GyroZ: % .2f\t",gyro.x,gyro.y,gyro.z);
+				Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Heading: %.2f\r\n",uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,heading);
 #endif
 #if 1
-			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, AccX: %.2f, AccY: %.2f, AccZ: %.2f, GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",
-								uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,
-								accel.x,accel.y,accel.z,
-								gyro.x,gyro.y,gyro.z
-						);
+				Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, AccX: %.2f, AccY: %.2f, AccZ: %.2f, GyroX: %.2f, GyroY: %.2f, GyroZ: %.2f\r\n",
+									uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,
+									accel.x,accel.y,accel.z,
+									gyro.x,gyro.y,gyro.z
+							);
 #endif
 #if 0
-			Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Cal_MagX: % .2f, Cal_MagY: % .2f, Cal_MagZ: % .2f\r\n",
-								uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,
-								calibrated_mag.x,calibrated_mag.y,calibrated_mag.z
-						);
+				Serial.printf("MagX: % .2f, MagY: % .2f, MagZ: % .2f, Cal_MagX: % .2f, Cal_MagY: % .2f, Cal_MagZ: % .2f\r\n",
+									uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z,
+									calibrated_mag.x,calibrated_mag.y,calibrated_mag.z
+							);
 #endif
 #if 0
-			Serial.printf("Cal_MagX: % .2f, Cal_MagY: % .2f, Cal_MagZ: % .2f, ",calibrated_mag.x,calibrated_mag.y,calibrated_mag.z);
-			Serial.printf("Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",filter.getRoll(),filter.getPitch(),filter.getYaw(),heading);
+				Serial.printf("Cal_MagX: % .2f, Cal_MagY: % .2f, Cal_MagZ: % .2f, ",calibrated_mag.x,calibrated_mag.y,calibrated_mag.z);
+				Serial.printf("Roll: %.1f, Pitch: %.1f, Yaw: %.1f, Heading: %.1f\r\n",filter.getRoll(),filter.getPitch(),filter.getYaw(),heading);
 #endif
+			}
 		}
 	}
 }
@@ -506,9 +506,9 @@ void ComputeAccelOffsetAndScale(void)
 	AccelOffset.y=accelmax.y+accelmin.y;
 	AccelOffset.z=accelmax.z+accelmin.z;
 
-	AccelScale.x=32768.0/(accelmax.x-accelmin.x);
-	AccelScale.y=32768.0/(accelmax.y-accelmin.y);
-	AccelScale.z=32768.0/(accelmax.z-accelmin.z);
+	AccelScale.x=2.0/(accelmax.x-accelmin.x);
+	AccelScale.y=2.0/(accelmax.y-accelmin.y);
+	AccelScale.z=2.0/(accelmax.z-accelmin.z);
 	
 	Serial.print("\tXoff = ");	Serial.print(AccelOffset.x);	Serial.print("\tXscale = ");	Serial.println(AccelScale.x);
 	Serial.print("\tYoff = ");	Serial.print(AccelOffset.y);	Serial.print("\tYscale = ");	Serial.println(AccelScale.y);

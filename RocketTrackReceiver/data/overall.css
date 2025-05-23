@@ -16,6 +16,7 @@ h2
 td
 {
 	text-align: center;
+	width: 50%;
 }
 
 #logo
@@ -48,6 +49,15 @@ td
 	height: 15%;
 	font-size: 48px;
 	border-radius: 15px;
+}
+
+.kmlbutton
+{
+	width: 85%;
+	height: 15%;
+	font-size: 64px;
+	border-radius: 15px;
+	background-color: #f44336;
 }
 
 .selectmenubuttons

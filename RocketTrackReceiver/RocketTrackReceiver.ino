@@ -239,7 +239,7 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 		case 'b':	OK=BarometerCommandHandler(cmd,cmdptr);				break;
 		case 'c':	OK=SensorCalibrationCommandHandler(cmd,cmdptr);		break;
 //		case 'e':	OK=LEDCommandHandler(cmd,cmdptr);					break;
-//		case 'g':	OK=GPSCommandHandler(cmd,cmdptr);					break;
+		case 'g':	OK=GPSCommandHandler(cmd,cmdptr);					break;
 //		case 'h':	OK=HighRateCommandHandler(cmd,cmdptr);				break;
 		case 'i':	OK=IMUCommandHandler(cmd,cmdptr);					break;
 //		case 'l':	OK=LORACommandHandler(cmd,cmdptr);					break;
@@ -267,6 +267,7 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 						DumpDecodedPacket(beacons[cnt]);
 					}
 					
+					OK=1;
 					break;
 
 		case 'k':	// insert dummy packet
@@ -280,6 +281,7 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 						UnpackPacket(packet,packetlength,-100,10,0.0);
 					}
 					
+					OK=1;
 					break;
 		
 		case 'z':	// insert dummy packet
@@ -287,12 +289,13 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 						Serial.println("Insert Smeaton's Pier dummy packet");
 					
 						// Smeaton's Pier Lighthouse, St Ives
-						uint8_t *packet=(uint8_t *)"\x00\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
+						uint8_t *packet=(uint8_t *)"\x01\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
 						uint16_t packetlength=16;
 						
 						UnpackPacket(packet,packetlength,-100,10,0.0);
 					}
 					
+					OK=1;
 					break;
 		
 		
