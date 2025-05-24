@@ -339,6 +339,15 @@ int SetupWebServer(void)
 	
 	server.on("/tracking.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/tracking.html",String(),false,trackingprocessor);			});
 	
+	server.on("/RocketBeacons.kml",HTTP_GET,[](AsyncWebServerRequest *request)			
+	{
+		char buffer[4096];
+		uint16_t buflen=sizeof(buffer);
+		GenerateKMLFile(buffer,buflen);
+		request->send(200,"application/vnd",buffer);
+//		request->redirect("/tracking.html");
+	});
+	
 	server.on("/select.html",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/select.html",String(),false,trackingprocessor);				});
 	
 	server.on("/telemetry.css",HTTP_GET,[](AsyncWebServerRequest *request)			{	request->send(SPIFFS,"/telemetry.css");												});
@@ -355,9 +364,6 @@ int SetupWebServer(void)
 	
    		selected_beacon=atoi(param->value().c_str());
 
-
-
-	
 		request->send(SPIFFS,"/telemetry.html",String(),false,trackingprocessor);
 	});
 
@@ -710,6 +716,66 @@ void GenerateJson(void)
 #if DEBUG>2
 	Serial.printf("json is %d bytes\r\n",strlen(jsonstring));
 	Serial.println(jsonstring);
+#endif
+}
+
+void GenerateKMLFile(char *buffer,uint16_t buflen)
+{
+//	uint16_t bufptr=0;
+
+	buffer[0]=0;
+	
+	sprintf(buffer+strlen(buffer),"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n");
+	sprintf(buffer+strlen(buffer),"<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\r\n");
+	sprintf(buffer+strlen(buffer),"<Document>\r\n");
+	sprintf(buffer+strlen(buffer),"\t<name>RocketBeacons.kml</name>\r\n");
+	
+	sprintf(buffer+strlen(buffer),"\t<Placemark>\r\n");
+	sprintf(buffer+strlen(buffer),"\t\t<name>Receiver</name>\r\n");
+	sprintf(buffer+strlen(buffer),"\t\t<Point>\r\n");
+	sprintf(buffer+strlen(buffer),"\t\t\t<coordinates>");
+	
+	sprintf(buffer+strlen(buffer),"%f,%f,%f",	
+				rxfix.longitude,
+				rxfix.latitude,
+				rxfix.height
+			);
+	
+	sprintf(buffer+strlen(buffer),"</coordinates>\r\n");
+	sprintf(buffer+strlen(buffer),"\t\t</Point>\r\n");
+	sprintf(buffer+strlen(buffer),"\t</Placemark>\r\n");
+	
+	
+	for(int cnt=0;cnt<MAX_BEACONS;cnt++)
+	{
+		if(		(beacons[cnt].spare1==0xff)
+			&&	(beacons[cnt].spare2==0xff)
+			&&	(beacons[cnt].spare3==0xff)		)
+		{
+			continue;
+		}
+	
+		sprintf(buffer+strlen(buffer),"\t<Placemark>\r\n");
+		sprintf(buffer+strlen(buffer),"\t\t<name>Beacon ID: %d</name>\r\n",beacons[cnt].id);
+		sprintf(buffer+strlen(buffer),"\t\t<Point>\r\n");
+		sprintf(buffer+strlen(buffer),"\t\t\t<coordinates>");
+		
+		sprintf(buffer+strlen(buffer),"%f,%f,%.1f",
+					beacons[cnt].longitude,
+					beacons[cnt].latitude,
+					beacons[cnt].height
+				);
+		
+		sprintf(buffer+strlen(buffer),"</coordinates>\r\n");
+		sprintf(buffer+strlen(buffer),"\t\t</Point>\r\n");
+		sprintf(buffer+strlen(buffer),"\t</Placemark>\r\n");
+	}
+
+	sprintf(buffer+strlen(buffer),"</Document>\r\n");
+	sprintf(buffer+strlen(buffer),"</kml>\r\n");
+
+#if DEBUG>2
+	Serial.print(buffer);
 #endif
 }
 

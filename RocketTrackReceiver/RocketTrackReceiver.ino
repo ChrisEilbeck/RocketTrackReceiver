@@ -257,10 +257,6 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 					OK=1;
 					break;
 		
-		case 'j':	JsonTest();
-					OK=1;
-					break;
-		
 		case 'd':	for(int cnt=0;cnt<MAX_BEACONS;cnt++)
 					{
 						Serial.println(cnt);
@@ -270,7 +266,60 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 					OK=1;
 					break;
 
-		case 'k':	// insert dummy packet
+		case 'j':	JsonTest();
+					OK=1;
+					break;
+		
+		case 'k':	{
+						char buffer[4096];
+						uint16_t buflen=sizeof(buffer);
+						GenerateKMLFile(buffer,buflen);
+					}
+					
+					OK=1;
+					break;
+		
+		case '1':	// insert dummy packet
+					{
+						Serial.println("Insert Whittington Tump dummy packet");
+					
+						uint8_t *packet=(uint8_t *)"\x0b\xca\xa4\xa1\xfb\xff\x5f\x56\x68\x00\x32\x00\x00\xc8\x7b\x00";
+						uint16_t packetlength=16;
+						
+						UnpackPacket(packet,packetlength,-100,10,0);
+						
+						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+						
+						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
+						
+						BeeperSetPattern(0b10000000000000000000000000000000,0);
+					}
+					
+					OK=1;
+					break;
+		
+		case '2':	// insert dummy packet
+					{
+						Serial.println("Insert Worcestershire Beacon dummy packet");
+					
+						uint8_t *packet=(uint8_t *)"\x0c\xcf\xda\x51\xfb\xff\x93\x35\x68\x00\xab\x01\x00\xb9\x7b\x00";
+						uint16_t packetlength=16;
+						
+						UnpackPacket(packet,packetlength,-100,10,0);
+						
+						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+						
+						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
+						
+						BeeperSetPattern(0b10000000000000000000000000000000,0);
+					}
+					
+					OK=1;
+					break;
+		
+		case '3':	// insert dummy packet
 					{
 						Serial.println("Insert Bredon Hill dummy packet");
 					
@@ -278,13 +327,20 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 						uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
 						uint16_t packetlength=16;
 						
-						UnpackPacket(packet,packetlength,-100,10,0.0);
+						UnpackPacket(packet,packetlength,-100,10,0);
+						
+						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+						
+						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
+						
+						BeeperSetPattern(0b10000000000000000000000000000000,0);
 					}
 					
 					OK=1;
 					break;
 		
-		case 'z':	// insert dummy packet
+		case '4':	// insert dummy packet
 					{
 						Serial.println("Insert Smeaton's Pier dummy packet");
 					
@@ -292,7 +348,14 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 						uint8_t *packet=(uint8_t *)"\x01\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
 						uint16_t packetlength=16;
 						
-						UnpackPacket(packet,packetlength,-100,10,0.0);
+						UnpackPacket(packet,packetlength,-100,10,0);
+						
+						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+						
+						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
+						
+						BeeperSetPattern(0b10000000000000000000000000000000,0);
 					}
 					
 					OK=1;
@@ -313,9 +376,10 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 					Serial.print("?\t-\tShow this menu\r\n");
 					Serial.print("------------------------------\r\n");
 					Serial.print("j\t-\tJson test\r\n");
-					Serial.print("k\t-\tInsert dummy packet from Bredon Hill\r\n");
+					Serial.print("y\t-\tInsert dummy packet from Bredon Hill\r\n");
 					Serial.print("z\t-\tInsert dummy packer from Smeaton's Pier, St Ives\r\n");
 					Serial.print("d\t-\tDisplay beacon packet buffers\r\n");
+					Serial.print("k\t-\tGenerate KML file\r\n");
 
 //					Serial.print("e\t-\tLed\r\n");
 //					Serial.print("g\t-\tGPS\r\n");

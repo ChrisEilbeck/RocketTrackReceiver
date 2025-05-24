@@ -365,6 +365,10 @@ function InsertButton(beacon,index,array)
 			element_tr=document.getElementById(row);
 		}
 	}
+	else
+	{
+		element_tr=document.createElement("tr");
+	}
 	
 	const element_td=document.createElement("td");
 	const element_form=document.createElement("form");
@@ -380,7 +384,8 @@ function InsertButton(beacon,index,array)
 	element_button.classList.add("selectmenubuttons");
 	element_button.type="submit";
 	element_button.formMethod="post";
-	element_button.value=beacon.id;
+//	element_button.value=beacon.id;
+	element_button.value=index;
 	element_button.name="beacon_id";
 
 	const element=document.getElementById("beacon_buttons");
@@ -402,6 +407,8 @@ function PopulateTelemetryPage()
 	var selected=%SELECTED%;
 	var rx_latitude="%RX_LATITUDE%";
 	var rx_longitude="%RX_LONGITUDE%";
+	
+	console.log("Selected beacon id = "+beacons[selected]["id"]);
 	
 	var range=GreatCircleDistance(rx_latitude,rx_longitude,beacons[selected]["lat"],beacons[selected]["long"]);
 	var bearing=GreatCircleBearing(beacons[selected]["lat"],beacons[selected]["long"],rx_latitude,rx_longitude);

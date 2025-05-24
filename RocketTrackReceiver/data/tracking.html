@@ -10,13 +10,19 @@
 		<table class="buttonsection">
 			<tr>
 				<td><form action="tracking.html"><button class="menubuttons" type="submit" formmethod="get">Tracking<br>Mode</button></form></td>
-				<td><form action="telemetry.html"><button class="menubuttons" type="submit" formmethod="get">Telemetry<br>Mode</button></form></td>
+				<td><form action="select.html"><button class="menubuttons" type="submit" formmethod="get">Telemetry<br>Mode</button></form></td>
 			</tr>
 			<tr>
 				<td><form action="north_up.html"><button class="menubuttons" type="submit" formmethod="get">North<br>Upwards</button></form></td>
 				<td><form action="beacon_up.html"><button class="menubuttons" type="submit" formmethod="get">Beacon Bearing<br>Upwards</button></form></td>
 			</tr>
-			<tr><td colspan="2"><form action="get_kml.html"><button class="kmlbutton" type="submit" formmethod="get">Get KML File</button></form></td></tr>
+			<tr><td colspan="2">
+				<form action="RocketBeacons.kml">
+					<button class="kmlbutton" type="submit" formmethod="get">
+						<a download="RocketBeacons.kml" target="_blank">Get KML File</a>
+					</button>
+				</form>
+			</td></tr>
 			<tr><td colspan="2"><form action="index.html"><button class="menubuttons" type="submit" formmethod="get">Back</button></form></td></tr>
 		</table>
 	</body>

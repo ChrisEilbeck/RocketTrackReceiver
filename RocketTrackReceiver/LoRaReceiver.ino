@@ -309,7 +309,8 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 							Serial.println("Rejecting errored packet");
 						else
 						{
-							UnpackPacket(packet,packetlength,-100,10,0.0);
+							UnpackPacket(packet,packetlength,-100,10,0);
+							
 							Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
 								lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
 				
@@ -325,8 +326,16 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					}
 
 					break;
+
+/*
+	Worcestershire Beacon 52.10464,-2.34014, 427
+	Whittington Tump 52.1687, -2.1843, 50
+*/	
+
+
 		
 		case '?':	Serial.print("Receiver Test Harness\r\n================\r\n\n");
+//					Serial.print("a\t-\tInsert Worcestershire Beacon packet\r\n");
 //					Serial.print("c\t-\tInsert ciphertext packet\r\n");
 					Serial.print("x\t-\tInsert plaintext packet\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");

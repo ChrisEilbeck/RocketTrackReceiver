@@ -79,5 +79,7 @@ __DATA__
 	{"id": 6,"gpsfix": 3,"numsats": 7,"snr": 10,"rssi": -96,"long":-2.33187000,"lat":52.08147500,"height":56.0,"accuracy":1.6,"voltage": 4150,"counter": 100,"millis": 7000},
 	{"id": 7,"gpsfix": 3,"numsats": 8,"snr": 10,"rssi": -97,"long":-2.33187000,"lat":52.08247500,"height":57.0,"accuracy":1.7,"voltage": 4150,"counter": 100,"millis": 8000},
 	{"id": 8,"gpsfix": 3,"numsats": 9,"snr": 10,"rssi": -98,"long":-2.33287000,"lat":52.08197500,"height":58.0,"accuracy":1.8,"voltage": 4150,"counter": 100,"millis": 7000},
-	{"id": 9,"gpsfix": 3,"numsats": 10,"snr": 10,"rssi": -99,"long":-2.33287000,"lat":52.08097500,"height":59.0,"accuracy":1.9,"voltage": 4150,"counter": 100,"millis": 8000}
+	{"id": 9,"gpsfix": 3,"numsats": 10,"snr": 10,"rssi": -99,"long":-2.33287000,"lat":52.08097500,"height":59.0,"accuracy":1.9,"voltage": 4150,"counter": 100,"millis": 8000},
+	{"id": 66,"gpsfix": 3,"numsats": 10,"snr": 10,"rssi": -99,"long":-2.1843,"lat":52.1687,"height":50.0,"accuracy":1.9,"voltage": 4000,"counter": 123,"millis": 8000},
+	{"id": 99,"gpsfix": 3,"numsats": 15,"snr": 15,"rssi": -80,"long":-2.34014,"lat":52.10464,"height":427.0,"accuracy":1.9,"voltage": 3700,"counter": 123,"millis": 8000}
 ]
