@@ -76,6 +76,7 @@ int BeeperCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 		
 		case 'e':	Serial.println("Rx beep enabled");
 					beeper_enable=true;
+					BeeperSetPattern(0,0);
 					retval=0;
 					break;
 		
