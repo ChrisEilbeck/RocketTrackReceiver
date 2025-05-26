@@ -289,6 +289,35 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
+		case '1':	lora_freq=LORA_CH1;
+					Serial.println("Setting to LoRa Channel 1");
+					retval=1;
+					break;
+
+		case '2':	lora_freq=LORA_CH2;
+					Serial.println("Setting to LoRa Channel 2");
+					retval=1;
+					break;
+
+		case '3':	lora_freq=LORA_CH3;
+					Serial.println("Setting to LoRa Channel 3");
+					retval=1;
+					break;
+
+		case '4':	lora_freq=LORA_CH4;
+					Serial.println("Setting to LoRa Channel 4");
+					retval=1;
+					break;
+
+		case '5':	lora_freq=LORA_CH5;
+					Serial.println("Setting to LoRa Channel 5");
+					retval=1;
+					break;
+
+		case '6':	lora_freq=LORA_CH6;
+					Serial.println("Setting to LoRa Channel 6");
+					retval=1;
+					break;
 
 		case 'x':
 #if 1
@@ -335,6 +364,7 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 
 		
 		case '?':	Serial.print("Receiver Test Harness\r\n================\r\n\n");
+					Serial.print("1..6\t-\tSet LoRa Channel\r\n");
 //					Serial.print("a\t-\tInsert Worcestershire Beacon packet\r\n");
 //					Serial.print("c\t-\tInsert ciphertext packet\r\n");
 					Serial.print("x\t-\tInsert plaintext packet\r\n");
