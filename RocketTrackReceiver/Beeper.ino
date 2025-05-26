@@ -69,12 +69,24 @@ int BeeperCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
+		case 'd':	Serial.println("Rx beep disabled");
+					beeper_enable=false;
+					retval=0;
+					break;
+		
+		case 'e':	Serial.println("Rx beep enabled");
+					beeper_enable=true;
+					retval=0;
+					break;
+		
 		case 't':	Serial.print("Triggering Beeper Test pattern\r\n");
 					BeeperSetPattern(0b1110111011100011101011100000000,0);
 					retval=0;
 					break;
 		
 		case '?':	Serial.print("Beeper Test Harness\r\n========================\r\n\n");
+					Serial.print("d\t-\tRx beep disable\r\n");
+					Serial.print("e\t-\tRx beep enable\r\n");
 					Serial.print("t\t-\tTrigger Beeper Test Pattern\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");		
 					retval=0;
