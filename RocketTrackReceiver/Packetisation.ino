@@ -125,11 +125,11 @@ void DumpDecodedPacket(fix newfix)
 		&&	(newfix.spare2!=0xff)
 		&&	(newfix.spare3!=0xff)	)
 	{
-		Serial.printf("\tBeacon ID:\t%d\r\n",newfix.id);
+		Serial.printf("\tBeacon ID:\t\t%d\r\n",newfix.id);
 		Serial.printf("\tBeacon Latitude:\t%.6f\r\n",newfix.latitude);
 		Serial.printf("\tBeacon Longitude:\t%.6f\r\n",newfix.longitude);
-		Serial.printf("\tBeacon Height:\t%.6f\r\n",newfix.height);
-		Serial.printf("\tBeacon Voltage:\t%.1f mV\r\n",newfix.voltage);
+		Serial.printf("\tBeacon Height:\t\t%.6f\r\n",newfix.height);
+		Serial.printf("\tBeacon Voltage:\t\t%.1f mV\r\n",newfix.voltage);
 		Serial.printf("\tBeacon Accuracy:\t%.3f\r\n",newfix.accuracy);
 		Serial.printf("\tBeacon Count Value:\t%d\r\n",newfix.counter);
 	}
