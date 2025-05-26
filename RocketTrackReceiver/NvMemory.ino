@@ -28,6 +28,21 @@ int NvMemoryCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
+		case 's':	// store to non-volatile memory
+					StoreCalibrationData();
+					Serial.println("Calibration data stored");		
+		
+					break;
+		
+		case 'r':	// recall from non-volatile memory
+		
+					if(RetrieveCalibrationData())
+						Serial.println("Error recalling calibration data!");
+					else
+						Serial.println("Calibration data read ok");
+		
+					break;
+	
 		case 'x':	// hexdump of the eeprom for debugging
 					{
 						int cnt;
@@ -95,8 +110,7 @@ void StoreCalibrationData(void)
 	EEPROM.writeInt(addr,lr_bw);				addr+=sizeof(int);
 	EEPROM.writeInt(addr,lr_sf);				addr+=sizeof(int);
 	EEPROM.writeInt(addr,lr_cr);				addr+=sizeof(int);
-	
-	
+		
 	EEPROM.commit();
 	
 	Serial.print("Calibration values stored to NvMemory\r\n");
