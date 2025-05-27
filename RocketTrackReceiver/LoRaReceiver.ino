@@ -102,7 +102,7 @@ int ValidatePacket(uint8_t *packet,uint16_t packetsize,int packetrssi,float pack
 	if(packetsize!=16)		return(0);
 	
 	// check the beacon id is between 0 and 15
-	if(packet[0]>15)		return(0);	
+//	if(packet[0]>15)		return(0);	
 	
 	// check the snr is -10 or better
 	if(packetsnr<-10)		return(0);
@@ -110,7 +110,9 @@ int ValidatePacket(uint8_t *packet,uint16_t packetsize,int packetrssi,float pack
 	// check the packet counter is more than the last good one
 	
 	
+	
 	// check the battery voltage is sensible
+	
 	
 	
 	// for now, check the accuracy is 00
@@ -255,17 +257,11 @@ uint8_t hexnibble(char val)
 	uint8_t retval;
 	
 	if((val>='0')&&(val<='9'))
-	{
 		retval=val-'0';
-	}
 	else if((val>='a')&&(val<='f'))
-	{
 		retval=val-'a'+10;	
-	}
 	else if((val>='A')&&(val<='F'))
-	{
 		retval=val-'F'+10;	
-	}
 	else
 	{
 		Serial.printf("Invalid hex character received - %c\r\n",val);
@@ -273,6 +269,18 @@ uint8_t hexnibble(char val)
 	}
 	
 	return(retval);
+}
+
+void InsertDummyPacket(uint8_t *packet,uint16_t packetlength)
+{
+	UnpackPacket(packet,packetlength,-100,10,0);
+	
+	Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
+		lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
+	
+	UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
+	
+	BeeperSetPattern(0b10000000000000000000000000000000,0);
 }
 
 int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
@@ -289,36 +297,49 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	
 	switch(cmd[1]|0x20)
 	{
-		case '1':	lora_freq=LORA_CH1;
-					Serial.println("Setting to LoRa Channel 1");
+		case '1':	lora_freq=LORA_CH1;		Serial.println("Setting to LoRa Channel 1");	retval=1;	break;
+		case '2':	lora_freq=LORA_CH2;		Serial.println("Setting to LoRa Channel 2");	retval=1;	break;
+		case '3':	lora_freq=LORA_CH3;		Serial.println("Setting to LoRa Channel 3");	retval=1;	break;
+		case '4':	lora_freq=LORA_CH4;		Serial.println("Setting to LoRa Channel 4");	retval=1;	break;
+		case '5':	lora_freq=LORA_CH5;		Serial.println("Setting to LoRa Channel 5");	retval=1;	break;
+		case '6':	lora_freq=LORA_CH6;		Serial.println("Setting to LoRa Channel 6");	retval=1;	break;
+
+		case 'a':	{
+						Serial.println("Insert Whittington Tump dummy packet");
+						uint8_t *packet=(uint8_t *)"\x0b\xca\xa4\xa1\xfb\xff\x5f\x56\x68\x00\x32\x00\x00\xc8\x7b\x00";
+						InsertDummyPacket(packet,16);
+					}
+					
 					retval=1;
 					break;
-
-		case '2':	lora_freq=LORA_CH2;
-					Serial.println("Setting to LoRa Channel 2");
+		
+		case 'b':	{
+						Serial.println("Insert Worcestershire Beacon dummy packet");
+						uint8_t *packet=(uint8_t *)"\x0c\xcf\xda\x51\xfb\xff\x93\x35\x68\x00\xab\x01\x00\xb9\x7b\x00";
+						InsertDummyPacket(packet,16);
+					}
+										
 					retval=1;
 					break;
-
-		case '3':	lora_freq=LORA_CH3;
-					Serial.println("Setting to LoRa Channel 3");
+		
+		case 'c':	{
+						Serial.println("Insert Bredon Hill dummy packet");
+						uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
+						InsertDummyPacket(packet,16);
+					}
+					
 					retval=1;
 					break;
-
-		case '4':	lora_freq=LORA_CH4;
-					Serial.println("Setting to LoRa Channel 4");
+		
+		case 'd':	{
+						Serial.println("Insert Smeaton's Pier dummy packet");
+						uint8_t *packet=(uint8_t *)"\x01\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
+						InsertDummyPacket(packet,16);
+					}
+					
 					retval=1;
 					break;
-
-		case '5':	lora_freq=LORA_CH5;
-					Serial.println("Setting to LoRa Channel 5");
-					retval=1;
-					break;
-
-		case '6':	lora_freq=LORA_CH6;
-					Serial.println("Setting to LoRa Channel 6");
-					retval=1;
-					break;
-
+		
 		case 'x':
 #if 1
 					Serial.println((char *)cmd);
@@ -356,18 +377,13 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 
 					break;
 
-/*
-	Worcestershire Beacon 52.10464,-2.34014, 427
-	Whittington Tump 52.1687, -2.1843, 50
-*/	
-
-
-		
 		case '?':	Serial.print("Receiver Test Harness\r\n================\r\n\n");
 					Serial.print("1..6\t-\tSet LoRa Channel\r\n");
-//					Serial.print("a\t-\tInsert Worcestershire Beacon packet\r\n");
-//					Serial.print("c\t-\tInsert ciphertext packet\r\n");
-					Serial.print("x\t-\tInsert plaintext packet\r\n");
+					Serial.print("a\t-\tInsert Whittington Tump dummy packet\r\n");
+					Serial.print("b\t-\tInsert Worcestershire Beacon dummy packet\r\n");
+					Serial.print("c\t-\tInsert Bredon Hill dummy packet\r\n");
+					Serial.print("d\t-\tInsert Smeaton's Pier dummy packet\r\n");
+					Serial.print("x\t-\tInsert plaintext hexadecimal packet\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
 		

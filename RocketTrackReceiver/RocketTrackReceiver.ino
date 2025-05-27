@@ -2,8 +2,6 @@
 /*
 	To Do
 	
-	-	support tracking multiple beacons at the same time
-	
 	-	move away from configuring things in an ini file, just use the
 		nvmemory instead with ways to set back to defaults from the 
 		test harness
@@ -14,10 +12,6 @@
 	-	check it works when built in 868 MHz mode
 	
 	-	support different barometers
-	
-	-	add a button to the web UI do download a spot in KML format to use
-		with a mapping application instead of just using the radar plot and
-		following it in to the landing location
 	
 	-	add a search mechanism to get a beacon and a receiver to sync
 		together even if set on the wrong channel, maybe using a bluetooth
@@ -91,39 +85,34 @@ void setup()
 	// I2C
 	Wire.begin(21,22);
 	
+	Serial.print("\n"
+				 "--------  RocketTrack Flight Telemetry Receiver  --------\r\n");
+				 
 #if LORA_BAND==434
-	Serial.print("\n"
-				 "--------  RocketTrack Flight Telemetry Receiver  --------\r\n"
-				 "---------------------  434 MHz Mode  --------------------\r\n"
-				 "\n");
+	Serial.print("---------------------  434 MHz Mode  --------------------\r\n\n");
 #else
-	Serial.print("\n"
-				 "--------  RocketTrack Flight Telemetry Receiver  --------\r\n"
-				 "---------------------  868 MHz Mode  --------------------\r\n"
-				 "\n");
+	Serial.print("---------------------  868 MHz Mode  --------------------\r\n\n");
 #endif
 
 	// clear the beacon buffer to a known state
 	memset((void *)beacons,0xff,10*sizeof(fix));
 	
-#if 0
-	packhack();
-#endif
-	
 	// mandatory peripherals
 	
 	if(SetupPMIC())					{	Serial.print("PMIC Setup failed, halting ...\r\n");					while(1);				}
+	if(SetupNvMemory())				{	Serial.print("Non-volatile memory read failed\r\n");										}
+	if(RetrieveSettings())			{	Serial.println("Failed to retrieve settings from NvMemory");								}
+	
 	if(SetupSPIFFS())				{	Serial.println("SPIFFS Setup failed ...\r\n");												}
-	if(SetupNvMemory())				{	Serial.print("EEPROM failed, you must calibrate the IMU\r\n");								}
 
-	if(ReadConfigFile(unit_mode))
-	{
-		Serial.print("Reading the config file failed, substituting defaults ...\r\n");
-		SetDefaultConfigValues();
-	}
-	
-	if(RetrieveCalibrationData())	{	Serial.println("Failed to retrieve settings from NvMemory");								}
-	
+#if 0
+    if(ReadConfigFile(unit_mode))
+    {
+        Serial.print("Reading the config file failed, substituting defaults ...\r\n");
+        SetDefaultConfigValues();
+    }
+#endif
+
 	if(SetupLoRaReceiver())			{	Serial.print("LoRa Setup failed, halting ...\r\n");					while(1);				}
 	if(SetupGPS())					{	Serial.print("GPS Setup failed, halting ...\r\n");					while(1);				}
 	if(SetupCrypto())				{	Serial.print("Crypto Setup failed, halting ...\r\n");				while(1);				}
@@ -133,10 +122,6 @@ void setup()
 	if(SetupIMU())					{	Serial.print("IMU setup failed, disabling ...\r\n");										}
 	if(SetupBarometer())			{	Serial.print("Pressure Sensor Setup failed, disabling ...\r\n");							}
 	
-#if 0
-	DumpHexPacket(crypto_key,32);
-#endif
-
 	if(SetupButton())				{	Serial.print("Button Setup failed, disabling ...\r\n");				button_enable=false;	}
 	if(SetupBeeper())				{	Serial.print("Beeper Setup failed, disabling ...\r\n");				beeper_enable=false;	}
 
@@ -144,25 +129,6 @@ void setup()
 	// optional peripherals
 	if(SetupLEDs())					{	Serial.print("LED Setup failed, halting ...\r\n");					while(1);				}
 	if(SetupNeopixels())			{	Serial.print("Neopixels Setup failed, disabling ...\r\n");			neopixels_enable=false;	}
-#endif
-
-#if 0
-	// insert a dummy unencrypted packet for testing without turning on a transmitter
-
-//	uint8_t *packet=(uint8_t *)"\x00\xC9\xC9\x96\x9E\xFE\x6C\x44\x0E\x1F\x4D\x00\x0B\xCA\x09\x00";
-//	uint8_t *packet=(uint8_t *)"\x00\xCC\xDC\x2E\x9F\xFE\xB6\xB7\x0A\x1F\x3A\x00\x0F\xC9\xE3\x00";
-	
-	// Smeaton's Pier Lighthouse, St Ives
-//	uint8_t *packet=(uint8_t *)"\x00\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
-
-	// Bredon Hill, 18.6km at 97.3 degrees
-	uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
-	uint16_t packetlength=16;
-
-	UnpackPacket(packet,packetlength,-100,10,0.0);
-#endif
-#if 0
-	RetrieveCalibrationData();
 #endif
 }
 
@@ -279,90 +245,7 @@ void ProcessCommand(uint8_t *cmd,uint16_t cmdptr)
 					OK=1;
 					break;
 		
-		case '1':	// insert dummy packet
-					{
-						Serial.println("Insert Whittington Tump dummy packet");
-					
-						uint8_t *packet=(uint8_t *)"\x0b\xca\xa4\xa1\xfb\xff\x5f\x56\x68\x00\x32\x00\x00\xc8\x7b\x00";
-						uint16_t packetlength=16;
-						
-						UnpackPacket(packet,packetlength,-100,10,0);
-						
-						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
-							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
-						
-						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
-						
-						BeeperSetPattern(0b10000000000000000000000000000000,0);
-					}
-					
-					OK=1;
-					break;
-		
-		case '2':	// insert dummy packet
-					{
-						Serial.println("Insert Worcestershire Beacon dummy packet");
-					
-						uint8_t *packet=(uint8_t *)"\x0c\xcf\xda\x51\xfb\xff\x93\x35\x68\x00\xab\x01\x00\xb9\x7b\x00";
-						uint16_t packetlength=16;
-						
-						UnpackPacket(packet,packetlength,-100,10,0);
-						
-						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
-							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
-						
-						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
-						
-						BeeperSetPattern(0b10000000000000000000000000000000,0);
-					}
-					
-					OK=1;
-					break;
-		
-		case '3':	// insert dummy packet
-					{
-						Serial.println("Insert Bredon Hill dummy packet");
-					
-						// Bredon Hill, 18.6km at 97.3 degrees
-						uint8_t *packet=(uint8_t *)"\x00\xc6\xca\xde\xfb\xff\xb2\x1e\x68\x00\xf4\x01\x01\x04\x00\x00";
-						uint16_t packetlength=16;
-						
-						UnpackPacket(packet,packetlength,-100,10,0);
-						
-						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
-							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
-						
-						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
-						
-						BeeperSetPattern(0b10000000000000000000000000000000,0);
-					}
-					
-					OK=1;
-					break;
-		
-		case '4':	// insert dummy packet
-					{
-						Serial.println("Insert Smeaton's Pier dummy packet");
-					
-						// Smeaton's Pier Lighthouse, St Ives
-						uint8_t *packet=(uint8_t *)"\x01\xc6\xed\x0b\xf5\xff\x4a\x6d\x64\x00\x7b\x00\x01\x04\x00\x00";
-						uint16_t packetlength=16;
-						
-						UnpackPacket(packet,packetlength,-100,10,0);
-						
-						Serial.printf("Rx packet: Lat = %.6f, Long = %.6f, Height = %.1f, Acc = %.2f\t%s Mode\r\n",
-							lastfix.latitude,lastfix.longitude,lastfix.height,lastfix.accuracy,lora_mode?"High Rate":"Long Range");
-						
-						UpdateFlightEvents(lastfix.latitude,lastfix.longitude,lastfix.height);
-						
-						BeeperSetPattern(0b10000000000000000000000000000000,0);
-					}
-					
-					OK=1;
-					break;
-		
-		
-		case '?':	Serial.print("RocketTrack Test Harness Menu\r\n========================\r\n\n");
+		case '?':	Serial.print("RocketTrackReceiver Test Harness\r\n================================\r\n\n");
 					Serial.print("b\t-\tBarometer\r\n");
 					Serial.print("c\t-\tSensor Calibration\r\n");
 					Serial.print("i\t-\tIMU\r\n");

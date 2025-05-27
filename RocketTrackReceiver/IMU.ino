@@ -543,11 +543,11 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					break;
 
 		case 's':	// store the calibration values
-					StoreCalibrationData();
+					StoreSettings();
 					break;
 		
 		case 't':	// retrieve the calibration values
-					RetrieveCalibrationData();
+					RetrieveSettings();
 					break;
 
 		case 'x':	if(cmd[2]=='-')	CalibrateAccelerometer("Nose down",&(accelmin.x),'x');

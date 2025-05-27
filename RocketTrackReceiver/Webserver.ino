@@ -402,7 +402,7 @@ int SetupWebServer(void)
     		if(strncmp(param->name().c_str(),"B3",2)==0)	{	Mag_B3=atof(param->value().c_str());		}
 		}
 		
-		StoreCalibrationData();
+		StoreSettings();
 		
 		request->redirect("/configure.html");
 	});
@@ -430,7 +430,7 @@ int SetupWebServer(void)
     		}    		
 		}
 		
-		StoreCalibrationData();
+		StoreSettings();
 		
 		request->redirect("/configure.html");
 	});
@@ -512,7 +512,7 @@ int SetupWebServer(void)
 			}
 		}
 		
-		StoreCalibrationData();
+		StoreSettings();
 		
 		request->redirect("/configure.html");
 	});
@@ -522,7 +522,7 @@ int SetupWebServer(void)
 		Serial.println("Should be resetting the LoRa settings to default here");
 		
 		SetLoRaDefaults();
-		StoreCalibrationData();
+		StoreSettings();
 		
 		request->redirect("/configure.html");
 	});
@@ -616,13 +616,13 @@ int SetupWebServer(void)
 	server.on("/store_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/store_calibration.html");		
-		StoreCalibrationData();
+		StoreSettings();
 	});
 	
 	server.on("/retrieve_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)
 	{
 		request->send(SPIFFS,"/retrieve_calibration.html");		
-		RetrieveCalibrationData();
+		RetrieveSettings();
 	});
 	
 	server.on("/reset_calibration.html",HTTP_GET,[](AsyncWebServerRequest *request)

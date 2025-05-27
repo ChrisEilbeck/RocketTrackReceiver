@@ -29,14 +29,14 @@ int NvMemoryCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	switch(cmd[1]|0x20)
 	{
 		case 's':	// store to non-volatile memory
-					StoreCalibrationData();
+					StoreSettings();
 					Serial.println("Calibration data stored");		
 		
 					break;
 		
 		case 'r':	// recall from non-volatile memory
 		
-					if(RetrieveCalibrationData())
+					if(RetrieveSettings())
 						Serial.println("Error recalling calibration data!");
 					else
 						Serial.println("Calibration data read ok");
@@ -71,7 +71,7 @@ int NvMemoryCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 	return(retval);
 }
 
-void StoreCalibrationData(void)
+void StoreSettings(void)
 {	
 	int64_t addr=NVMEMORY_ARRAY;
 	
@@ -116,7 +116,7 @@ void StoreCalibrationData(void)
 	Serial.print("Calibration values stored to NvMemory\r\n");
 }
 
-int RetrieveCalibrationData(void)
+int RetrieveSettings(void)
 {
 	int64_t addr=NVMEMORY_ARRAY;
 	

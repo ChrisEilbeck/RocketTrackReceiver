@@ -346,7 +346,7 @@ void ResetAllSettings(void)
 	SetMagnetometerDefaults();
 	SetIMUDefaults();
 	
-	StoreCalibrationData();
+	StoreSettings();
 	
 	DisplayAllSettings();
 }
