@@ -50,12 +50,12 @@ int PollButton(void)
 				
 				uint32_t ButtonPressTime=millis()-LastButtonDownTime;
 				
-				if(ButtonPressTime<3000)
+				if(ButtonPressTime<1000)
 				{
 					Serial.println("\tShort button press");
 					ButtonEvent=BUTTON_SHORT_PRESS;
 				}
-				else if(ButtonPressTime>=3000&&ButtonPressTime<10000)
+				else if(ButtonPressTime>=1000&&ButtonPressTime<5000)
 				{
 					Serial.println("\tLong button press");
 					ButtonEvent=BUTTON_LONG_PRESS;
