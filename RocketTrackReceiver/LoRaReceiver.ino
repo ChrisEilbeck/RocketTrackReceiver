@@ -339,6 +339,18 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					
 					retval=1;
 					break;
+					
+		case 'r':	Serial.println("Resetting LoRa parameters");
+		
+					hr_bw=125000;
+					hr_sf=7;
+					hr_cr=8;
+					lr_bw=31250;
+					lr_sf=12;
+					lr_cr=8;
+					
+					retval=1;
+					break;
 		
 		case 'x':
 #if 1
@@ -383,6 +395,7 @@ int ReceiverCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 					Serial.print("b\t-\tInsert Worcestershire Beacon dummy packet\r\n");
 					Serial.print("c\t-\tInsert Bredon Hill dummy packet\r\n");
 					Serial.print("d\t-\tInsert Smeaton's Pier dummy packet\r\n");
+					Serial.print("r\t-\tReset LoRa parameters\r\n");
 					Serial.print("x\t-\tInsert plaintext hexadecimal packet\r\n");
 					Serial.print("?\t-\tShow this menu\r\n");
 					break;
