@@ -677,6 +677,8 @@ void JsonTest(void)
 	GenerateJson();
 }
 
+#define MIN_PACKETS 3
+
 void GenerateJson(void)
 {
 	JsonDocument construction;
@@ -684,26 +686,29 @@ void GenerateJson(void)
 	JsonArray c_arr=construction.to<JsonArray>();
 
 	int outcnt=0;
-	for(int cnt=0;cnt<MAX_BEACONS;cnt++)
+	for(int slot=0;slot<MAX_BEACONS;slot++)
 	{
-		if(		(beacons[cnt].spare1!=0xff)
-			&&	(beacons[cnt].spare2!=0xff)
-			&&	(beacons[cnt].spare3!=0xff)		)
+		if(		(beacons[slot].spare1!=0xff)
+			&&	(beacons[slot].spare2!=0xff)
+			&&	(beacons[slot].spare3!=0xff)		)
 		{
-			c_arr[outcnt]["id"]=beacons[cnt].id;
-			c_arr[outcnt]["numsats"]=beacons[cnt].numsats;
-			c_arr[outcnt]["gpsfix"]=beacons[cnt].gpsfix;
-			c_arr[outcnt]["long"]=beacons[cnt].longitude;
-			c_arr[outcnt]["lat"]=beacons[cnt].latitude;
-			c_arr[outcnt]["height"]=beacons[cnt].height;
-			c_arr[outcnt]["accuracy"]=beacons[cnt].accuracy;
-			c_arr[outcnt]["voltage"]=beacons[cnt].voltage;
-			c_arr[outcnt]["counter"]=beacons[cnt].counter;
-			c_arr[outcnt]["snr"]=beacons[cnt].snr;
-			c_arr[outcnt]["rssi"]=beacons[cnt].rssi;
-			c_arr[outcnt]["age"]=millis()-beacons[cnt].millis;
-			
-			outcnt++;
+			if(beacons[slot].packetcount>MIN_PACKETS)
+			{
+				c_arr[outcnt]["id"]=beacons[slot].id;
+				c_arr[outcnt]["numsats"]=beacons[slot].numsats;
+				c_arr[outcnt]["gpsfix"]=beacons[slot].gpsfix;
+				c_arr[outcnt]["long"]=beacons[slot].longitude;
+				c_arr[outcnt]["lat"]=beacons[slot].latitude;
+				c_arr[outcnt]["height"]=beacons[slot].height;
+				c_arr[outcnt]["accuracy"]=beacons[slot].accuracy;
+				c_arr[outcnt]["voltage"]=beacons[slot].voltage;
+				c_arr[outcnt]["counter"]=beacons[slot].counter;
+				c_arr[outcnt]["snr"]=beacons[slot].snr;
+				c_arr[outcnt]["rssi"]=beacons[slot].rssi;
+				c_arr[outcnt]["age"]=millis()-beacons[slot].millis;
+				
+				outcnt++;
+			}
 		}
 	}
 
@@ -721,8 +726,6 @@ void GenerateJson(void)
 
 void GenerateKMLFile(char *buffer,uint16_t buflen)
 {
-//	uint16_t bufptr=0;
-
 	buffer[0]=0;
 	
 	sprintf(buffer+strlen(buffer),"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n");
@@ -745,25 +748,24 @@ void GenerateKMLFile(char *buffer,uint16_t buflen)
 	sprintf(buffer+strlen(buffer),"\t\t</Point>\r\n");
 	sprintf(buffer+strlen(buffer),"\t</Placemark>\r\n");
 	
-	
-	for(int cnt=0;cnt<MAX_BEACONS;cnt++)
+	for(int slot=0;slot<MAX_BEACONS;slot++)
 	{
-		if(		(beacons[cnt].spare1==0xff)
-			&&	(beacons[cnt].spare2==0xff)
-			&&	(beacons[cnt].spare3==0xff)		)
+		if(		(beacons[slot].spare1==0xff)
+			&&	(beacons[slot].spare2==0xff)
+			&&	(beacons[slot].spare3==0xff)		)
 		{
 			continue;
 		}
 	
 		sprintf(buffer+strlen(buffer),"\t<Placemark>\r\n");
-		sprintf(buffer+strlen(buffer),"\t\t<name>Beacon ID: %d</name>\r\n",beacons[cnt].id);
+		sprintf(buffer+strlen(buffer),"\t\t<name>Beacon ID: %d</name>\r\n",beacons[slot].id);
 		sprintf(buffer+strlen(buffer),"\t\t<Point>\r\n");
 		sprintf(buffer+strlen(buffer),"\t\t\t<coordinates>");
 		
 		sprintf(buffer+strlen(buffer),"%f,%f,%.1f",
-					beacons[cnt].longitude,
-					beacons[cnt].latitude,
-					beacons[cnt].height
+					beacons[slot].longitude,
+					beacons[slot].latitude,
+					beacons[slot].height
 				);
 		
 		sprintf(buffer+strlen(buffer),"</coordinates>\r\n");
