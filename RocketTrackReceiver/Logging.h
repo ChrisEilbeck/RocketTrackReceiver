@@ -25,6 +25,7 @@ typedef struct
 	float accuracy;
 	float voltage;
 	float offset;
+	uint16_t packetcount;
 	uint16_t counter;
 	uint32_t millis;
 } fix;

@@ -14,7 +14,7 @@ fix rxfix={0,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0,0,0,0};
 //
 // insert the location of Bredon Hill so that's the default reported
 // location until we receive packets from any beacon
-fix lastfix={1,3,6,13,-63,0,0,0,0,52.059956,-2.064869,500.0,1.23,3.99,0.0,1234,0};
+fix lastfix={1,3,6,13,-63,0,0,0,0,52.059956,-2.064869,500.0,1.23,3.99,0.0,0,1234,0};
 
 #define LORA_ID 1
 
@@ -155,19 +155,21 @@ void StorePacketInBeaconBuffer(int id)
 	
 	bool found=false;
 	
-	int cnt;
-	for(cnt=0;cnt<MAX_BEACONS;cnt++)
+	int slot;
+	for(slot=0;slot<MAX_BEACONS;slot++)
 	{
-		if(		(beacons[cnt].spare1!=0xff)
-			&&	(beacons[cnt].spare2!=0xff)
-			&&	(beacons[cnt].spare3!=0xff)
-			&&	(beacons[cnt].id==id)		)
+		if(		(beacons[slot].spare1!=0xff)
+			&&	(beacons[slot].spare2!=0xff)
+			&&	(beacons[slot].spare3!=0xff)
+			&&	(beacons[slot].id==id)		)
 		{
 			// this is an occupied slot and the id matches the one we've
 			// just received from so store the packet into that slotkd
 			
-			memcpy((void *)&beacons[cnt],(void *)&lastfix,sizeof(fix));
-			Serial.printf("Packet stored to slot %d\r\n",cnt);
+			uint16_t packetcount=beacons[slot].packetcount;
+			memcpy((void *)&beacons[slot],(void *)&lastfix,sizeof(fix));
+			beacons[slot].packetcount=packetcount+1;
+			Serial.printf("Packet stored to slot %d, packetcount = %d\r\n",slot,packetcount);
 			found=true;
 		}
 	}
@@ -179,15 +181,16 @@ void StorePacketInBeaconBuffer(int id)
 	{
 		Serial.printf("Beacon %d not already found in beacons buffers\r\n",id);
 		
-		for(cnt=0;cnt<MAX_BEACONS;cnt++)
+		for(slot=0;slot<MAX_BEACONS;slot++)
 		{
-			if(		(beacons[cnt].spare1==0xff)
-				&&	(beacons[cnt].spare2==0xff)
-				&&	(beacons[cnt].spare3==0xff)		)
+			if(		(beacons[slot].spare1==0xff)
+				&&	(beacons[slot].spare2==0xff)
+				&&	(beacons[slot].spare3==0xff)		)
 			{
 				// this is an unoccupied slot so start using it
-				memcpy((void *)&beacons[cnt],(void *)&lastfix,sizeof(fix));
-				Serial.printf("Packet stored to slot %d\r\n",cnt);
+				lastfix.packetcount=0;
+				memcpy((void *)&beacons[slot],(void *)&lastfix,sizeof(fix));
+				Serial.printf("Packet stored to slot %d\r\n",slot);
 				found=true;
 				break;
 			}
@@ -204,19 +207,20 @@ void StorePacketInBeaconBuffer(int id)
 		int oldest_fix=-1;
 		int oldest_time=1<<31;
 		
-		for(cnt=0;cnt<MAX_BEACONS;cnt++)
+		for(slot=0;slot<MAX_BEACONS;slot++)
 		{
-			if(beacons[cnt].millis<oldest_time)
+			if(beacons[slot].millis<oldest_time)
 			{
-				oldest_time=beacons[cnt].millis;
-				oldest_fix=cnt;
-				Serial.printf("Oldest fix is in slot %d\r\n",cnt);
+				oldest_time=beacons[slot].millis;
+				oldest_fix=slot;
+				Serial.printf("Oldest fix is in slot %d\r\n",slot);
 			}
 		}
 		
-		cnt=oldest_fix;
-		memcpy((void *)&beacons[cnt],(void *)&lastfix,sizeof(fix));
-		Serial.printf("Packet stored to slot %d\r\n",cnt);
+		slot=oldest_fix;
+		lastfix.packetcount=0;
+		memcpy((void *)&beacons[slot],(void *)&lastfix,sizeof(fix));
+		Serial.printf("Packet stored to slot %d\r\n",slot);
 	}
 }
 
