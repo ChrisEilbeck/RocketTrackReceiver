@@ -2,6 +2,7 @@
 
 PORT=/dev/ttyACM0
 PORT=/dev/ttyUSB0
+#PORT=/dev/ttyACM1
 
 arduino-cli upload \
 	--port ${PORT} \

@@ -2,10 +2,6 @@
 /*
 	To Do
 	
-	-	move away from configuring things in an ini file, just use the
-		nvmemory instead with ways to set back to defaults from the 
-		test harness
-	
 	-	changing the wifi setup and crypto keys from the web UI is probably
 		a bad thing to do and should be done via the test harness
 	

@@ -99,7 +99,7 @@ int SetupIMU(void)
 	Mag_A21=0.0;			Mag_A22=1.0;			Mag_A23=0.0;
 	Mag_A31=0.0;			Mag_A32=0.0;			Mag_A33=1.0;
 
-	mag_B1=0.0;				Mag_B2=0.0;				Mag_B3=0.0;
+	Mag_B1=0.0;				Mag_B2=0.0;				Mag_B3=0.0;
 #endif
 #if 0
 	Serial.println("\tApply magnetometer calibration for 4 element Yagi");
@@ -111,6 +111,39 @@ int SetupIMU(void)
 	
 	// hard iron calibration vector for 4 element Yagi antenna
 	Mag_B1=-10.6583;		Mag_B2=8.0037;			Mag_B3=34.7096;
+#endif
+#if 1
+	// damian's antenna with an Ultrafire 18650 cell
+	
+	Mag_A11=1.136081;		Mag_A12=-0.012534;		Mag_A13=-0.021845;
+	Mag_A21=-0.021845;		Mag_A22=0.922643;		Mag_A23=-0.120007;
+	Mag_A31=-0.021845;		Mag_A32=-0.120007;		Mag_A33=0.972071;
+
+	Mag_B1=-249.437;		Mag_B2=-74.082;			Mag_B3=-133.345;
+
+	GyroOffset.x=-2.8;		GyroOffset.y=-1.4;		GyroOffset.z=-1.8;
+#endif
+#if 0
+	// chris' small yagi with an Ultrafire 18650 cell
+	
+	Mag_A11=1.1964e+00;		Mag_A12=1.1888e-02;		Mag_A13=-7.8856e-03;
+	Mag_A21=1.1888e-02;		Mag_A22=1.0043e+00;		Mag_A23=-1.6386e-01;
+	Mag_A31=-7.8856e-03;	Mag_A32=-1.6386e-01;	Mag_A33=9.5554e-01;
+	
+	Mag_B1=-112.1468;		Mag_B2=5.8504;			Mag_B3=-18.9436;
+
+	GyroOffset.x=-6.6;		GyroOffset.y=0.8;		GyroOffset.z=1.1;
+#endif
+#if 0
+	// chris' large yagi with an Ultrafire 18650 cell
+	
+	Mag_A11=1.2564e+00;		Mag_A12=-1.2663e-03;	Mag_A13=-1.3329e-02;
+	Mag_A21=-1.2663e-03;	Mag_A22=1.0041e+00;		Mag_A23=-1.6683e-01;
+	Mag_A31=-1.3329e-02;	Mag_A32=-1.6683e-01;	Mag_A33=9.3498e-01;
+	
+	Mag_B1=-138.991;		Mag_B2=-84.098;			Mag_B3=21.601;
+
+	GyroOffset.x=-5.3;		GyroOffset.y=-0.7;		GyroOffset.z=+3.1;
 #endif
 #if 1
 	PrintMagCalibration();
@@ -181,6 +214,8 @@ bool DetectSeparateBoards(void)
 	{
 		Serial.println("\t\tHMC5883L Magnetometer initialised ...");
 		magnetometer_setup=HMC5883L;
+		
+		hmc5883l.setMagGain(HMC5883_MAGGAIN_8_1);
 	}
 	
 	if((accel_setup!=NO_SENSOR)&&(gyro_setup!=NO_SENSOR)&&(magnetometer_setup!=NO_SENSOR))
@@ -310,6 +345,19 @@ void PollIMU(void)
 							&(uncalibrated_mag.z)
 						);
 		
+		if(mag_cal_mode)
+		{
+			static int update_ui_at=0;
+			
+			if(millis()>update_ui_at)
+			{
+				update_ui_at=millis()+100;
+				
+				if(	(uncalibrated_mag.x!=0.0)&&(uncalibrated_mag.y!=0.0)&&(uncalibrated_mag.z!=0.0)	)
+					Serial.printf("MagCal:%.3f\t%.2f\t%.2f\t%.2f\r\n",(float)millis()/1000.0,uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z);
+			}
+		}
+		
 		// see https://teslabs.com/articles/magnetometer-calibration/ and 
 		// https://sailboatinstruments.blogspot.com/2011/08/improved-magnetometer-calibration.html
 		// for a better explanation than I have of all of this 
@@ -349,19 +397,6 @@ void PollIMU(void)
 		heading=180.0-filter.getYaw();
 		if(heading<0.0)		heading+=360.0;
 		if(heading>360.0)	heading-=360.0;
-		
-		if(mag_cal_mode)
-		{
-			static int update_ui_at=0;
-			
-			if(millis()>update_ui_at)
-			{
-				update_ui_at=millis()+100;
-				
-				if(	(uncalibrated_mag.x!=0.0)&&(uncalibrated_mag.y!=0.0)&&(uncalibrated_mag.z!=0.0)	)
-					Serial.printf("MagCal:%.3f,%.2f,%.2f,%.2f\r\n",(float)millis()/1000.0,uncalibrated_mag.x,uncalibrated_mag.y,uncalibrated_mag.z);
-			}
-		}
 		
 		if(compass_live_mode)
 		{
@@ -535,7 +570,6 @@ int SensorCalibrationCommandHandler(uint8_t *cmd,uint16_t cmdptr)
 
 		case 'g':	// calibrate the gyro
 					CalibrateGyro();
-					
 					break;
 
 		case 'p':	// print valibration values
